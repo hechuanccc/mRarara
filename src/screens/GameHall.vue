@@ -28,27 +28,8 @@
     data () {
       return {
         view: login
-        // tabs: [
-        //   {
-        //     label: '快速登录',
-        //     name: 'login'
-        //   },
-        //   {
-        //     label: '快速注册',
-        //     name: 'register'
-        //   }
-        // ]
       }
     },
-    // watch: {
-    //   '$route.name': function () {
-    //     this.activeTab = this.$route.name
-    //
-    //     if (this.$route.name === 'Fin') { // to avoid not arrive recharge-page after user key .../fin/ directly
-    //       this.$router.push({name: 'Recharge'})
-    //     }
-    //   }
-    // },
     computed: {},
     components: {
       Tab,
