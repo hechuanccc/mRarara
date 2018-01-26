@@ -7,6 +7,7 @@ export default {
   },
   misc: {
     username: '用户名',
+    usernick: '昵称',
     password: '密码',
     confirm_password: '确认密码',
     login: '登录',

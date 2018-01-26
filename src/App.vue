@@ -111,9 +111,6 @@ export default {
     },
     isStatisticPage () {
       return this.$route.path.split('/')[1] === 'stastics'
-    },
-    getHeaderBgColor () {
-      return this.$route.name === 'Home' ? '#fff' : this.isStatisticPage ? '#0069b1' : ''
     }
   },
   methods: {
