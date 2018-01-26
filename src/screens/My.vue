@@ -10,7 +10,7 @@
         is-link
         :title="$t('withdraw.apply')"
         @click.native="$router.push('/my/withdraw')">
-        <i class="icon-withdraw icon" slot="icon"></i>
+        <i class="icon-fin icon" slot="icon"></i>
       </cell>
       <cell
         @click.native="$router.push('/my/bankinfo')"

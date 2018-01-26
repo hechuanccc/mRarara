@@ -33,6 +33,27 @@ export default new Router({
       path: '/game',
       name: 'Game',
       component: resolve => { require(['../screens/GameHall.vue'], resolve) }
+      //
+      // children: [
+      // {
+      //   path: 'recharge',
+      //   name: 'Recharge',
+      //   meta: {
+      //     title: '充值',
+      //     requiresAuth: true
+      //   },
+      //   component: resolve => { require(['../screens/finance/Recharge.vue'], resolve) }
+      // },
+      // {
+      //   path: 'recharge',
+      //     name: 'Recharge',
+      //   meta: {
+      //   title: '充值',
+      //     requiresAuth: true
+      // },
+      //   component: resolve => { require(['../screens/finance/Recharge.vue'], resolve) }
+      // },
+      // ]
     },
     {
       path: '/fin',
