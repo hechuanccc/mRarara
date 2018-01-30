@@ -63,7 +63,7 @@
 </template>
 <script>
 import { Cell, Group, XInput, XButton, Datetime, Selector, Spinner } from 'vux'
-import { changeUserInformation } from '../../api'
+// import { changeUserInformation } from '../../api'
 import { formatError } from '../../utils/error_handler'
 import { mapActions, mapGetters } from 'vuex'
 export default {
