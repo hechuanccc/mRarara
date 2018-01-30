@@ -162,3 +162,7 @@ export function getToken (oldToken) {
       return res
     })
 }
+
+export function sendImgToChat (data) {
+  return axios.post(`${urls.sendImgToChat}`, data)
+}
