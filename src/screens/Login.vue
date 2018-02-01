@@ -84,13 +84,8 @@
             this.loading = false
             this.$router.push('/')
           }, error => {
-            if (error.data.auth_req === 1) {
-              this.fetchCaptcha().then(res => {
-                this.illegalTriedLogin = true
-              })
-            }
             this.loading = false
-            this.error = error.msg
+            this.error = '用户名或密码不正确'
           })
         }
       }
