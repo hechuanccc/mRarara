@@ -21,12 +21,11 @@ axios.interceptors.response.use(res => {
   if (!responseData.error) {
     return responseData
   } else {
-    router.push({
-      path: '/login'
-    })
-    return Promise.reject(responseData.msg)
+    toLogin(router)
+    return Promise.reject(responseData)
   }
 }, (error) => {
+  toLogin(router)
   return Promise.reject(error)
 })
 
