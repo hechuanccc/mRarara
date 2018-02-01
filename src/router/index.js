@@ -5,16 +5,16 @@ Vue.use(Router)
 
 export default new Router({
   routes: [
-    // {
-    //   path: '/login',
-    //   name: 'Login',
-    //   meta: {
-    //     tabbarHidden: true,
-    //     title: '登录',
-    //     showBack: true
-    //   },
-    //   component: resolve => { require(['../screens/Login.vue'], resolve) }
-    // },
+    {
+      path: '/login',
+      name: 'Login',
+      meta: {
+        tabbarHidden: true,
+        title: '登录',
+        showBack: true
+      },
+      component: resolve => { require(['../screens/Login.vue'], resolve) }
+    }
     // {
     //   path: '/register',
     //   name: 'Register',
@@ -22,8 +22,8 @@ export default new Router({
     //     tabbarHidden: true,
     //     title: '注册'
     //   },
-    //   component: resolve => { require(['../screens/Register.vue'], resolve) }
-    // },
+    //   component: resolve => { require(['../screens/login/Register.vue'], resolve) }
+    // }
     // {
     //   path: '/',
     //   name: 'Home',

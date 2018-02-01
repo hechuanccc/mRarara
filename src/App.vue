@@ -1,13 +1,18 @@
 <template>
   <view-box class='content-box'>
-    <x-header :left-options="{showBack: false}">
-      <div class="chat-logo"></div>
-      <div class="logout">退出</div>
-      <div class="user-name">山东桃酥</div>
-      <div class="user-img"></div>
+    <x-header 
+      :left-options="{showBack: $route.meta.showBack || false}"
+      >
+      <div v-if="!$route.meta.showBack">
+        <div class="chat-logo"></div>
+        <div class="logout">退出</div>
+        <div class="user-name">山东桃酥</div>
+        <div class="user-img"></div>
+      </div>
+      {{$route.meta.title}}
     </x-header>
     <router-view></router-view>
-    <div>
+    <div v-if="!$route.meta.tabbarHidden">
        <tab :line-width=2 active-color='#fc378c' v-model="index">
         <tab-item class="vux-center" :selected="demo2 === item" v-for="(item, index) in list2" @click="demo2 = item" :key="index">{{item}}</tab-item>
       </tab>
@@ -51,21 +56,24 @@ export default {
 }
 </script>
 
+<style lang="less">
+@import '~vux/src/styles/reset.less';
+@import './styles/theme.less';
+@import './styles/base.less';
+</style>
+
 <style lang="less" scoped>
-body {
-  margin: 0px auto;
-  padding: 0px;
-}
+
 .content-box {
   position: fixed;
   top: 0;
   width: 100%;
+  left: 0;
   & /deep/ .vux-header{
     height: 40px;
     background-color: #383636;
   }
   & /deep/ .vux-header-left {
-    display: none;
   }
   & /deep/ .vux-header-title {
     margin: 0;
