@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { XHeader,ViewBox, Tab, TabItem, Swiper, SwiperItem } from 'vux'
+import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem } from 'vux'
 const list = () => ['计划聊天室', '私聊', '开奖', '投注']
 export default {
   name: 'app',
@@ -33,16 +33,12 @@ export default {
     }
   },
   watch: {
-    
   },
   computed: {
-    
   },
   methods: {
-  
   },
   created () {
-    
   },
   components: {
     XHeader,
