@@ -11,8 +11,6 @@ import {
 export default {
   login: ({ commit, state }, { user }) => {
     return login(user).then(res => {
-      console.log('login data')
-      console.log(res)
       let expires = new Date(res.expires_in)
       if (res.access_token && res.refresh_token) {
         Vue.cookie.set('access_token', res.access_token, {
@@ -47,16 +45,16 @@ export default {
   },
   fetchUser: ({ commit, state }) => {
     return fetchUser().then(res => {
-      if (res.length > 0) {
+      if (!res.error) {
         commit(types.SET_USER, {
           user: {
-            ...res[0],
+            ...res,
             logined: true
           }
         })
-        return Promise.resolve(res[0])
+        return Promise.resolve(res)
       } else {
-        return Promise.reject(res[0])
+        return Promise.reject(res)
       }
     }, error => {
       commit(types.SET_USER, {
