@@ -19,7 +19,7 @@ if (token) {
 axios.interceptors.response.use(res => {
   let responseData = res.data
   if (!responseData.error) {
-    return responseData.data
+    return responseData
   } else {
     router.push({
       path: '/login'
