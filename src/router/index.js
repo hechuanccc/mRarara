@@ -24,6 +24,14 @@ export default new Router({
         showBack: true
       },
       component: resolve => { require(['../screens/Register.vue'], resolve) }
+    },
+    {
+      path: '/',
+      name: 'Home',
+      component: resolve => { require(['../screens/Home.vue'], resolve) },
+      meta: {
+        requiresAuth: true
+      }
     }
   ]
 })
