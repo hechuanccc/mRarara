@@ -83,7 +83,7 @@
             this.error = ''
             this.loading = false
             this.$router.push('/')
-          }, error => {
+          }, () => {
             this.loading = false
             this.error = '用户名或密码不正确'
           })
