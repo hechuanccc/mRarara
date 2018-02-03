@@ -34,6 +34,14 @@ export default new Router({
       }
     },
     {
+      path: '/result',
+      name: 'Result',
+      component: resolve => { require(['../screens/Result.vue'], resolve) },
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
       path: '/my',
       name: 'my',
       component: resolve => { require(['../screens/My.vue'], resolve) },
