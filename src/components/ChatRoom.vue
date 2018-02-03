@@ -1,6 +1,6 @@
 <template>
   <div class="chat-box" id="chatBox">
-    <p class="login-info" v-if="chatLoading">聊天室登陆中...</p>
+    <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else>
       <div class="chat-announce" v-if="chatAnnounce">
         <div class="annouce-info clearfix">

@@ -34,9 +34,25 @@ export default new Router({
       component: resolve => { require(['../screens/Register.vue'], resolve) }
     },
     {
+      path: '/private',
+      name: 'PrivateChat',
+      component: resolve => { require(['../screens/PrivateChat.vue'], resolve) },
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
       path: '/bet',
       name: 'Bet',
       component: resolve => { require(['../screens/Bet.vue'], resolve) },
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/result',
+      name: 'Result',
+      component: resolve => { require(['../screens/Result.vue'], resolve) },
       meta: {
         requiresAuth: true
       }
