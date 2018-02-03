@@ -32,6 +32,17 @@ export default new Router({
       meta: {
         requiresAuth: true
       }
+    },
+    {
+      path: '/my',
+      name: 'my',
+      component: resolve => { require(['../screens/My.vue'], resolve) },
+      meta: {
+        title: '个人中心',
+        showBack: true,
+        requiresAuth: true,
+        tabbarHidden: true
+      }
     }
   ]
 })
