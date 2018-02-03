@@ -26,9 +26,9 @@ export default new Router({
       component: resolve => { require(['../screens/Register.vue'], resolve) }
     },
     {
-      path: '/',
-      name: 'Home',
-      component: resolve => { require(['../screens/Home.vue'], resolve) },
+      path: '/bet',
+      name: 'Bet',
+      component: resolve => { require(['../screens/Bet.vue'], resolve) },
       meta: {
         requiresAuth: true
       }

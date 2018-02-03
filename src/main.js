@@ -5,6 +5,7 @@ import router from './router'
 import VueCookie from 'vue-cookie'
 import { createStore } from './store'
 import { sync } from 'vuex-router-sync'
+import { fetchSystemConfig } from './api'
 import * as types from './store/mutations/mutation-types'
 import Vue2Filters from 'vue2-filters'
 
@@ -85,23 +86,17 @@ Vue.mixin({
   }
 })
 
-// gethomePage().then(
-//   response => {
-//     let pref = response.global_preferences
-//     store.dispatch('setSystemConfig',
-//       {
-//         homePageLogo: response.icon,
-//         customerServiceUrl: pref.customer_service_url,
-//         agentDashboardUrl: pref.agent_dashboard_url,
-//         global_preferences: pref,
-//         agentBusinessConsultingQQ: pref.agent_business_consulting_qq,
-//         contactEmail: pref.contact_email,
-//         contactPhoneNumber: pref.contact_phone_number,
-//         openAccountConsultingQQ: pref.open_account_consulting_qq,
-//         siteName: response.name
-//       })
-//   }
-// )
+fetchSystemConfig().then(
+  response => {
+    let pref = response.global_preferences
+    store.dispatch('setSystemConfig',
+      {
+        mobileLotteryUrl: pref.mobile_lottery_url,
+        customerServiceUrl: pref.customer_service_url,
+        webLotteryRegisterUrl: pref.web_lottery_register_url
+      })
+  }
+)
 
 /* eslint-disable no-new */
 new Vue({

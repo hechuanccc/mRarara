@@ -64,5 +64,8 @@ export default {
       })
       return Promise.reject(error)
     })
+  },
+  setSystemConfig: ({ commit }, data) => {
+    commit(types.SET_SYSTEM_CONFIG, data)
   }
 }

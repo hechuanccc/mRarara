@@ -14,17 +14,17 @@
       </div>
       {{$route.meta.title}}
     </x-header>
-    <router-view></router-view>
     <div v-if="!$route.meta.tabbarHidden">
-       <tab :line-width="2" active-color="#fc378c" v-model="index">
-        <tab-item class="vux-center" :selected="demo2 === item" v-for="(item, index) in list2" @click="demo2 = item" :key="index">{{item}}</tab-item>
+       <tab :line-width="2" active-color="#fc378c">
+        <tab-item
+          class="vux-center"
+          :selected="`/${$route.path.split('/')[1]}` === page.path"
+          v-for="(page, index) in pages"
+           @on-item-click="switchTab(page.path)"
+          :key="index">{{page.name}}</tab-item>
       </tab>
-      <swiper v-model="index" height="100px" :show-dots="false">
-        <swiper-item v-for="(item, index) in list2" :key="index">
-          <div class="tab-swiper vux-center">{{item}} Container</div>
-        </swiper-item>
-      </swiper>
     </div>
+    <router-view></router-view>
     <account-panel
       v-model="showAccountPanel"
       @handleClose="closeAccountPanel" />
@@ -35,25 +35,41 @@
 import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem } from 'vux'
 import { mapGetters } from 'vuex'
 import AccountPanel from './components/AccountPanel'
-const list = () => ['计划聊天室', '私聊', '开奖', '投注']
+const homeLinks = ['/chatroom', '/private', '/result', '/bet']
 export default {
   name: 'app',
   data () {
     return {
-      list2: list(),
-      demo2: '计划聊天室',
+      pages: [{
+        name: '计画聊天室',
+        path: '/chatroom'
+      }, {
+        name: '私聊',
+        path: '/private'
+      }, {
+        name: '开奖',
+        path: '/result'
+      }, {
+        name: '投注',
+        path: '/bet'
+      }],
       index: 0,
       showAccountPanel: false
     }
   },
   watch: {
+    '$route': function (to, from) {
+      if (to.path === '/') {
+        this.$router.replace({path: '/chatroom'})
+      }
+    }
   },
   computed: {
     ...mapGetters([
       'user'
     ]),
     headerType () {
-      if (this.$route.path === '/') {
+      if (homeLinks.includes(this.$route.path)) {
         return 'home'
       } else {
         return 'page'
@@ -72,9 +88,13 @@ export default {
     },
     closeAccountPanel () {
       this.showAccountPanel = false
+    },
+    switchTab (path) {
+      this.$router.push({path})
     }
   },
   created () {
+    this.$router.replace({path: '/chatroom'})
   },
   components: {
     XHeader,
