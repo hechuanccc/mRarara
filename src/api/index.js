@@ -26,3 +26,7 @@ export function sendImgToChat (data) {
 export function checkUserName (username) {
   return axios.get(urls.check_username, { params: { username: username } })
 }
+
+export function fetchSystemConfig () {
+  return axios.get(urls.systemConfig)
+}

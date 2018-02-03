@@ -12,7 +12,12 @@ export function createStore () {
       user: {
         logined: ''
       },
-      isLoading: false
+      isLoading: false,
+      systemConfig: {
+        mobileLotteryUrl: '',
+        customerServiceUrl: '',
+        webLotteryRegisterUrl: ''
+      }
     },
     actions,
     mutations,
