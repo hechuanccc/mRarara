@@ -2,12 +2,13 @@
   <view-box class='content-box'>
     <x-header :class="headerType"
       :left-options="{showBack: $route.meta.showBack || false}"
-      >
+      :right-options="{showMore: user.logined}"
+      @on-click-more="showAccountPanel = true">
       <div v-if="!$route.meta.showBack" slot="left">
         <div class="chat-logo"></div>
       </div>
       <div v-if="!$route.meta.showBack" slot="right" class="group">
-        <div class="user-img"></div>
+        <div class="user-img" :style="avatar"></div>
         <div class="user-name">{{user.nickname}}</div>
         <div class="logout" @click="logout">退出</div>
       </div>
@@ -15,7 +16,7 @@
     </x-header>
     <router-view></router-view>
     <div v-if="!$route.meta.tabbarHidden">
-       <tab :line-width=2 active-color='#fc378c' v-model="index">
+       <tab :line-width="2" active-color="#fc378c" v-model="index">
         <tab-item class="vux-center" :selected="demo2 === item" v-for="(item, index) in list2" @click="demo2 = item" :key="index">{{item}}</tab-item>
       </tab>
       <swiper v-model="index" height="100px" :show-dots="false">
@@ -24,12 +25,16 @@
         </swiper-item>
       </swiper>
     </div>
+    <account-panel
+      v-model="showAccountPanel"
+      @handleClose="closeAccountPanel" />
   </view-box>
 </template>
 
 <script>
 import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem } from 'vux'
 import { mapGetters } from 'vuex'
+import AccountPanel from './components/AccountPanel'
 const list = () => ['计划聊天室', '私聊', '开奖', '投注']
 export default {
   name: 'app',
@@ -37,7 +42,8 @@ export default {
     return {
       list2: list(),
       demo2: '计划聊天室',
-      index: 0
+      index: 0,
+      showAccountPanel: false
     }
   },
   watch: {
@@ -52,12 +58,20 @@ export default {
       } else {
         return 'page'
       }
+    },
+    avatar () {
+      return {
+        'background-image': `url(${this.user.avatar})`
+      }
     }
   },
   methods: {
     logout () {
       this.$store.dispatch('logout')
       this.$router.push({path: '/login'})
+    },
+    closeAccountPanel () {
+      this.showAccountPanel = false
     }
   },
   created () {
@@ -68,7 +82,8 @@ export default {
     Tab,
     TabItem,
     Swiper,
-    SwiperItem
+    SwiperItem,
+    AccountPanel
   }
 }
 </script>
@@ -98,7 +113,8 @@ export default {
   .chat-logo {
     width: 120px;
     height: 30px;
-    background-color: #FFFFFF;
+    background: url('./assets/logo.png') no-repeat;
+    background-size: contain;
     float: left;
     margin-left: 10px;
     margin-top: 2px;
@@ -106,7 +122,8 @@ export default {
   .user-img {
     width: 20px;
     height: 20px;
-    background: #FFFFFF;
+    background-repeat: no-repeat;
+    background-size: contain;
   }
   .user-name {
     font-size: 14px;
@@ -133,10 +150,21 @@ export default {
   }
   & /deep/ .vux-header-right {
     position: static;
+    display: flex;
     .group {
+      order: 1;
       height: 100%;
       display: flex;
       align-items: center;
+    }
+    .vux-header-more {
+      width: 40px;
+      margin:0;
+      order: 2;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 }
