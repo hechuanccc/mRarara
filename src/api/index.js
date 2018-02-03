@@ -34,3 +34,7 @@ export function checkUserName (username) {
 export function fetchSystemConfig () {
   return axios.get(urls.systemConfig)
 }
+
+export function changeUserInfo (id, data) {
+  return axios.put(`${urls.changeUserInfo}${id}/`, data)
+}
