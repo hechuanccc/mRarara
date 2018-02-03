@@ -33,9 +33,9 @@
         autocapitalize="off"
         title="QQ号"
         :max="8"
-        @on-change="validate($event, 'qq')"
+        @on-change="validate($event, 'QQ')"
         keyboard="number"
-        :value="member.qq">
+        :value="member.QQ">
       </x-input>
     </group>
     <div class="vux-group-tip text-danger">{{errorMsg}}</div>
@@ -52,7 +52,7 @@ import { Cell, Group, XInput, XButton, Datetime, Selector, Spinner } from 'vux'
 import { msgFormatter, validateEmail, validatePhone, validateQQ } from '../../utils'
 import { mapActions, mapGetters } from 'vuex'
 import { changeUserInfo } from '../../api'
-const inputs = ['nickname', 'email', 'mobile', 'qq']
+const inputs = ['nickname', 'email', 'mobile', 'QQ']
 export default {
   name: 'profile',
   data () {
@@ -95,7 +95,7 @@ export default {
           },
           errorMsg: ''
         },
-        qq: {
+        QQ: {
           origin: '',
           valid: true,
           validate: (value) => {
@@ -113,7 +113,7 @@ export default {
         nickname: '',
         mobile: '',
         email: '',
-        qq: ''
+        QQ: ''
       },
       loading: false,
       errorMsg: '',
