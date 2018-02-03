@@ -16,6 +16,14 @@ export default new Router({
       component: resolve => { require(['../screens/Login.vue'], resolve) }
     },
     {
+      path: '/',
+      name: 'Home',
+      meta: {
+
+      },
+      component: resolve => { require(['../screens/Home.vue'], resolve) }
+    },
+    {
       path: '/register',
       name: 'Register',
       meta: {
@@ -43,6 +51,17 @@ export default new Router({
         requiresAuth: true,
         tabbarHidden: true
       }
+    },
+    {
+      path: '/my/profile',
+      name: 'profile',
+      meta: {
+        title: '修改账户资料',
+        showBack: true,
+        tabbarHidden: true,
+        requiresAuth: true
+      },
+      component: resolve => { require(['../screens/my/Profile.vue'], resolve) }
     }
   ]
 })

@@ -2,7 +2,6 @@
   <view-box class='content-box'>
     <x-header :class="headerType"
       :left-options="{showBack: $route.meta.showBack || false}"
-      :right-options="{showMore: user.logined}"
       @on-click-more="showAccountPanel = true">
       <div v-if="!$route.meta.showBack" slot="left">
         <div class="chat-logo"></div>
@@ -11,6 +10,9 @@
         <div class="user-img" :style="avatar"></div>
         <div class="user-name">{{user.nickname}}</div>
         <div class="logout" @click="logout">退出</div>
+        <router-link class="user-info" to="/my">
+          <icon scale="1.5" name="user-circle"></icon>
+        </router-link>
       </div>
       {{$route.meta.title}}
     </x-header>
@@ -35,13 +37,25 @@
 import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem } from 'vux'
 import { mapGetters } from 'vuex'
 import AccountPanel from './components/AccountPanel'
+import Icon from 'vue-awesome/components/Icon'
+import 'vue-awesome/icons/user-circle'
 const homeLinks = ['/chatroom', '/private', '/result', '/bet']
 export default {
   name: 'app',
+  components: {
+    XHeader,
+    ViewBox,
+    Tab,
+    TabItem,
+    Swiper,
+    SwiperItem,
+    AccountPanel,
+    Icon
+  },
   data () {
     return {
       pages: [{
-        name: '计画聊天室',
+        name: '计划聊天室',
         path: '/chatroom'
       }, {
         name: '私聊',
@@ -55,13 +69,6 @@ export default {
       }],
       index: 0,
       showAccountPanel: false
-    }
-  },
-  watch: {
-    '$route': function (to, from) {
-      if (to.path === '/') {
-        this.$router.replace({path: '/chatroom'})
-      }
     }
   },
   computed: {
@@ -81,6 +88,13 @@ export default {
       }
     }
   },
+  watch: {
+    '$route': function (to, from) {
+      if (to.path === '/') {
+        this.$router.replace({path: '/chatroom'})
+      }
+    }
+  },
   methods: {
     logout () {
       this.$store.dispatch('logout')
@@ -92,18 +106,6 @@ export default {
     switchTab (path) {
       this.$router.push({path})
     }
-  },
-  created () {
-    this.$router.replace({path: '/chatroom'})
-  },
-  components: {
-    XHeader,
-    ViewBox,
-    Tab,
-    TabItem,
-    Swiper,
-    SwiperItem,
-    AccountPanel
   }
 }
 </script>
@@ -149,8 +151,15 @@ export default {
     font-size: 14px;
     padding: 0 10px;
   }
+  .user-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 100%;
+  }
   .logout {
-    width: 50px;
+    width: 40px;
     height: 100%;
     display: flex;
     align-items: center;

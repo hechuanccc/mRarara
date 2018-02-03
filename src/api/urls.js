@@ -12,5 +12,6 @@ export default {
   chatEmoji: host + '/v1/emoji/',
   sendImgToChat: host + '/v1/image/',
   check_username: host + '/v1/user/check',
-  systemConfig: host + '/v1/global-data/'
+  systemConfig: host + '/v1/global-data/',
+  changeUserInfo: host + '/v1/user/'
 }

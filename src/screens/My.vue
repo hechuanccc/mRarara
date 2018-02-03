@@ -2,11 +2,9 @@
   <div>
     <group label-width="'100px'">
       <cell title="用户名" :value="user.username" ></cell>
-      <cell title="昵称" :value="user.nickname"></cell>
-      <cell title="手机号码" :value="user.mobile"></cell>
-      <cell title="邮箱地址" :value="user.email"></cell>
-    </group>
-    <group>
+      <cell title="修改个人资料" is-link link="/my/profile"></cell>
+      <cell title="修改头像" is-link link="/my/img"></cell>
+      <cell title="重设密码" is-link link="/my/password"></cell>
       <cell>
         <span class="logout" @click="logoutDialogShow = true" slot="after-title">退出登录</span>
       </cell>
