@@ -3,7 +3,7 @@
     <group label-width="'100px'">
       <cell title="用户名" :value="user.username" ></cell>
       <cell title="修改个人资料" is-link link="/my/profile"></cell>
-      <cell title="修改头像" is-link link="/my/img"></cell>
+      <cell title="修改头像" is-link link="/my/image"></cell>
       <cell title="重设密码" is-link link="/my/password"></cell>
       <cell>
         <span class="logout" @click="logoutDialogShow = true" slot="after-title">退出登录</span>

@@ -62,6 +62,28 @@ export default new Router({
         requiresAuth: true
       },
       component: resolve => { require(['../screens/my/Profile.vue'], resolve) }
+    },
+    {
+      path: '/my/password',
+      name: 'profile',
+      meta: {
+        title: '重设密码',
+        showBack: true,
+        tabbarHidden: true,
+        requiresAuth: true
+      },
+      component: resolve => { require(['../screens/my/Password.vue'], resolve) }
+    },
+    {
+      path: '/my/image',
+      name: 'profile',
+      meta: {
+        title: '修改头像',
+        showBack: true,
+        tabbarHidden: true,
+        requiresAuth: true
+      },
+      component: resolve => { require(['../screens/my/Image.vue'], resolve) }
     }
   ]
 })
