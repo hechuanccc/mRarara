@@ -8,6 +8,13 @@ import { sync } from 'vuex-router-sync'
 import { fetchSystemConfig } from './api'
 import * as types from './store/mutations/mutation-types'
 import Vue2Filters from 'vue2-filters'
+import qs from 'qs'
+
+let url = window.location.href
+let params = qs.parse(url.slice(url.indexOf('?') + 1, url.indexOf('#')))
+if (params.r) {
+  VueCookie.set('r', params.r, {expires: '1M'})
+}
 
 Vue.use(require('vue-moment'))
 Vue.use(Vue2Filters)
@@ -17,6 +24,7 @@ const token = Vue.cookie.get('access_token')
 if (token) {
   axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
 }
+
 axios.interceptors.response.use(res => {
   let responseData = res.data
   if (!responseData.error) {
