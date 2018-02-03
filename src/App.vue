@@ -41,7 +41,7 @@ export default {
   data () {
     return {
       pages: [{
-        name: '计画聊天室',
+        name: '计划聊天室',
         path: '/chatroom'
       }, {
         name: '私聊',
@@ -58,11 +58,6 @@ export default {
     }
   },
   watch: {
-    '$route': function (to, from) {
-      if (to.path === '/') {
-        this.$router.replace({path: '/chatroom'})
-      }
-    }
   },
   computed: {
     ...mapGetters([
@@ -92,9 +87,6 @@ export default {
     switchTab (path) {
       this.$router.push({path})
     }
-  },
-  created () {
-    this.$router.replace({path: '/chatroom'})
   },
   components: {
     XHeader,
