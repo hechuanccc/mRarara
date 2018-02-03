@@ -15,6 +15,10 @@ export function fetchUser () {
   return axios.get(urls.user)
 }
 
+export function fetchMemberRoom (limit, page) {
+  return axios.get(`${urls.memberRoom}?offset=${page * limit}&limit=${limit}&type=2,3`)
+}
+
 export function register (user) {
   return axios.post(urls.register, qs.stringify(user))
 }
