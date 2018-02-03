@@ -30,7 +30,7 @@
 </template>
 
 <script>
-  import { TransferDom, Popup, Group, CellBox, Cell, XButton, Confirm } from 'vux'
+  import { TransferDom, Popup, Group, CellBox, Confirm } from 'vux'
   import Icon from 'vue-awesome/components/Icon'
   import 'vue-awesome/icons/user-circle'
   export default {
@@ -51,8 +51,6 @@
       Popup,
       Group,
       CellBox,
-      Cell,
-      XButton,
       Confirm,
       Icon
     },
@@ -88,16 +86,6 @@
 .weui-cell {
   padding: 10px 20px;
   margin-top: 0;
-}
-.balance {
-  padding-left: 10px;
-  color: @red;
-}
-.buttons {
-  margin: 10px 10px 0;
-  /deep/ .weui-btn {
-    font-size: 15px;
-  }
 }
 .links {
   position: absolute;

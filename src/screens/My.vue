@@ -33,21 +33,9 @@ export default {
     }
   },
   computed: {
-    unread () {
-      return this.$store.state.user.unread
-    },
     ...mapGetters([
       'user'
-    ]),
-    bankAccount () {
-      let bank = this.user.bank
-      if (bank) {
-        let bankName = this.user.bank.bank
-        let bankNo = this.user.bank.account.slice(-4)
-        return `${bankName} ****${bankNo}`
-      }
-      return ''
-    }
+    ])
   },
   methods: {
     logout () {
@@ -70,13 +58,6 @@ export default {
 .vux-x-icon {
   margin-right: 10px;
 }
-.unread-alert {
-  border-radius: 20px;
-  font-size: 14px;
-  padding: 4px 10px;
-  background: @red;
-  color: #fff;
-}
 .icon {
   width: 24px;
   margin-right: 10px;
@@ -88,10 +69,5 @@ export default {
   display: block;
   text-align: center;
   color: @red;
-}
-.register {
-  display: block;
-  text-align: center;
-  color: @azul;
 }
 </style>
