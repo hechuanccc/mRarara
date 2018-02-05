@@ -81,7 +81,7 @@ export default new Router({
     },
     {
       path: '/my/password',
-      name: 'profile',
+      name: 'password',
       meta: {
         title: '重设密码',
         showBack: true,
@@ -92,14 +92,14 @@ export default new Router({
     },
     {
       path: '/my/image',
-      name: 'profile',
+      name: 'image',
       meta: {
         title: '修改头像',
         showBack: true,
         tabbarHidden: true,
         requiresAuth: true
       },
-      component: resolve => { require(['../screens/my/Image.vue'], resolve) }
+      component: resolve => { require(['../screens/my/Img.vue'], resolve) }
     }
   ]
 })

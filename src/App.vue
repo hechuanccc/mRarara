@@ -9,7 +9,6 @@
       <div v-if="!$route.meta.showBack" slot="right" class="group">
         <div class="user-img" :style="avatar"></div>
         <div class="user-name">{{user.nickname}}</div>
-        <div class="logout" @click="logout">退出</div>
         <router-link class="user-info" to="/my">
           <icon scale="1.5" name="user-circle"></icon>
         </router-link>
@@ -96,11 +95,6 @@ export default {
     }
   },
   methods: {
-    logout () {
-      this.$store.dispatch('logout').then(() => {
-        this.$router.push({path: '/login'})
-      })
-    },
     closeAccountPanel () {
       this.showAccountPanel = false
     },
