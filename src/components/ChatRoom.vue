@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-box" id="chatBox" :style="{height: resultsH + 'px'}">
+  <div class="chat-box" id="chatBox" :style="{height: resultsHeight + 'px'}">
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else>
       <div class="chat-announce" v-if="chatAnnounce.length > 0">
@@ -170,7 +170,7 @@ export default {
     ...mapGetters([
       'user'
     ]),
-    resultsH () {
+    resultsHeight () {
       return (document.documentElement.clientHeight || document.body.clientHeight) - 40 - 44
     }
   },
