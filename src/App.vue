@@ -15,7 +15,7 @@
       </div>
       {{$route.meta.title}}
     </x-header>
-    <div v-if="!$route.meta.tabbarHidden">
+    <div class="tab-content" v-if="!$route.meta.tabbarHidden">
        <tab :line-width="2" active-color="#fc378c">
         <tab-item
           class="vux-center"
@@ -118,6 +118,11 @@ export default {
   top: 0;
   width: 100%;
   left: 0;
+  .tab-content {
+    .vux-tab {
+      z-index: 999;
+    }
+  }
   & /deep/ .vux-header{
     height: 40px;
     background-color: #383636;

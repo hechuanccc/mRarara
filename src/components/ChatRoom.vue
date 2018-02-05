@@ -1,17 +1,19 @@
 <template>
-  <div class="chat-box" id="chatBox">
+  <div class="chat-box" id="chatBox" :style="{height: resultsHeight + 'px'}">
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else>
-      <div class="chat-announce" v-if="chatAnnounce">
+      <div class="chat-announce" v-if="chatAnnounce.length > 0">
         <div class="annouce-info clearfix">
           <icon class="volume-up" name="volume-up"></icon>
           公告
         </div>
         <div class="scroll">
-          <MarqueeTips :content="chatAnnounce" :speed="10"></MarqueeTips>
+          <marquee>
+            <marquee-item v-for="item in chatAnnounce" :key="item" class="align-middle">{{item}}</marquee-item>
+          </marquee>
         </div>
       </div>
-      <div class="chat-content">
+      <div class="chat-content" @click="showSmile = false">
         <ul class="lay-scroll">
           <li v-for="(item, index) in messages" :class="['clearfix', 'item', item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -43,11 +45,29 @@
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
       </div>
-      <div class="footer" height="100">
+      <div class="footer" height="50">
+        <div class="smile-box" v-if='showSmile'>
+              <a href="javascript:void(0)"
+                v-for="(item, index) in emojis.people.slice(0, 80)"
+                :key="index"
+                class="emoji"
+                @click="personal_setting.chat.status ? msgCnt = msgCnt + item.emoji + ' ' : ''">
+                {{item.emoji}}
+              </a>
+            </div>
         <div class="typing">
           <div class="control-bar">
             <a href="javascript:void(0)" class="btn-control btn-smile">
-              <label for="imgUploadInput">
+              <label>
+                <span title="上传表情" @click="showSmile = !showSmile">
+                  <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
+                </span>
+              </label>
+            </a>
+          </div>
+          <div class="control-bar">
+            <a href="javascript:void(0)" class="btn-control">
+              <label for="imgUploadInput" @click="showSmile = false">
                 <span title="上传图片">
                   <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
                   <input @change="sendMsgImg" type="file" ref="fileImgSend" class="img-upload-input" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
@@ -57,9 +77,9 @@
           </div>
           <div class="txtinput el-textarea">
             <textarea 
-              @keyup.enter="sendMsg" 
-              :placeholder="personal_setting.chat.status ? '' : sendMsgCondition" 
-              type="textarea" rows="2" 
+              @keyup.enter="sendMsg"
+              @focus="showSmile = false"
+              type="textarea" 
               autocomplete="off" 
               validateevent="true" 
               :class="['el-textarea-inner', !personal_setting.chat ? 'is-disabled' : '']" 
@@ -89,10 +109,10 @@ import Vue from 'vue'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/picture-o'
 import 'vue-awesome/icons/volume-up'
-import MarqueeTips from 'vue-marquee-tips'
+import 'vue-awesome/icons/smile-o'
 import { mapGetters } from 'vuex'
-import { sendImgToChat } from '../api'
-import { TransferDom, Tab, TabItem, AlertModule, Popup } from 'vux'
+import { sendImgToChat, fetchAnnouce, fetchChatEmoji } from '../api'
+import { TransferDom, Tab, TabItem, AlertModule, Popup, Marquee, MarqueeItem, Popover } from 'vux'
 import config from '../../config'
 const WSHOST = config.chatHost
 const RECEIVER = 1
@@ -104,7 +124,9 @@ export default {
     TabItem,
     AlertModule,
     Icon,
-    MarqueeTips
+    Marquee,
+    MarqueeItem,
+    Popover
   },
   directives: {
     TransferDom
@@ -117,14 +139,18 @@ export default {
   data () {
     return {
       ws: null,
-      chatAnnounce: '',
+      chatAnnounce: [],
       messages: [],
+      showSmile: false,
       msgCnt: '',
       showNickNameBox: false,
       nickname: this.$store.state.user.nickname,
       showImageMsg: false,
       showImageMsgUrl: '',
       announcement: '',
+      emojis: {
+        people: []
+      },
       personal_setting: {
         chat: {
           reasons: []
@@ -144,16 +170,13 @@ export default {
     ...mapGetters([
       'user'
     ]),
-    sendMsgCondition () {
-      let condition = JSON.parse(this.$store.state.systemConfig.global_preferences.send_chat_conditions)
-      if (condition.length) {
-        return `发言条件：前${condition[0]['value']}天充值不少于${condition[1]['value']}元；投注打码量不少于${condition[2]['value']}元`
-      }
-      return ''
+    resultsHeight () {
+      return (document.documentElement.clientHeight || document.body.clientHeight) - 40 - 44
     }
   },
   created () {
     this.joinChatRoom()
+    this.getAnnouce()
   },
   methods: {
     leaveRoom () {
@@ -177,8 +200,16 @@ export default {
         return this.$router.push('/login?next=' + this.$route.path)
       }
       this.chatLoading = true
-      this.ws = new WebSocket(`${WSHOST}/chat/stream?username=${this.$store.state.user.username}&token=${token}`)
+      this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
       this.ws.onopen = () => {
+        if (!this.emojis.people.length) {
+          fetchChatEmoji().then((resData) => {
+            resData.people = resData.people.reverse()
+            this.emojis = resData
+          }).catch(err => {
+            console.log(err)
+          })
+        }
         this.handleMsg()
       }
       this.ws.onclose = () => {
@@ -205,10 +236,6 @@ export default {
               this.personal_setting = data.personal_setting
             } else if (!data.error_type) {
               if (data.latest_message) {
-                if (data.latest_message[data.latest_message.length - 1].type === 3) {
-                  let annouce = data.latest_message.pop()
-                  this.chatAnnounce = annouce.content
-                }
                 this.messages = this.messages.concat(data.latest_message.reverse())
                 if (this.personal_setting.chat.reasons.length) {
                   this.messages = this.messages.concat([{
@@ -288,26 +315,38 @@ export default {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       }, 1000)
     },
+    getAnnouce () {
+      fetchAnnouce().then(result => {
+        result.forEach((item) => {
+          if (item.platform !== 0) {
+            this.chatAnnounce.push(item.content)
+          }
+        })
+      })
+    },
     sendMsgImg (e) {
-      if (!this.personal_setting.chat) { return false }
-
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
+      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
+        this.errMsgCnt = '文件格式不正确或您目前尚不符合发言条件'
+        this.errMsg = true
+        return false
+      }
       if (file.size > 1024 * 1024) {
-        AlertModule.show({
-          content: '图片尺寸太大，请选择较小尺寸的图片。'
-        })
+        this.errMsg = true
+        this.errMsgCnt = '图片尺寸太大，请选择较小尺寸的图片。'
         return
       }
       let formData = new FormData()
-      formData.append('receivers', RECEIVER)
+      formData.append('receiver', RECEIVER)
       formData.append('image', file)
       sendImgToChat(formData).then((data) => {
         fileInp.value = ''
       })
     },
     sendMsg () {
-      if (!this.msgCnt.trim() || !this.personal_setting.chat) { return false }
+      this.showSmile = false
+      if (!this.msgCnt.trim()) { return false }
       this.ws.send(JSON.stringify({
         'command': 'send',
         'receivers': [RECEIVER],
@@ -325,7 +364,6 @@ export default {
 
 .chat-box {
   position: fixed;
-  top: 46px;
   left: 0;
   width: 100%;
   height: 100%;
@@ -375,7 +413,7 @@ export default {
   }
 }
 .chat-content {
-  padding-bottom: 70px;
+  padding-bottom: 10px;
 }
 .lay-scroll {
   .block-user-info {
@@ -553,15 +591,32 @@ export default {
   position: fixed;
   bottom: 0;
   width: 100%;
+  height: 38px;
   background: #f5f5f5;
   padding: 0;
+  .smile-box {
+    position: absolute;
+    width: 100%;
+    height: 136px;
+    background-color: #ffffff;
+    overflow: scroll;
+    bottom: 38px;
+    .emoji {
+      padding: 2px 6px 0 6px;
+      display: inline-block;
+      cursor: pointer;
+      position: relative;
+      font-size: 18px;
+      text-align: center;
+      border: 2px solid transparent;
+    }
+  }
 }
 .typing {
   .control-bar {
     margin-right: 5px;
     flex: 0.5;
     height: 100%;
-    background: #72aadb;
     border-radius: 4px;
     overflow: hidden;
     .img-upload-input {
@@ -574,12 +629,13 @@ export default {
   }
   display: flex;
   position: relative;
-  padding: 5px;
   .txtinput {
     flex: 3;
+    height: 28px;
   }
   .txt-right {
     margin-left: 5px;
+    margin-right: 5px;
     flex: 1;
   }
   .el-textarea {
@@ -598,9 +654,11 @@ export default {
   .el-textarea-inner {
     display: block;
     resize: vertical;
-    padding: 5px 7px;
-    line-height: 1.5;
+    padding: 0 4px;
+    margin-top: 5px;
     width: 100%;
+    height: 28px;
+    line-height: 27px;
     font-size: 14px;
     color: #1f2d3d;
     background-color: #fff;
@@ -615,12 +673,12 @@ export default {
 .btn-control {
   height: 100%;
   display: block;
-  line-height: 54px;
+  line-height: 46px;
   color: #666;
   text-align: center;
   .el-icon-picture {
     font-size: 20px;
-    color: #fff;
+    color: #72aadb;
   }
 }
 
@@ -628,9 +686,10 @@ export default {
   display: block;
   text-align: center;
   border-radius: 3px;
-  height: 100%;
+  height: 28px;
   font-size: 14px;
-  line-height: 52px;
+  margin-top: 5px;
+  line-height: 28px;
   background: #72aadb;
   color: #fff;
 }
