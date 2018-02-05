@@ -50,6 +50,14 @@ export default new Router({
       }
     },
     {
+      path: '/chatroom',
+      name: 'ChatRoom',
+      component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
       path: '/result',
       name: 'Result',
       component: resolve => { require(['../screens/Result.vue'], resolve) },

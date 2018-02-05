@@ -38,3 +38,11 @@ export function fetchSystemConfig () {
 export function changeUserInfo (id, data) {
   return axios.put(`${urls.changeUserInfo}${id}/`, data)
 }
+
+export function fetchAnnouce () {
+  return axios.get(`${urls.annoucement}`)
+}
+
+export function fetchChatEmoji () {
+  return axios.get(`${urls.chatEmoji}`)
+}
