@@ -1,7 +1,7 @@
 <template>
   <view-box
     class='content-box'
-    :body-padding-top="$route.meta.tabbarHidden?'4px':'84px'"
+    :body-padding-top="$route.meta.tabbarHidden?'40px':'84px'"
     body-padding-bottom="0">
     <div
       slot="header"
