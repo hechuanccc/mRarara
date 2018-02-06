@@ -21,7 +21,9 @@ if (params.r) {
   let expires = new Date()
   expires.setMonth(expires.getMonth() + 1)
   VueCookie.set('r', params.r, {expires: expires})
-} else if (params.desktop === '1' && Vue.cookie.get('desktop') !== '1') {
+}
+
+if (params.desktop === '1' && Vue.cookie.get('desktop') !== '1') {
   VueCookie.set('desktop', params.desktop)
   window.location.reload()
 }
