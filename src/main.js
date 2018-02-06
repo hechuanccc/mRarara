@@ -10,15 +10,23 @@ import * as types from './store/mutations/mutation-types'
 import Vue2Filters from 'vue2-filters'
 import qs from 'qs'
 
-let url = window.location.href
-let params = qs.parse(url.slice(url.indexOf('?') + 1, url.indexOf('#')))
-if (params.r) {
-  VueCookie.set('r', params.r, {expires: '1M'})
-}
-
 Vue.use(require('vue-moment'))
 Vue.use(Vue2Filters)
 Vue.use(VueCookie)
+
+let url = window.location.href
+let params = qs.parse(url.slice(url.indexOf('?') + 1, url.length))
+
+if (params.r) {
+  let expires = new Date()
+  expires.setMonth(expires.getMonth() + 1)
+  VueCookie.set('r', params.r, {expires: expires})
+}
+
+if (params.desktop === '1' && Vue.cookie.get('desktop') !== '1') {
+  VueCookie.set('desktop', params.desktop)
+  window.location.reload()
+}
 
 const token = Vue.cookie.get('access_token')
 if (token) {
