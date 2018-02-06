@@ -1,30 +1,42 @@
 <template>
-  <view-box class='content-box'>
-    <x-header :class="headerType"
-      :left-options="{showBack: $route.meta.showBack || false}"
-      @on-click-more="showAccountPanel = true">
-      <div v-if="!$route.meta.showBack" slot="left">
-        <div class="chat-logo"></div>
+  <view-box
+    class='content-box'
+    :body-padding-top="$route.meta.tabbarHidden?'40px':'84px'"
+    body-padding-bottom="0">
+    <div
+      slot="header"
+      :style="{
+        width: '100%',
+        position: 'fixed', // lay over the default
+        left:'0',
+        top:'0',
+        'z-index':'100'
+      }">
+      <x-header :class="headerType"
+        :left-options="{showBack: $route.meta.showBack || false}"
+        @on-click-more="showAccountPanel = true">
+        <div v-if="!$route.meta.showBack" slot="left">
+          <div class="chat-logo"></div>
+        </div>
+        <div v-if="!$route.meta.showBack" slot="right" class="group">
+          <div class="user-img" :style="avatar"></div>
+          <div class="user-name">{{user.nickname}}</div>
+          <router-link class="user-info" to="/my">
+            <icon scale="1.5" name="user-circle"></icon>
+          </router-link>
+        </div>
+        {{$route.meta.title}}
+      </x-header>
+      <div class="tab-content" v-if="!$route.meta.tabbarHidden">
+        <tab :line-width="2" active-color="#fc378c">
+          <tab-item
+            class="vux-center"
+            :selected="`/${$route.path.split('/')[1]}` === page.path"
+            v-for="(page, index) in pages"
+            @on-item-click="switchTab(page.path)"
+            :key="index">{{page.name}}</tab-item>
+        </tab>
       </div>
-      <div v-if="!$route.meta.showBack" slot="right" class="group">
-        <div class="user-img" :style="avatar"></div>
-        <div class="user-name">{{user.nickname}}</div>
-        <div class="logout" @click="logout">退出</div>
-        <router-link class="user-info" to="/my">
-          <icon scale="1.5" name="user-circle"></icon>
-        </router-link>
-      </div>
-      {{$route.meta.title}}
-    </x-header>
-    <div class="tab-content" v-if="!$route.meta.tabbarHidden">
-       <tab :line-width="2" active-color="#fc378c">
-        <tab-item
-          class="vux-center"
-          :selected="`/${$route.path.split('/')[1]}` === page.path"
-          v-for="(page, index) in pages"
-           @on-item-click="switchTab(page.path)"
-          :key="index">{{page.name}}</tab-item>
-      </tab>
     </div>
     <router-view></router-view>
     <account-panel
@@ -96,11 +108,6 @@ export default {
     }
   },
   methods: {
-    logout () {
-      this.$store.dispatch('logout').then(() => {
-        this.$router.push({path: '/login'})
-      })
-    },
     closeAccountPanel () {
       this.showAccountPanel = false
     },

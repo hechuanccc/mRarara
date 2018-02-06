@@ -76,14 +76,13 @@
             </a>
           </div>
           <div class="txtinput el-textarea">
-            <textarea 
-              @keyup.enter="sendMsg"
+            <textarea
               @focus="showSmile = false"
-              type="textarea" 
-              autocomplete="off" 
-              validateevent="true" 
-              :class="['el-textarea-inner', !personal_setting.chat ? 'is-disabled' : '']" 
-              v-model="msgCnt" 
+              type="textarea"
+              autocomplete="off"
+              validateevent="true"
+              :class="['el-textarea-inner', !personal_setting.chat ? 'is-disabled' : '']"
+              v-model="msgCnt"
               :disabled="personal_setting.chat.status ? false : true">
             </textarea>
           </div>
@@ -542,9 +541,9 @@ export default {
   }
 }
 .bubble {
-  background: linear-gradient(to right, #1976D2, rgb(25, 158, 216)); 
-  border-left-color: rgb(25, 158, 216); 
-  border-right-color: #1976D2; 
+  background: linear-gradient(to right, #1976D2, rgb(25, 158, 216));
+  border-left-color: rgb(25, 158, 216);
+  border-right-color: #1976D2;
   color: rgb(255, 255, 255);
   margin-top: 3px;
   position: relative;
@@ -567,7 +566,7 @@ export default {
   p {
     display: inline-block;
     span {
-      white-space: pre-wrap; 
+      white-space: pre-wrap;
       word-break: break-all;
       font-size: 14px;
     }
@@ -620,10 +619,10 @@ export default {
     border-radius: 4px;
     overflow: hidden;
     .img-upload-input {
-      width: 0.1px; 
-      height: 0.1px; 
-      opacity: 0; 
-      position: absolute; 
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      position: absolute;
       top: -20px;
     }
   }
