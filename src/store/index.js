@@ -16,7 +16,8 @@ export function createStore () {
       systemConfig: {
         mobileLotteryUrl: '',
         customerServiceUrl: '',
-        webLotteryRegisterUrl: ''
+        webLotteryRegisterUrl: '',
+        lotteryResultUrl: ''
       }
     },
     actions,
