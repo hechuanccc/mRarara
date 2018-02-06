@@ -1,19 +1,19 @@
 <template>
-  <div class="chat-box" id="chatBox" :style="{height: resultsHeight + 'px'}">
+  <div class="chat-box" id="chatBox">
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
-    <div v-else>
-      <div class="chat-announce" v-if="chatAnnounce.length > 0">
-        <div class="annouce-info clearfix">
-          <icon class="volume-up" name="volume-up"></icon>
-          公告
-        </div>
-        <div class="scroll">
-          <marquee>
-            <marquee-item v-for="item in chatAnnounce" :key="item" class="align-middle">{{item}}</marquee-item>
-          </marquee>
-        </div>
-      </div>
+    <div v-else class="chat-body">
       <div class="chat-content" @click="showSmile = false">
+        <div class="chat-announce" v-if="chatAnnounce.length > 0">
+          <div class="annouce-info clearfix">
+            <icon class="volume-up" name="volume-up"></icon>
+            公告
+          </div>
+          <div class="scroll">
+            <marquee>
+              <marquee-item v-for="item in chatAnnounce" :key="item" class="align-middle">{{item}}</marquee-item>
+            </marquee>
+          </div>
+        </div>
         <ul class="lay-scroll">
           <li v-for="(item, index) in messages" :class="['clearfix', 'item', item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -45,7 +45,7 @@
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
       </div>
-      <div class="footer" height="50">
+      <div class="footer">
         <div class="smile-box" v-if='showSmile'>
               <a href="javascript:void(0)"
                 v-for="(item, index) in emojis.people.slice(0, 80)"
@@ -58,20 +58,16 @@
         <div class="typing">
           <div class="control-bar">
             <a href="javascript:void(0)" class="btn-control btn-smile">
-              <label>
-                <span title="上传表情" @click="showSmile = !showSmile">
-                  <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
-                </span>
+              <label @click="showSmile = !showSmile">
+                <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
               </label>
             </a>
           </div>
           <div class="control-bar">
             <a href="javascript:void(0)" class="btn-control">
               <label for="imgUploadInput" @click="showSmile = false">
-                <span title="上传图片">
-                  <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
-                  <input @change="sendMsgImg" type="file" ref="fileImgSend" class="img-upload-input" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
-                </span>
+                <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
+                <input @change="sendMsgImg" type="file" ref="fileImgSend" class="img-upload-input" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
               </label>
             </a>
           </div>
@@ -362,14 +358,11 @@ export default {
 @import '../styles/vars.less';
 
 .chat-box {
-  position: fixed;
-  left: 0;
   width: 100%;
   height: 100%;
   background: url('../assets/chatbg.jpg') no-repeat right bottom;
   background-attachment: fixed;
   background-size: cover;
-  overflow-y: scroll;
   .login-info {
     color: red;
     border-top-color: rgb(204, 204, 204);
@@ -411,8 +404,15 @@ export default {
     margin-left: 72px;
   }
 }
+.chat-body {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
 .chat-content {
-  padding-bottom: 10px;
+  flex: 1 1 auto;
+  height: 100%;
+  overflow-y: auto;
 }
 .lay-scroll {
   .block-user-info {
@@ -587,8 +587,7 @@ export default {
   margin-top: -7px;
 }
 .footer {
-  position: fixed;
-  bottom: 0;
+  flex: 0 0 auto;
   width: 100%;
   height: 38px;
   background: #f5f5f5;
@@ -612,6 +611,7 @@ export default {
   }
 }
 .typing {
+  height: 100%;
   .control-bar {
     margin-right: 5px;
     flex: 0.5;
@@ -671,10 +671,15 @@ export default {
 
 .btn-control {
   height: 100%;
-  display: block;
-  line-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   color: #666;
-  text-align: center;
   .el-icon-picture {
     font-size: 20px;
     color: #72aadb;

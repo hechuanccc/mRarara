@@ -109,7 +109,8 @@ fetchSystemConfig().then(
       {
         mobileLotteryUrl: pref.mobile_lottery_url,
         customerServiceUrl: pref.customer_service_url,
-        webLotteryRegisterUrl: pref.web_lottery_register_url
+        webLotteryRegisterUrl: pref.web_lottery_register_url,
+        lotteryResultUrl: pref.lottery_result_url
       })
   }
 )

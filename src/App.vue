@@ -51,7 +51,7 @@ import { mapGetters } from 'vuex'
 import AccountPanel from './components/AccountPanel'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/user-circle'
-const homeLinks = ['/chatroom', '/private', '/result', '/bet']
+const homeLinks = ['/', '/chatroom', '/private', '/result', '/bet']
 export default {
   name: 'app',
   components: {
