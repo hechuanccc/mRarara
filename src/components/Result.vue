@@ -128,13 +128,7 @@ export default {
     },
     initResults () {
       jsonp(`${urls.latest_results}`, null, (err, data) => {
-        if (err) {
-          // this.$message({
-          //   showClose: true,
-          //   message: '系统发生了错误, 请刷新再試或联系客服',
-          //   type: 'error'
-          // })
-        } else {
+        if (!err) {
           let formatted = JSON.parse(encoded(data))
 
           this.codes = _.map(formatted, (obj) => obj.game_code)
