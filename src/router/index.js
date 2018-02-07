@@ -42,6 +42,16 @@ export default new Router({
       }
     },
     {
+      path: '/private/:receiver',
+      name: 'PrivateChatroom',
+      component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
+      meta: {
+        requiresAuth: true,
+        showBack: true,
+        tabbarHidden: true
+      }
+    },
+    {
       path: '/bet',
       name: 'Bet',
       component: resolve => { require(['../screens/Bet.vue'], resolve) },

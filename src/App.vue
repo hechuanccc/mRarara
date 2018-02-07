@@ -25,7 +25,7 @@
             <icon scale="1.5" name="user-circle"></icon>
           </router-link>
         </div>
-        {{$route.meta.title}}
+        {{$store.state.customTitle || $route.meta.title}}
       </x-header>
       <div class="tab-content" v-if="!$route.meta.tabbarHidden">
         <tab :line-width="2" active-color="#fc378c">
