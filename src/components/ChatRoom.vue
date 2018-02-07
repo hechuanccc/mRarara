@@ -110,7 +110,6 @@ import { sendImgToChat, fetchAnnouce, fetchChatEmoji } from '../api'
 import { TransferDom, Tab, TabItem, AlertModule, Popup, Marquee, MarqueeItem, Popover } from 'vux'
 import config from '../../config'
 const WSHOST = config.chatHost
-const RECEIVER = 1
 
 export default {
   components: {
@@ -148,14 +147,16 @@ export default {
       },
       personal_setting: {
         chat: {
-          reasons: []
+          reasons: [],
+          status: ''
         },
         manager: true
       },
       showCheckUser: false,
       checkUser: {},
       chatLoading: true,
-      routeHasChange: this.routeChanged
+      routeHasChange: this.routeChanged,
+      RECEIVER: parseInt(this.$route.params.receiver) || 1
     }
   },
   watch: {
@@ -182,7 +183,7 @@ export default {
       this.messages = []
       this.ws && this.ws.send(JSON.stringify({
         'command': 'leave',
-        'receivers': [RECEIVER]
+        'receivers': [this.RECEIVER]
       }))
       if (this.ws) {
         this.ws.close()
@@ -221,10 +222,14 @@ export default {
     },
     handleMsg () {
       this.chatLoading = false
-      this.ws.send(JSON.stringify({
-        'command': 'join',
-        'receivers': [RECEIVER]
-      }))
+      if (this.RECEIVER === 1) { // 進入遊戲大廳
+        this.ws.send(JSON.stringify({
+          'command': 'join',
+          'receivers': [this.RECEIVER]
+        }))
+      } else { // 私聊
+        this.personal_setting.chat.status = 1
+      }
       this.ws.onmessage = (resData) => {
         let data
         if (typeof resData.data === 'string') {
@@ -233,7 +238,8 @@ export default {
             if (data.personal_setting) {
               this.personal_setting = data.personal_setting
             } else if (!data.error_type) {
-              if (data.latest_message) {
+              // 只顯示目前房間的歷史訊息
+              if (data.latest_message && data.latest_message.length > 0 && data.latest_message[1].receivers === this.RECEIVER) {
                 this.messages = this.messages.concat(data.latest_message.reverse())
                 if (this.personal_setting.chat.reasons.length) {
                   this.messages = this.messages.concat([{
@@ -264,7 +270,9 @@ export default {
                     this.announcement = data.content
                     break
                   default:
-                    this.messages.push(data)
+                    if (data.receivers === this.RECEIVER) {
+                      this.messages.push(data)
+                    }
                 }
 
                 let chatBox = document.getElementById('chatBox')
@@ -336,7 +344,7 @@ export default {
         return
       }
       let formData = new FormData()
-      formData.append('receiver', RECEIVER)
+      formData.append('receiver', this.RECEIVER)
       formData.append('image', file)
       sendImgToChat(formData).then((data) => {
         fileInp.value = ''
@@ -347,12 +355,15 @@ export default {
       if (!this.msgCnt.trim()) { return false }
       this.ws.send(JSON.stringify({
         'command': 'send',
-        'receivers': [RECEIVER],
+        'receivers': [this.RECEIVER],
         'type': 0,
         'content': this.msgCnt
       }))
       this.msgCnt = ''
     }
+  },
+  beforeDestroy () {
+    this.$store.dispatch('setCustomTitle', '')
   }
 }
 </script>

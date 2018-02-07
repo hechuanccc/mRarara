@@ -42,6 +42,10 @@ axios.interceptors.response.use(res => {
     return Promise.reject(responseData)
   }
 }, (error) => {
+  const status = error.response.status
+  if (status !== 401 && status !== 403) {
+    return Promise.reject(error)
+  }
   toLogin(router)
   return Promise.reject(error)
 })
@@ -61,28 +65,15 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
+let firstEnter = true
 router.beforeEach((to, from, next) => {
-  // fisrMacthed might be the top-level parent route of others
-  const firstMatched = to.matched.length ? to.matched[0] : null
-  if ((firstMatched || to).meta.requiresAuth) {
-    if (from && from.matched[0] && from.matched[0].path === to.matched[0].path) {
+  if (firstEnter && to.meta.requiresAuth === true) {
+    store.dispatch('fetchUser').then(res => {
+      firstEnter = false
       next()
-    } else {
-      store.dispatch('fetchUser')
-        .then(res => {
-          // got user info
-          if (res.account_type === 0 && to.matched[0].path === '/account') {
-            toLogin(router)
-          } else {
-            next()
-          }
-        })
-        .catch(error => {
-          // can't get user info
-          toLogin(router)
-          return Promise.resolve(error)
-        })
-    }
+    }).catch(() => {
+      toLogin(router)
+    })
   } else {
     next()
   }
