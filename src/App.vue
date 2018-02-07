@@ -16,7 +16,9 @@
         :left-options="{showBack: $route.meta.showBack || false}"
         @on-click-more="showAccountPanel = true">
         <div v-if="!$route.meta.showBack" slot="left">
-          <div class="chat-logo"></div>
+          <div class="chat-logo">
+            <img :src="systemConfig.logo" alt="logo">
+          </div>
         </div>
         <div v-if="!$route.meta.showBack" slot="right" class="group">
           <div class="user-img" :style="avatar"></div>
@@ -47,11 +49,11 @@
 
 <script>
 import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem } from 'vux'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import AccountPanel from './components/AccountPanel'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/user-circle'
-const homeLinks = ['/', '/chatroom', '/private', '/result', '/bet']
+const homeLinks = ['/', '/chatroom', '/private', '/results', '/bet']
 export default {
   name: 'app',
   components: {
@@ -74,7 +76,7 @@ export default {
         path: '/private'
       }, {
         name: '开奖',
-        path: '/result'
+        path: '/results'
       }, {
         name: '投注',
         path: '/bet'
@@ -86,6 +88,9 @@ export default {
   computed: {
     ...mapGetters([
       'user'
+    ]),
+    ...mapState([
+      'systemConfig'
     ]),
     headerType () {
       if (homeLinks.includes(this.$route.path)) {
@@ -146,13 +151,13 @@ export default {
     margin: 0;
   }
   .chat-logo {
-    width: 120px;
-    height: 30px;
-    background: url('./assets/logo.png') no-repeat;
-    background-size: contain;
     float: left;
     margin-left: 10px;
     margin-top: 2px;
+    img {
+      width: 120px;
+      height: 30px;
+    }
   }
   .user-img {
     width: 20px;

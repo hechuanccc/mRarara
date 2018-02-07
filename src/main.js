@@ -110,7 +110,12 @@ fetchSystemConfig().then(
         mobileLotteryUrl: pref.mobile_lottery_url,
         customerServiceUrl: pref.customer_service_url,
         webLotteryRegisterUrl: pref.web_lottery_register_url,
-        lotteryResultUrl: pref.lottery_result_url
+        lotteryResultUrl: pref.lottery_result_url,
+        logo: pref.logo,
+        mobileBackground: pref.mobile_background,
+        mobileUrl: pref.mobile_url,
+        privateChatBlockedUsers: pref.private_chat_blocked_users,
+        title: pref.title
       })
   }
 )

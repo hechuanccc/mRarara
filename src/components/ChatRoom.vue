@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-box" id="chatBox">
+  <div class="chat-box" id="chatBox" :style="{backgroundImage: `url(${systemConfig.mobileBackground})`}">
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-body">
       <div class="chat-content" @click="showSmile = false">
@@ -105,7 +105,7 @@ import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/picture-o'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import { sendImgToChat, fetchAnnouce, fetchChatEmoji } from '../api'
 import { TransferDom, Tab, TabItem, AlertModule, Popup, Marquee, MarqueeItem, Popover } from 'vux'
 import config from '../../config'
@@ -164,6 +164,9 @@ export default {
   computed: {
     ...mapGetters([
       'user'
+    ]),
+    ...mapState([
+      'systemConfig'
     ]),
     resultsHeight () {
       return (document.documentElement.clientHeight || document.body.clientHeight) - 40 - 44
@@ -360,7 +363,7 @@ export default {
 .chat-box {
   width: 100%;
   height: 100%;
-  background: url('../assets/chatbg.jpg') no-repeat right bottom;
+  background: no-repeat right bottom;
   background-attachment: fixed;
   background-size: cover;
   .login-info {
