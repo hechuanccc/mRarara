@@ -1,0 +1,147 @@
+// hkl
+.hk6ball {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  margin-left: 5px;
+  background-image: url('../assets/ball_hk6.png');
+  vertical-align: middle;
+  text-indent: -9999px;
+}
+
+.hkl-if(@i) when (@i < 10) {
+  .hkl-0@{i} {
+    &:extend(.hk6ball);
+    background-position: 0 (-27px * (@i - 1));;
+  }
+}
+
+.hk6-loop(@i) when (@i < 50) {
+  .hk6-loop(@i + 1);
+  .hkl-if(@i);
+  .hkl-@{i} {
+    &:extend(.hk6ball);
+    background-position: 0 (-27px * (@i - 1));;
+  }
+}
+
+.hk6-loop(1);
+
+
+// jsk3
+
+.jsk3-dice {
+  display: inline-block;
+  background: url(../assets/ball_4.png) no-repeat;
+  width: 27px;
+  height: 27px;
+  text-indent: -9999px;
+  margin-right: 3px;
+}
+
+
+.jsk3-loop(@i: 6) when (@i > 0) {
+  .jsk3-loop(@i - 1);
+
+  .jsk3-@{i} {
+    &:extend(.jsk3-dice);
+    background-position: 0 (-27px * (@i - 1));
+  }
+}
+
+.jsk3-loop();
+
+
+// racing series
+.racingicon {
+  display: inline-block;
+  background: url("../assets/ball-pk.png") no-repeat;
+  width: 21px;
+  height: 21px;
+  text-indent: -9999px;
+  margin-right: 3px;
+}
+
+@racinggames:
+  jspk10 10,
+  bcr 10 ,
+  mlaft 10,
+  er75ft 10;
+
+
+.racinggames-loop(@gameindex: length(@racinggames)) when (@gameindex > 0) {
+
+  @device: extract(@racinggames, @gameindex);
+  @name:   extract(@device, 1);
+  @size:   extract(@device, 2);
+
+
+
+  .number-loop(@num: @size) when (@num > 0) {
+    .@{name}-@{num} {
+      &:extend(.racingicon);
+      background-position: 0 (-21px * (@num - 1)) ;
+    }
+    .@{name}-0@{num} {
+      &:extend(.racingicon);
+      background-position: 0 (-21px * (@num - 1)) ;
+    }
+    .number-loop(@num - 1);
+  }
+
+  .number-loop();
+  .racinggames-loop(@gameindex - 1);
+}
+
+.racinggames-loop();
+
+// plainball series
+.plainball {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  background: radial-gradient(circle at 5px 5px, #fff, #ccc);
+  border-radius: 100%;
+  text-align: center;
+  color: #333;
+  font-weight: normal;
+  font-size: 14px;
+  margin-right: 3px;
+}
+
+@plainballgames:
+  tjssc 10,
+  xjssc 10 ,
+  cqssc 10,
+  jsssc 10,
+  pcdd 27,
+  bjkl8 80,
+  auluck8 80,
+  gd11x5 11,
+  gdklsf 20,
+  jnd28 27,
+  cqlf 20,
+  fc3d 10;
+
+.plaingames-loop(@gameindex: length(@plainballgames)) when (@gameindex > 0) {
+
+  @device: extract(@plainballgames, @gameindex);
+  @name:   extract(@device, 1);
+  @size:   extract(@device, 2);
+
+  .number-loop(@num: @size) when (@num >= 0) {
+    .@{name}-@{num} {
+      &:extend(.plainball);
+    }
+    .@{name}-0@{num} {
+      &:extend(.plainball);
+    }
+    .number-loop(@num - 1);
+  }
+
+  .number-loop();
+  .plaingames-loop(@gameindex - 1);
+}
+
+.plaingames-loop();
