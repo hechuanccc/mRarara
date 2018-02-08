@@ -130,6 +130,8 @@ export default {
       jsonp(`${urls.latest_results}`, null, (err, data) => {
         if (!err) {
           let formatted = JSON.parse(encoded(data))
+          console.log(err, 'err')
+          console.log(JSON.parse(encoded(data)), 'data')
 
           this.codes = _.map(formatted, (obj) => obj.game_code)
           _.each(formatted, (game, index) => {
@@ -195,8 +197,8 @@ export default {
   .text {
     display: inline-block;
   }
-  .name, .issue {
-    font-size: 14px;
+  .name, .issue, .text {
+    font-size: 12px;
   }
 }
 
