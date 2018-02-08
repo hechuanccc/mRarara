@@ -2,32 +2,31 @@
   <div>
     <form class="container" autocomplete="off">
     <group>
-      <div v-if="!valid">
+      <div v-if="showInputErrors.length">
         <ul slot="after-title" class="input-errors">
-          <li class="text" v-for="(error, index) in inputErrors" :key="index">
+          <li class="text" v-for="(error, index) in showInputErrors" :key="index">
             {{error}}
           </li>
         </ul>
       </div>
       <x-input
-        required
+        :class="{'weui-cell_warn': inputErrors['username']}"
         show-clear
-        :is-type="checkValid.checkUser"
-        @on-change="validate"
-        @on-blur="validate"
+        @on-change="validate($event, 'username')"
+        @on-blur="validate($event, 'username')"
         ref="username"
         placeholder="6~15位英数字"
         title="用户名"
         label-width="100"
+        :debounce="1000"
         v-model="user.username">
       </x-input>
       <x-input
-        required
+        :class="{'weui-cell_warn': inputErrors['password']}"
         show-clear
-        :is-type="checkValid.checkPassword"
         type="password"
-        @on-change="validate"
-        @on-blur="validate"
+        @on-change="validate($event, 'password')"
+        @on-blur="validate($event, 'password')"
         ref="password"
         placeholder="8~15字,含大写字母及数字"
         autocomplete="off"
@@ -36,12 +35,11 @@
         v-model="user.password">
       </x-input>
       <x-input
-        required
+        :class="{'weui-cell_warn': inputErrors['confirmation_password']}"
         show-clear
         type="password"
-        :is-type="checkValid.checkPasswordConfirmation"
-        @on-change="validate"
-        @on-blur="validate"
+        @on-change="validate($event, 'confirmation_password')"
+        @on-blur="validate($event, 'confirmation_password')"
         ref="confirmation_password"
         autocomplete="off"
         title="确认密码"
@@ -49,30 +47,18 @@
         v-model="user.confirmation_password">
       </x-input>
       <x-input
-        required
+        :class="{'weui-cell_warn': inputErrors['nickname']}"
         show-clear
-        is-type="china-name"
-        @on-change="validate"
-        @on-blur="validate"
+        @on-change="validate($event, 'nickname')"
+        @on-blur="validate($event, 'nickname')"
         ref="nickname"
         title="昵称"
         label-width="100"
         v-model="user.nickname">
       </x-input>
-      <x-input
-        required
-        show-clear
-        is-type="china-mobile"
-        @on-change="validate"
-        @on-blur="validate"
-        ref="phone"
-        title="手机号"
-        label-width="100"
-        v-model="user.phone">
-      </x-input>
     </group>
     <div class="read-agreement m-t">
-      <check-icon :value.sync="agreement.isAgree">
+      <check-icon :value.sync="user.hasAgree">
         我已阅读并完全同意
       </check-icon>
       <span class="link" @click="agreement.showAgreement= true">用户协议</span>
@@ -81,8 +67,8 @@
       <div v-if="error" class="error">{{error}}</div>
       <x-button type="primary"
                 action-type ="button"
-                :show-loading="false"
-                :disabled="false"
+                :show-loading="loading"
+                :disabled="loading"
                 @click.native="submitForm">
                 注册
       </x-button>
@@ -160,128 +146,178 @@
 
 <script>
   import { checkUserName, register } from '../api'
-  import { validateUserName, validatePassword, validateWithdrawPassword, msgFormatter } from '../utils'
+  import { validateUserName, validatePassword, msgFormatter } from '../utils'
   import { XInput, Group, XButton, Flexbox, FlexboxItem, Selector, Cell, Popup, CheckIcon, TransferDom } from 'vux'
-
+  const usernameValidator = (value, type) => {
+    return new Promise((resolve, reject) => {
+      if (!value) {
+        resolve('请输入用户名称')
+      } else if (!validateUserName(value)) {
+        resolve('请输入6~15位英数字')
+      } else {
+        checkUserName(value).then(response => {
+          if (response.existed) {
+            resolve('用户名已经存在')
+          } else {
+            resolve('')
+          }
+        })
+      }
+    })
+  }
+  const passwordValidator = (value) => {
+    return new Promise((resolve, reject) => {
+      if (!value) {
+        resolve('请输入密码')
+      } else if (!validatePassword(value)) {
+        resolve('请输入8~15字元，其中至少包含一大写字母及一数字')
+      } else {
+        resolve('')
+      }
+    })
+  }
+  const repeatPasswordValidator = (repeatValue, value) => {
+    return new Promise((resolve, reject) => {
+      if (value !== repeatValue) {
+        resolve('两次输入密码不一致')
+      } else {
+        resolve('')
+      }
+    })
+  }
+  const nicknameValidator = (value) => {
+    return new Promise((resolve, reject) => {
+      if (!value) {
+        resolve('请输入昵称')
+      } else {
+        resolve('')
+      }
+    })
+  }
+  const agreementValidator = (value) => {
+    return new Promise((resolve, reject) => {
+      if (!value) {
+        resolve('请阅读并同意用户协议')
+      } else {
+        resolve('')
+      }
+    })
+  }
 export default {
     name: 'Register',
     data () {
       return {
         agreement: {
-          isAgree: true,
           showAgreement: false
         },
         user: {
           username: '',
           nickname: '',
-          qq: '',
           password: '',
           confirmation_password: '',
-          phone: '',
-          hasAgree: ['hasAgree']
-        },
-        checkValid: {
-          checkUser: (val) => {
-            if (validateUserName(val)) {
-              checkUserName(val).then(response => {
-                this.usernameNotUsed = !response.existed
-              })
-            }
-            return {
-              valid: this.usernameNotUsed > 0 && validateUserName(val),
-              msg: !validateUserName(val) ? '要符合格式唷' : '用户名已经存在'
-            }
-          },
-          checkPassword: (val) => {
-            return {
-              valid: this.user.confirmation_password ? validatePassword(val) && this.user.confirmation_password === val : validatePassword(val),
-              msg: this.user.confirmation_password === val ? '要符合格式唷' : '两次密码不一致'
-            }
-          },
-          checkPasswordConfirmation: (val) => {
-            return {
-              valid: this.user.password === val,
-              msg: '两次密码不一致'
-            }
-          },
-          checkWithdrawPassword: (val) => {
-            return {
-              valid: validateWithdrawPassword(val),
-              msg: '要符合格式唷'
-            }
-          }
+          hasAgree: true
         },
         captcha_src: '',
         error: '',
         valid: true,
-        inputErrors: []
+        confirmPasswordIsValid: true,
+        inputErrors: {
+          username: '',
+          password: '',
+          confirmation_password: '',
+          nickname: '',
+          hasAgree: ''
+        },
+        validators: {
+          username: usernameValidator,
+          password: passwordValidator,
+          confirmation_password: repeatPasswordValidator,
+          nickname: nicknameValidator,
+          hasAgree: agreementValidator
+        },
+        loading: false
       }
     },
     methods: {
-      handleAgreementClick () {
-        this.agreement.showAgreement = false
-        this.agreement.isAgree = true
-      },
-      submitForm () {
-        if (!this.agreement.isAgree) {
-          this.valid = false
-          this.error = '请阅读并同意用户协议'
-          setTimeout(() => {
-            this.error = ''
-          }, 3000)
-          return
-        }
-
-        register(this.user).then(result => {
-          return this.$store.dispatch('login', {
-            user: {
-              username: this.user.username,
-              password: this.user.password
+      validate (value, input) {
+        let currentValue = value || this.user[input]
+        if (input === 'confirmation_password') {
+          this.validators['confirmation_password'](currentValue, this.user.password).then(msg => {
+            this.inputErrors[input] = msg
+          })
+        } else {
+          this.validators[input](currentValue).then(msg => {
+            this.inputErrors[input] = msg
+            if (input === 'password') {
+              this.validate(this.user.confirmation_password, 'confirmation_password')
             }
           })
-        }).then(result => {
-          this.$router.push({ name: 'Home' })
-          this.$store.dispatch('fetchUser')
-        }, errorMsg => {
-          this.error = msgFormatter(errorMsg.msg)
-        })
-      },
-      validate () {
-        let valid = true
-        let msg = []
-        for (let x in this.$refs) {
-          let input = this.$refs[x]
-          valid = input.valid && valid
-          if (input && input.touched) {
-            let errors = input.errors
-            let title = input.title
-            let key = Object.keys(errors)[0]
-            if (errors[key] && !input.valid) {
-              if (errors[key] && errors[key].indexOf(title) === -1) {
-                msg.push(title + errors[key])
-              } else {
-                msg.push(errors[key])
-              }
-            }
-          }
         }
-        this.inputErrors = msg
-        this.valid = valid && !!this.user.confirmation_password && this.agreement.isAgree
+      },
+      validateAll () {
+        const inputs = ['username', 'password', 'confirmation_password', 'nickname', 'hasAgree']
+        const validatePromises = inputs.map(input => {
+          const currentValue = this.user[input]
+          if (input === 'confirmation_password') {
+            return this.validators['confirmation_password'](currentValue, this.user.password).then(msg => {
+              this.inputErrors['confirmation_password'] = msg
+              return msg
+            })
+          } else {
+            return this.validators[input](currentValue).then(msg => {
+              this.inputErrors[input] = msg
+              return msg
+            })
+          }
+        })
+        return Promise.all(validatePromises)
+      },
+      handleAgreementClick () {
+        this.agreement.showAgreement = false
+        this.user.hasAgree = true
+      },
+      submitForm () {
+        this.validateAll().then(msgs => {
+          const isValid = msgs.filter(msg => { return msg }).length === 0
+          if (isValid) {
+            this.loading = true
+            register(this.user).then(result => {
+              return this.$store.dispatch('login', {
+                user: {
+                  username: this.user.username,
+                  password: this.user.password
+                }
+              })
+            }).then(result => {
+              this.$router.push({ name: 'Home' })
+              this.$store.dispatch('fetchUser')
+            }, errorMsg => {
+              this.loading = false
+              this.error = msgFormatter(errorMsg.msg)
+            }).catch(() => {
+              this.loading = false
+            })
+          }
+        })
       }
     },
     computed: {
-      nextStepDisabled () {
-        if (this.user.username && this.user.password && this.user.confirmation_password) {
-          let usernameValid = this.$refs.username.valid
-          let passwordValid = this.$refs.password.valid && this.$refs.confirmation_password.valid
-
-          return !(usernameValid && passwordValid)
-        } else {
-          return true
-        }
+      showInputErrors () {
+        const keys = Object.keys(this.inputErrors)
+        const errors = []
+        keys.forEach(key => {
+          const msg = this.inputErrors[key]
+          if (msg) {
+            errors.push(msg)
+          }
+        })
+        return errors
       }
     },
     watch: {
+      'user.hasAgree': function (hasAgree) {
+        this.validate(hasAgree, 'hasAgree')
+      }
     },
     created () {
     },
