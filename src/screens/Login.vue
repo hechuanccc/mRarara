@@ -83,7 +83,8 @@
             this.error = ''
             this.loading = false
             this.$router.push('/')
-          }, () => {
+          }, (error) => {
+            this.error = error.response.data.error
             this.loading = false
           })
         }

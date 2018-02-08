@@ -1,12 +1,14 @@
 <template>
   <group class="rooms">
     <cell
-      v-if="room.target"
-      :key="'room' + index" 
+      v-if="room.target && room.users.length > 1"
+      :key="'room' + index"
       v-for="(room, index) in rooms"
       is-link
-      :title="room.target.nickname"
-      :border-intent="false">
+      :title="room.users[1].nickname"
+      :link="{path:'/private/'+room.id}"
+      :border-intent="false"
+      @click.native="chooseRoom(room.users[1].nickname)">
       {{ room.last_message.content }}
     </cell>
   </group>
@@ -50,13 +52,15 @@ export default {
         }
         this.loading = false
         this.rooms = rooms.map(room => {
-          room.users.filter(user => user.id !== this.user.id)
           return {
             ...room,
             target: room.type !== 1 ? room.users[0] : undefined
           }
         })
       })
+    },
+    chooseRoom (nickname) {
+      this.$store.dispatch('setCustomTitle', nickname)
     }
   }
 }

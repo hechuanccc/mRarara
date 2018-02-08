@@ -18,7 +18,8 @@ export function createStore () {
         customerServiceUrl: '',
         webLotteryRegisterUrl: '',
         lotteryResultUrl: ''
-      }
+      },
+      customTitle: ''
     },
     actions,
     mutations,
