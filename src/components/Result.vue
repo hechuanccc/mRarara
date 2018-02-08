@@ -195,8 +195,8 @@ export default {
   .text {
     display: inline-block;
   }
-  .name, .issue {
-    font-size: 14px;
+  .name, .issue, .text {
+    font-size: 12px;
   }
 }
 
