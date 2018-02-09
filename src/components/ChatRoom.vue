@@ -625,7 +625,7 @@ export default {
 .footer {
   flex: 0 0 auto;
   width: 100%;
-  height: 38px;
+  height: 65px;
   background: #f5f5f5;
   padding: 0;
   .smile-box {
@@ -647,11 +647,14 @@ export default {
   }
 }
 .typing {
-  height: 100%;
+  .el-textarea-inner {
+    outline: none;
+  }
   .control-bar {
     margin-right: 5px;
     flex: 0.5;
     height: 100%;
+    background: #72aadb;
     border-radius: 4px;
     overflow: hidden;
     .img-upload-input {
@@ -664,13 +667,12 @@ export default {
   }
   display: flex;
   position: relative;
+  padding: 5px;
   .txtinput {
     flex: 3;
-    height: 28px;
   }
   .txt-right {
     margin-left: 5px;
-    margin-right: 5px;
     flex: 1;
   }
   .el-textarea {
@@ -689,11 +691,9 @@ export default {
   .el-textarea-inner {
     display: block;
     resize: vertical;
-    padding: 0 4px;
-    margin-top: 5px;
+    padding: 5px 7px;
+    line-height: 1.5;
     width: 100%;
-    height: 28px;
-    line-height: 27px;
     font-size: 14px;
     color: #1f2d3d;
     background-color: #fff;
@@ -707,18 +707,13 @@ export default {
 
 .btn-control {
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  display: block;
+  line-height: 54px;
   color: #666;
+  text-align: center;
   .el-icon-picture {
     font-size: 20px;
-    color: #72aadb;
+    color: #fff;
   }
 }
 
@@ -726,10 +721,9 @@ export default {
   display: block;
   text-align: center;
   border-radius: 3px;
-  height: 28px;
+  height: 100%;
   font-size: 14px;
-  margin-top: 5px;
-  line-height: 28px;
+  line-height: 52px;
   background: #72aadb;
   color: #fff;
 }
