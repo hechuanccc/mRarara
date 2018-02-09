@@ -373,7 +373,9 @@ export default {
     getImgSrc (sender) {
       if (sender) {
         if (sender.id === this.user.id) {
-          return this.user.avatar
+          if (this.user.avatar) {
+            return this.user.avatar
+          }
         } else if (sender.avatar) {
           return this.host + sender.avatar
         }
