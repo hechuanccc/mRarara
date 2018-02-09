@@ -71,16 +71,20 @@ export default {
       pages: [{
         name: '计划聊天室',
         path: '/chatroom'
-      }, {
-        name: '私聊',
-        path: '/private'
-      }, {
+      },
+      // {
+      //   name: '客服',
+      //   path: '/private'
+      // },
+      {
         name: '开奖',
         path: '/results'
-      }, {
-        name: '投注',
-        path: '/bet'
-      }],
+      }
+      // , {
+      //   name: '投注',
+      //   path: '/bet'
+      // }
+      ],
       index: 0,
       showAccountPanel: false
     }

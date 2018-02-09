@@ -48,6 +48,7 @@
 
 <script>
   import { XInput, Group, XButton, Flexbox, FlexboxItem, Popup } from 'vux'
+  import { msgFormatter } from '../utils'
 
   export default {
     name: 'Home',
@@ -84,7 +85,7 @@
             this.loading = false
             this.$router.push('/')
           }, (error) => {
-            this.error = error.response.data.error
+            this.error = msgFormatter(error)
             this.loading = false
           })
         }

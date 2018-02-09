@@ -183,7 +183,7 @@ export default {
           })
         }, (response) => {
           this.loading = false
-          this.errorMsg = msgFormatter(response.data.error)
+          this.errorMsg = msgFormatter(response)
         })
       }
     }
