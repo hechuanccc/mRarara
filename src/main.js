@@ -5,7 +5,7 @@ import router from './router'
 import VueCookie from 'vue-cookie'
 import { createStore } from './store'
 import { sync } from 'vuex-router-sync'
-import { fetchSystemConfig } from './api'
+import { fetchSystemConfig, setCookie } from './api'
 import * as types from './store/mutations/mutation-types'
 import Vue2Filters from 'vue2-filters'
 import qs from 'qs'
@@ -18,9 +18,7 @@ let url = window.location.href
 let params = qs.parse(url.slice(url.indexOf('?') + 1, url.length))
 
 if (params.r) {
-  let expires = new Date()
-  expires.setMonth(expires.getMonth() + 1)
-  VueCookie.set('r', params.r, {expires: expires})
+  setCookie('r=' + params.r).catch(() => {})
 }
 
 if (params.desktop === '1' && Vue.cookie.get('desktop') !== '1') {

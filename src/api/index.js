@@ -20,7 +20,7 @@ export function fetchMemberRoom (limit, page) {
 }
 
 export function register (user) {
-  return axios.post(urls.register, qs.stringify(user))
+  return axios.post(urls.register, qs.stringify(user), {withCredentials: true})
 }
 
 export function sendImgToChat (data) {
@@ -45,4 +45,8 @@ export function fetchAnnouce () {
 
 export function fetchChatEmoji () {
   return axios.get(`${urls.chatEmoji}`)
+}
+
+export function setCookie (cookie) {
+  return axios.post(urls.setCookie, {cookie}, { 'Content-Type': 'application/json', withCredentials: true })
 }

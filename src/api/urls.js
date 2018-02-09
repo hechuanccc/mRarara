@@ -5,7 +5,7 @@ const host = env.HOST.replace(/"/g, '')
 const ghost = 'http://a546542.eastasia.cloudapp.azure.com:8000'
 
 export default {
-  domain: host,
+  host: host,
   login: host + '/login/',
   register: host + '/v1/register/',
   user: host + '/v1/token/identity/',
@@ -17,5 +17,6 @@ export default {
   systemConfig: host + '/v1/global-data/',
   changeUserInfo: host + '/v1/user/',
   latest_results: ghost + '/latest_results/',
-  memberRoom: host + '/v1/member/room/'
+  memberRoom: host + '/v1/member/room/',
+  setCookie: host + '/set_cookie/'
 }
