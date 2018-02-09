@@ -158,7 +158,8 @@ export default {
       chatLoading: true,
       routeHasChange: this.routeChanged,
       RECEIVER: parseInt(this.$route.params.receiver) || 1,
-      host: urls.host
+      host: urls.host,
+      hearbeat: ''
     }
   },
   watch: {
@@ -212,6 +213,12 @@ export default {
           })
         }
         this.handleMsg()
+        this.hearbeat = setInterval(() => {
+          this.ws.send(JSON.stringify({
+            'command': 'live',
+            'user_id': this.user.id
+          }))
+        }, 300000)
       }
       this.ws.onclose = () => {
         this.ws = null
@@ -376,6 +383,7 @@ export default {
   },
   beforeDestroy () {
     this.$store.dispatch('setCustomTitle', '')
+    clearInterval(this.hearbeat)
   }
 }
 </script>
