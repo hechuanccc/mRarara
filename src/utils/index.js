@@ -56,7 +56,8 @@ export function filtAmount (evt) {
   }
 }
 
-export function msgFormatter (msgs) {
+export function msgFormatter (error) {
+  let msgs = error.response.data
   let formatMsg
   if (Array.isArray(msgs)) {
     let arr = []

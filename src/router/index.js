@@ -33,32 +33,32 @@ export default new Router({
       },
       component: resolve => { require(['../screens/Register.vue'], resolve) }
     },
-    {
-      path: '/private',
-      name: 'PrivateChat',
-      component: resolve => { require(['../screens/PrivateChat.vue'], resolve) },
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/private/:receiver',
-      name: 'PrivateChatroom',
-      component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
-      meta: {
-        requiresAuth: true,
-        showBack: true,
-        tabbarHidden: true
-      }
-    },
-    {
-      path: '/bet',
-      name: 'Bet',
-      component: resolve => { require(['../screens/Bet.vue'], resolve) },
-      meta: {
-        requiresAuth: true
-      }
-    },
+    // {
+    //   path: '/private',
+    //   name: 'PrivateChat',
+    //   component: resolve => { require(['../screens/PrivateChat.vue'], resolve) },
+    //   meta: {
+    //     requiresAuth: true
+    //   }
+    // },
+    // {
+    //   path: '/private/:receiver',
+    //   name: 'PrivateChatroom',
+    //   component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
+    //   meta: {
+    //     requiresAuth: true,
+    //     showBack: true,
+    //     tabbarHidden: true
+    //   }
+    // },
+    // {
+    //   path: '/bet',
+    //   name: 'Bet',
+    //   component: resolve => { require(['../screens/Bet.vue'], resolve) },
+    //   meta: {
+    //     requiresAuth: true
+    //   }
+    // },
     {
       path: '/chatroom',
       name: 'ChatRoom',

@@ -293,7 +293,7 @@ export default {
               this.$store.dispatch('fetchUser')
             }, errorMsg => {
               this.loading = false
-              this.error = msgFormatter(errorMsg.msg)
+              this.error = msgFormatter(errorMsg)
             }).catch(() => {
               this.loading = false
             })

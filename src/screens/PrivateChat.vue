@@ -5,7 +5,7 @@
       :key="'room' + index"
       v-for="(room, index) in rooms"
       is-link
-      :title="room.users[1].nickname"
+      :title="`${isCustomerService(room.users[1].roles)? '客服人员 ':''}${room.users[1].nickname}`"
       :link="{path:'/private/'+room.id}"
       :border-intent="false"
       @click.native="chooseRoom(room.users[1].nickname)">
@@ -61,6 +61,9 @@ export default {
     },
     chooseRoom (nickname) {
       this.$store.dispatch('setCustomTitle', nickname)
+    },
+    isCustomerService (roles) {
+      return roles.some(role => role.id === 4)
     }
   }
 }
