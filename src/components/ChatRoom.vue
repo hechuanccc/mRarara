@@ -19,7 +19,7 @@
             <div class="lay-block clearfix" v-if="item.type >= 0">
               <div class="avatar">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
-                <img :src="item.sender && item.sender.avatar_url ? item.sender.avatar_url : require('../assets/avatar.png')" v-else> </div> <div class="lay-content">
+                <img :src="getImgSrc(item.sender)" v-else> </div> <div class="lay-content">
                 <div class="msg-header">
                   <h4 v-html="item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)"></h4>
                   <span class="common-member" v-if="item.type !== 4">
@@ -109,6 +109,7 @@ import { mapGetters, mapState } from 'vuex'
 import { sendImgToChat, fetchAnnouce, fetchChatEmoji } from '../api'
 import { TransferDom, Tab, TabItem, AlertModule, Popup, Marquee, MarqueeItem, Popover } from 'vux'
 import config from '../../config'
+import urls from '../api/urls'
 const WSHOST = config.chatHost
 
 export default {
@@ -156,7 +157,8 @@ export default {
       checkUser: {},
       chatLoading: true,
       routeHasChange: this.routeChanged,
-      RECEIVER: parseInt(this.$route.params.receiver) || 1
+      RECEIVER: parseInt(this.$route.params.receiver) || 1,
+      host: urls.host
     }
   },
   watch: {
@@ -360,6 +362,16 @@ export default {
         'content': this.msgCnt
       }))
       this.msgCnt = ''
+    },
+    getImgSrc (sender) {
+      if (sender) {
+        if (sender.id === this.user.id) {
+          return this.user.avatar
+        } else if (sender.avatar) {
+          return this.host + sender.avatar
+        }
+      }
+      return require('../assets/avatar.png')
     }
   },
   beforeDestroy () {
