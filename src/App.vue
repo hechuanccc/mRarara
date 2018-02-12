@@ -136,10 +136,7 @@ export default {
 <style lang="less" scoped>
 
 .content-box {
-  position: fixed;
-  top: 0;
   width: 100%;
-  left: 0;
   .tab-content {
     .vux-tab {
       z-index: 999;
