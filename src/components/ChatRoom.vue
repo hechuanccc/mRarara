@@ -1,19 +1,17 @@
 <template>
   <div class="chat-box" id="chatBox" :style="{backgroundImage: `url(${systemConfig.mobileBackground})`}">
+    <div class="chat-announce" v-if="chatAnnounce.length > 0">
+      <div class="annouce-info clearfix">
+        <icon class="volume-up" name="volume-up"></icon>
+        公告
+      </div>
+      <div class="scroll">
+        <MarqueeTips :content="chatAnnounce[chatAnnounceIndex]" :speed="10"></MarqueeTips>
+      </div>
+    </div>
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
-        <div class="chat-announce" v-if="chatAnnounce.length > 0">
-          <div class="annouce-info clearfix">
-            <icon class="volume-up" name="volume-up"></icon>
-            公告
-          </div>
-          <div class="scroll">
-            <marquee>
-              <marquee-item v-for="item in chatAnnounce" :key="item" class="align-middle">{{item}}</marquee-item>
-            </marquee>
-          </div>
-        </div>
         <ul class="lay-scroll">
           <li v-for="(item, index) in messages" :class="['clearfix', 'item', item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -107,7 +105,8 @@ import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
 import { mapGetters, mapState } from 'vuex'
 import { sendImgToChat, fetchAnnouce, fetchChatEmoji } from '../api'
-import { TransferDom, Tab, TabItem, AlertModule, Popup, Marquee, MarqueeItem, Popover } from 'vux'
+import { TransferDom, Tab, TabItem, AlertModule, Popup, Popover } from 'vux'
+import MarqueeTips from 'vue-marquee-tips'
 import config from '../../config'
 import urls from '../api/urls'
 const WSHOST = config.chatHost
@@ -119,8 +118,7 @@ export default {
     TabItem,
     AlertModule,
     Icon,
-    Marquee,
-    MarqueeItem,
+    MarqueeTips,
     Popover
   },
   directives: {
@@ -135,6 +133,7 @@ export default {
     return {
       ws: null,
       chatAnnounce: [],
+      chatAnnounceIndex: 0,
       messages: [],
       showSmile: false,
       msgCnt: '',
@@ -159,7 +158,8 @@ export default {
       routeHasChange: this.routeChanged,
       RECEIVER: parseInt(this.$route.params.receiver) || 1,
       host: urls.host,
-      hearbeat: ''
+      hearbeat: '',
+      marqueeInterval: ''
     }
   },
   computed: {
@@ -338,6 +338,9 @@ export default {
             this.chatAnnounce.push(item.content)
           }
         })
+        this.marqueeInterval = setInterval(() => {
+          this.chatAnnounceIndex = (this.chatAnnounceIndex + 1) % this.chatAnnounce.length
+        }, 10000)
       })
     },
     sendMsgImg (e) {
@@ -387,6 +390,7 @@ export default {
   beforeDestroy () {
     this.$store.dispatch('setCustomTitle', '')
     clearInterval(this.hearbeat)
+    clearInterval(this.marqueeInterval)
     this.leaveRoom()
   }
 }
@@ -396,6 +400,7 @@ export default {
 @import '../styles/vars.less';
 
 .chat-box {
+  position: relative;
   width: 100%;
   height: 100%;
   background: no-repeat right bottom;
@@ -412,13 +417,13 @@ export default {
   }
 }
 .chat-announce {
-  position: sticky;
+  position: absolute;
   top: 5px;
   margin: 0 5px;
+  width: calc(~"100%" - 12px);
   background: rgba(237,244,254,.9);
   border: 1px solid #c2cfe2;
   border-radius: 5px;
-  padding-right: 10px;
   height: 29px;
   overflow: hidden;
   z-index: 1;
