@@ -57,7 +57,7 @@
           <label class="control-bar btn-smile" @click="showSmile = !showSmile">
             <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
           </label>
-          <label class="control-bar" for="imgUploadInput" @click="showSmile = false">
+          <label class="control-bar" for="capture" @click="showSmile = false">
             <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
             <input @change="sendMsgImg"
               type="file"
@@ -343,6 +343,8 @@ export default {
     sendMsgImg (e) {
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
+      console.log(fileInp)
+
       if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
         this.errMsgCnt = '文件格式不正确或您目前尚不符合发言条件'
         this.errMsg = true
@@ -353,9 +355,11 @@ export default {
         this.errMsgCnt = '图片尺寸太大，请选择较小尺寸的图片。'
         return
       }
+
       let formData = new FormData()
       formData.append('receiver', this.RECEIVER)
       formData.append('image', file)
+
       sendImgToChat(formData).then((data) => {
         fileInp.value = ''
       })
