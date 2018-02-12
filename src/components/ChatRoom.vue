@@ -70,10 +70,9 @@
                 <input @change="sendMsgImg"
                   type="file"
                   id="capture"
-                  capture="camera"
                   ref="fileImgSend"
                   class="img-upload-input"
-                  accept="image/*;capture=camera">
+                  accept="image/*">
               </label>
             </a>
           </div>
