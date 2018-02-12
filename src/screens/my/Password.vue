@@ -39,6 +39,7 @@
           ref="confirmPassword"
           :max="15"
           @on-blur="validateErrors"
+          @on-change="validateErrors"
           :class="!confirmPasswordValidator.valid?'weui-cell_warn':''"
           v-model="password.repeat_password">
         </x-input>

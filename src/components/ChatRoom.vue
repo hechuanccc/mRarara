@@ -45,36 +45,28 @@
       </div>
       <div class="footer">
         <div class="smile-box" v-if='showSmile'>
-              <a href="javascript:void(0)"
-                v-for="(item, index) in emojis.people.slice(0, 80)"
-                :key="index"
-                class="emoji"
-                @click="personal_setting.chat.status ? msgCnt = msgCnt + item.emoji + ' ' : ''">
-                {{item.emoji}}
-              </a>
-            </div>
+          <a href="javascript:void(0)"
+            v-for="(item, index) in emojis.people.slice(0, 80)"
+            :key="index"
+            class="emoji"
+            @click="personal_setting.chat.status ? msgCnt = msgCnt + item.emoji + ' ' : ''">
+            {{item.emoji}}
+          </a>
+        </div>
         <div class="typing">
-          <div class="control-bar">
-            <a href="javascript:void(0)" class="btn-control btn-smile">
-              <label @click="showSmile = !showSmile">
-                <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
-              </label>
-            </a>
-          </div>
-          <div class="control-bar">
-            <a href="javascript:void(0)" class="btn-control">
-              <label for="imgUploadInput" @click="showSmile = false">
-                <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
-                <input @change="sendMsgImg"
-                  type="file"
-                  capture="camera"
-                  ref="fileImgSend"
-                  class="img-upload-input"
-                  id="imgUploadInput"
-                  accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
-              </label>
-            </a>
-          </div>
+          <label class="control-bar btn-smile" @click="showSmile = !showSmile">
+            <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
+          </label>
+          <label class="control-bar" for="imgUploadInput" @click="showSmile = false">
+            <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
+            <input @change="sendMsgImg"
+              type="file"
+              capture="camera"
+              ref="fileImgSend"
+              class="img-upload-input"
+              id="imgUploadInput"
+              accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
+          </label>
           <div class="txtinput el-textarea">
             <textarea
               @focus="showSmile = false"
@@ -636,11 +628,12 @@ export default {
   margin-top: -7px;
 }
 .footer {
+  display: flex;
+  position: relative;
   flex: 0 0 auto;
   width: 100%;
   height: 65px;
   background: #f5f5f5;
-  padding: 0;
   .smile-box {
     position: absolute;
     width: 100%;
@@ -658,29 +651,36 @@ export default {
       border: 2px solid transparent;
     }
   }
-}
-.typing {
+  .typing {
+    display: flex;
+    box-sizing: border-box;
+    padding: 5px;
+    width: 100%;
+    height: 100%;
+  }
   .el-textarea-inner {
     outline: none;
   }
   .control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-right: 5px;
     flex: 0.5;
     height: 100%;
     background: #72aadb;
+    color: #666;
+    text-align: center;
     border-radius: 4px;
     overflow: hidden;
     .img-upload-input {
-      width: 0.1px;
-      height: 0.1px;
-      opacity: 0;
-      position: absolute;
-      top: -20px;
+      display: none;
+    }
+    .el-icon-picture {
+      font-size: 20px;
+      color: #fff;
     }
   }
-  display: flex;
-  position: relative;
-  padding: 5px;
   .txtinput {
     flex: 3;
   }
@@ -715,18 +715,6 @@ export default {
     transition: border-color .2s cubic-bezier(.645,.045,.355,1);
     box-sizing: border-box;
     background-image: none;
-  }
-}
-
-.btn-control {
-  height: 100%;
-  display: block;
-  line-height: 54px;
-  color: #666;
-  text-align: center;
-  .el-icon-picture {
-    font-size: 20px;
-    color: #fff;
   }
 }
 
