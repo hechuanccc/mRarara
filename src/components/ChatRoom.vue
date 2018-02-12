@@ -343,7 +343,6 @@ export default {
     sendMsgImg (e) {
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
-      console.log(fileInp)
 
       if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
         this.errMsgCnt = '文件格式不正确或您目前尚不符合发言条件'
