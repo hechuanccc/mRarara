@@ -185,7 +185,6 @@ export default {
   },
   methods: {
     leaveRoom () {
-      debugger
       if (this.$route.name === 'GameDetail') { return }
       this.messages = []
       this.ws && this.ws.send(JSON.stringify({
@@ -393,7 +392,6 @@ export default {
   },
   beforeDestroy () {
     this.$store.dispatch('setCustomTitle', '')
-    this.leaveRoom()
     clearInterval(this.hearbeat)
     this.leaveRoom()
   }
