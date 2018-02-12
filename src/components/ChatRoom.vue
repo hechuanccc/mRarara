@@ -1,19 +1,17 @@
 <template>
   <div class="chat-box" id="chatBox" :style="{backgroundImage: `url(${systemConfig.mobileBackground})`}">
+    <div class="chat-announce" v-if="chatAnnounce.length > 0">
+      <div class="annouce-info clearfix">
+        <icon class="volume-up" name="volume-up"></icon>
+        公告
+      </div>
+      <div class="scroll">
+        <MarqueeTips :content="chatAnnounce[chatAnnounceIndex]" :speed="10"></MarqueeTips>
+      </div>
+    </div>
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
-        <div class="chat-announce" v-if="chatAnnounce.length > 0">
-          <div class="annouce-info clearfix">
-            <icon class="volume-up" name="volume-up"></icon>
-            公告
-          </div>
-          <div class="scroll">
-            <marquee>
-              <marquee-item v-for="item in chatAnnounce" :key="item" class="align-middle">{{item}}</marquee-item>
-            </marquee>
-          </div>
-        </div>
         <ul class="lay-scroll">
           <li v-for="(item, index) in messages" :class="['clearfix', 'item', item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -47,35 +45,27 @@
       </div>
       <div class="footer">
         <div class="smile-box" v-if='showSmile'>
-              <a href="javascript:void(0)"
-                v-for="(item, index) in emojis.people.slice(0, 80)"
-                :key="index"
-                class="emoji"
-                @click="personal_setting.chat.status ? msgCnt = msgCnt + item.emoji + ' ' : ''">
-                {{item.emoji}}
-              </a>
-            </div>
+          <a href="javascript:void(0)"
+            v-for="(item, index) in emojis.people.slice(0, 80)"
+            :key="index"
+            class="emoji"
+            @click="personal_setting.chat.status ? msgCnt = msgCnt + item.emoji + ' ' : ''">
+            {{item.emoji}}
+          </a>
+        </div>
         <div class="typing">
-          <div class="control-bar">
-            <a href="javascript:void(0)" class="btn-control btn-smile">
-              <label @click="showSmile = !showSmile">
-                <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
-              </label>
-            </a>
-          </div>
-          <div class="control-bar">
-            <a href="javascript:void(0)" class="btn-control">
-              <label for="capture" @click="showSmile = false">
-                <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
-                <input @change="sendMsgImg"
-                  type="file"
-                  id="capture"
-                  ref="fileImgSend"
-                  class="img-upload-input"
-                  accept="image/*">
-              </label>
-            </a>
-          </div>
+          <label class="control-bar btn-smile" @click="showSmile = !showSmile">
+            <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
+          </label>
+          <label class="control-bar" for="imgUploadInput" @click="showSmile = false">
+            <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
+            <input @change="sendMsgImg"
+              type="file"
+              id="capture"
+              ref="fileImgSend"
+              class="img-upload-input"
+              accept="image/*">
+          </label>
           <div class="txtinput el-textarea">
             <textarea
               @focus="showSmile = false"
@@ -112,7 +102,8 @@ import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
 import { mapGetters, mapState } from 'vuex'
 import { sendImgToChat, fetchAnnouce, fetchChatEmoji } from '../api'
-import { TransferDom, Tab, TabItem, AlertModule, Popup, Marquee, MarqueeItem, Popover } from 'vux'
+import { TransferDom, Tab, TabItem, AlertModule, Popup, Popover } from 'vux'
+import MarqueeTips from 'vue-marquee-tips'
 import config from '../../config'
 import urls from '../api/urls'
 const WSHOST = config.chatHost
@@ -124,8 +115,7 @@ export default {
     TabItem,
     AlertModule,
     Icon,
-    Marquee,
-    MarqueeItem,
+    MarqueeTips,
     Popover
   },
   directives: {
@@ -140,6 +130,7 @@ export default {
     return {
       ws: null,
       chatAnnounce: [],
+      chatAnnounceIndex: 0,
       messages: [],
       showSmile: false,
       msgCnt: '',
@@ -164,7 +155,8 @@ export default {
       routeHasChange: this.routeChanged,
       RECEIVER: parseInt(this.$route.params.receiver) || 1,
       host: urls.host,
-      hearbeat: ''
+      hearbeat: '',
+      marqueeInterval: ''
     }
   },
   computed: {
@@ -343,6 +335,9 @@ export default {
             this.chatAnnounce.push(item.content)
           }
         })
+        this.marqueeInterval = setInterval(() => {
+          this.chatAnnounceIndex = (this.chatAnnounceIndex + 1) % this.chatAnnounce.length
+        }, 10000)
       })
     },
     sendMsgImg (e) {
@@ -392,6 +387,7 @@ export default {
   beforeDestroy () {
     this.$store.dispatch('setCustomTitle', '')
     clearInterval(this.hearbeat)
+    clearInterval(this.marqueeInterval)
     this.leaveRoom()
   }
 }
@@ -401,6 +397,7 @@ export default {
 @import '../styles/vars.less';
 
 .chat-box {
+  position: relative;
   width: 100%;
   height: 100%;
   background: no-repeat right bottom;
@@ -417,13 +414,13 @@ export default {
   }
 }
 .chat-announce {
-  position: sticky;
+  position: absolute;
   top: 5px;
   margin: 0 5px;
+  width: calc(~"100%" - 12px);
   background: rgba(237,244,254,.9);
   border: 1px solid #c2cfe2;
   border-radius: 5px;
-  padding-right: 10px;
   height: 29px;
   overflow: hidden;
   z-index: 1;
@@ -630,11 +627,12 @@ export default {
   margin-top: -7px;
 }
 .footer {
+  display: flex;
+  position: relative;
   flex: 0 0 auto;
   width: 100%;
   height: 65px;
   background: #f5f5f5;
-  padding: 0;
   .smile-box {
     position: absolute;
     width: 100%;
@@ -652,29 +650,36 @@ export default {
       border: 2px solid transparent;
     }
   }
-}
-.typing {
+  .typing {
+    display: flex;
+    box-sizing: border-box;
+    padding: 5px;
+    width: 100%;
+    height: 100%;
+  }
   .el-textarea-inner {
     outline: none;
   }
   .control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-right: 5px;
     flex: 0.5;
     height: 100%;
     background: #72aadb;
+    color: #666;
+    text-align: center;
     border-radius: 4px;
     overflow: hidden;
     .img-upload-input {
-      width: 0.1px;
-      height: 0.1px;
-      opacity: 0;
-      position: absolute;
-      top: -20px;
+      display: none;
+    }
+    .el-icon-picture {
+      font-size: 20px;
+      color: #fff;
     }
   }
-  display: flex;
-  position: relative;
-  padding: 5px;
   .txtinput {
     flex: 3;
   }
@@ -709,18 +714,6 @@ export default {
     transition: border-color .2s cubic-bezier(.645,.045,.355,1);
     box-sizing: border-box;
     background-image: none;
-  }
-}
-
-.btn-control {
-  height: 100%;
-  display: block;
-  line-height: 54px;
-  color: #666;
-  text-align: center;
-  .el-icon-picture {
-    font-size: 20px;
-    color: #fff;
   }
 }
 
