@@ -37,7 +37,7 @@
             </div>
             <div v-else-if="item.type === -2 || item.type === -3" class="inner type-warning">
               <p>
-                <span v-for="(item, index) in personal_setting.chat.reasons">{{item}}</span>
+                <span v-for="(item, index) in personal_setting.chat.reasons" :key="index">{{item}}</span>
               </p>
             </div>
           </li>
@@ -65,15 +65,15 @@
           </div>
           <div class="control-bar">
             <a href="javascript:void(0)" class="btn-control">
-              <label for="imgUploadInput" @click="showSmile = false">
+              <label for="capture" @click="showSmile = false">
                 <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
                 <input @change="sendMsgImg"
                   type="file"
+                  id="capture"
                   capture="camera"
                   ref="fileImgSend"
                   class="img-upload-input"
-                  id="imgUploadInput"
-                  accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
+                  accept="image/*;capture=camera">
               </label>
             </a>
           </div>
