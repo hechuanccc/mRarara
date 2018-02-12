@@ -15,7 +15,7 @@ export default {
   annoucement: host + '/v1/member/announcement/',
   check_username: host + '/v1/user/check',
   systemConfig: host + '/v1/global-data/',
-  changeUserInfo: host + '/v1/user/',
+  changeUserInfo: host + '/v1/member/user/',
   latest_results: ghost + '/latest_results/',
   memberRoom: host + '/v1/member/room/',
   setCookie: host + '/set_cookie/'
