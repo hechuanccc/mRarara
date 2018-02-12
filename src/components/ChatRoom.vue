@@ -67,7 +67,13 @@
             <a href="javascript:void(0)" class="btn-control">
               <label for="imgUploadInput" @click="showSmile = false">
                 <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
-                <input @change="sendMsgImg" type="file" ref="fileImgSend" class="img-upload-input" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
+                <input @change="sendMsgImg"
+                  type="file"
+                  capture="camera"
+                  ref="fileImgSend"
+                  class="img-upload-input"
+                  id="imgUploadInput"
+                  accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
               </label>
             </a>
           </div>
