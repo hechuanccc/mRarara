@@ -40,7 +40,7 @@ const CryptoJS = require('crypto-js')
 
 const encoded = (data) => {
   const ciphertext = CryptoJS.enc.Base64.parse(data)
-  const key = CryptoJS.enc.Utf8.parse(urls.decode)
+  const key = CryptoJS.enc.Utf8.parse(urls.decode.replace(/"/g, ''))
   const decryped = CryptoJS.AES.decrypt({ciphertext: ciphertext}, key, {
     mode: CryptoJS.mode.ECB
   })
