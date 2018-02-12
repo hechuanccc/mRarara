@@ -2,7 +2,7 @@
   <div class="chat-box" id="chatBox" :style="{backgroundImage: `url(${systemConfig.mobileBackground})`}">
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-body">
-      <div class="chat-content" @click="showSmile = false">
+      <div class="chat-content" id="chatContent" @click="showSmile = false">
         <div class="chat-announce" v-if="chatAnnounce.length > 0">
           <div class="annouce-info clearfix">
             <icon class="volume-up" name="volume-up"></icon>
@@ -168,9 +168,6 @@ export default {
       hearbeat: ''
     }
   },
-  watch: {
-    '$route': 'leaveRoom'
-  },
   computed: {
     ...mapGetters([
       'user'
@@ -291,17 +288,12 @@ export default {
                     }
                 }
 
-                let chatBox = document.getElementById('chatBox')
-                if (chatBox) {
-                  let h = chatBox.clientHeight
-                  let sh = chatBox.scrollHeight || chatBox.offsetHeigth
-                  let st = chatBox.scrollTop || document.documentElement.scrollTop || document.body.scrollTop
-                  if (h + st + 100 >= sh || (data.sender && data.sender.username === this.user.username)) {
-                    this.$nextTick(() => {
-                      this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-                    })
+                let chatBody = document.getElementById('chatContent')
+                this.$nextTick(() => { // 有新訊息則下拉至底部
+                  if (chatBody.scrollHeight > chatBody.clientHeight) {
+                    chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight
                   }
-                }
+                })
               }
             } else {
               switch (data.error_type) {
@@ -319,6 +311,15 @@ export default {
                   AlertModule.show({
                     content: data.msg
                   })
+                  break
+                case 6:
+                  this.errMsgCnt = data.msg
+                  setTimeout(() => {
+                    this.errMsgCnt = ''
+                    this.$store.dispatch('logout').then(res => {
+                      this.$router.push({name: 'Login'})
+                    })
+                  }, 3000)
                   break
                 default:
                   if (data.error_type !== 3 && data.error_type !== 2) {
@@ -394,6 +395,7 @@ export default {
     this.$store.dispatch('setCustomTitle', '')
     this.leaveRoom()
     clearInterval(this.hearbeat)
+    this.leaveRoom()
   }
 }
 </script>
@@ -642,7 +644,7 @@ export default {
     height: 136px;
     background-color: #ffffff;
     overflow: scroll;
-    bottom: 38px;
+    bottom: 65px;
     .emoji {
       padding: 2px 6px 0 6px;
       display: inline-block;
