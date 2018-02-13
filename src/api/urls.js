@@ -14,7 +14,7 @@ export default {
   chatEmoji: host + '/v1/emoji/',
   sendImgToChat: host + '/v1/image/',
   annoucement: host + '/v1/member/announcement/',
-  check_username: host + '/v1/user/check',
+  check_username: host + '/v1/user/check/',
   systemConfig: host + '/v1/global-data/',
   changeUserInfo: host + '/v1/member/user/',
   latest_results: ghost + '/latest_results/',
