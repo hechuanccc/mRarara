@@ -24,13 +24,6 @@
       </x-input>
       <x-input
         autocapitalize="off"
-        title="邮箱地址"
-        type="email"
-        @on-change="validate($event, 'email')"
-        :value="member.email">
-      </x-input>
-      <x-input
-        autocapitalize="off"
         title="QQ号"
         :max="8"
         @on-change="validate($event, 'QQ')"
@@ -49,10 +42,10 @@
 </template>
 <script>
 import { Cell, Group, XInput, XButton, Datetime, Selector, Spinner } from 'vux'
-import { msgFormatter, validateEmail, validatePhone, validateQQ } from '../../utils'
+import { msgFormatter, validatePhone, validateQQ } from '../../utils'
 import { mapActions, mapGetters } from 'vuex'
 import { changeUserInfo } from '../../api'
-const inputs = ['nickname', 'email', 'mobile', 'QQ']
+const inputs = ['nickname', 'mobile', 'QQ']
 export default {
   name: 'profile',
   data () {
@@ -82,19 +75,6 @@ export default {
           },
           errorMsg: ''
         },
-        email: {
-          origin: '',
-          valid: true,
-          validate: (value) => {
-            if (!value) {
-              return '请输入邮箱地址'
-            } else if (!validateEmail(value)) {
-              return '邮箱地址格式错误'
-            }
-            return ''
-          },
-          errorMsg: ''
-        },
         QQ: {
           origin: '',
           valid: true,
@@ -112,7 +92,6 @@ export default {
       member: {
         nickname: '',
         mobile: '',
-        email: '',
         QQ: ''
       },
       loading: false,
