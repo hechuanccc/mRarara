@@ -9,10 +9,12 @@ import { fetchSystemConfig, setCookie } from './api'
 import * as types from './store/mutations/mutation-types'
 import Vue2Filters from 'vue2-filters'
 import qs from 'qs'
+import { ToastPlugin } from 'vux'
 
 Vue.use(require('vue-moment'))
 Vue.use(Vue2Filters)
 Vue.use(VueCookie)
+Vue.use(ToastPlugin, {position: 'middle', timing: 3000})
 
 let url = window.location.href
 let params = qs.parse(url.slice(url.indexOf('?') + 1, url.length))
@@ -40,11 +42,26 @@ axios.interceptors.response.use(res => {
     return Promise.reject(responseData)
   }
 }, (error) => {
-  const status = error.response.status
-  if (status !== 401 && status !== 403) {
-    return Promise.reject(error)
+  if (!error.response) {
+    Vue.$vux.toast.show({
+      text: '系统发生了错误, 请联系客服',
+      type: 'warn'
+    })
+  } else {
+    const status = error.response.status
+    if (status === 401 || status === 403) {
+      toLogin(router)
+    } else if (error.response.status !== 587) {
+      let msg = error.response.data.error
+      if (!msg) {
+        msg = '系统发生了错误, 请联系客服'
+      }
+      Vue.$vux.toast.show({
+        text: msg,
+        type: 'warn'
+      })
+    }
   }
-  toLogin(router)
   return Promise.reject(error)
 })
 
