@@ -2,8 +2,11 @@
 <div>
   <group>
     <cell-box>
-      <div v-if="showImg" class="current-img" :style="showImg"></div>
-      <div v-else class="current-img">暂无图片</div>
+      <div class="display-area">
+        <div v-if="showImg" class="current-img" :style="{'background-image': `url('${showImg}')`}"></div>
+        <div v-else class="default-img"></div>
+        <div v-if="showImg" class="reset-img" @click="resetImg">恢复预设头像</div>
+      </div>
     </cell-box>
     <div v-if="inputErrors.length">
       <ul class="input-errors">
@@ -15,14 +18,19 @@
     <cell-box>
       <label class="setting-img">
         <span class="cross"></span>
-        <input style="display:none" type="file" accept="image/*" @change="syncImg($event)">
+        <input
+          ref="fileImgSend"
+          style="display:none"
+          type="file"
+          accept="image/*"
+          @change="syncImg($event)">
       </label>
     </cell-box>
   </group>
   <div class="text-center text-danger m-t">{{errorMsg}}</div>
   <div class="text-center text-success m-t" v-if="changed">头像已修改</div>
   <div class="m-a">
-    <x-button type="primary" @click.native="submit">
+    <x-button type="primary" :disabled="!hasChange" @click.native="submit">
       <spinner v-if="loading" :type="'spiral'" class="vux-spinner-inverse"></spinner>
       <span v-else>提交</span>
     </x-button>
@@ -31,81 +39,112 @@
 </template>
 
 <script>
-import { Group, GroupTitle, CellBox, XButton, Spinner } from 'vux'
+import { mapGetters } from 'vuex'
+import { Group, GroupTitle, CellBox, Cell, XButton, Spinner } from 'vux'
 import { changeUserInfo } from '../../api'
 import { msgFormatter } from '../../utils'
+import lrz from 'lrz'
 export default {
   name: 'ImageEditor',
   components: {
     Group,
     CellBox,
+    Cell,
     GroupTitle,
     XButton,
     Spinner
   },
   data () {
     const avatar = this.$store.state.user.avatar
-    const showImg = avatar ? {'background-image': `url(${avatar})`} : ''
+    const showImg = avatar || ''
     return {
       selectedImg: '',
       showImg,
+      originImg: showImg,
       loading: false,
       inputErrors: [],
       errorMsg: '',
       changed: false
     }
   },
+  computed: {
+    ...mapGetters([
+      'user'
+    ]),
+    hasChange () {
+      return this.originImg !== this.showImg
+    }
+  },
   methods: {
     syncImg (e) {
-      const reader = new FileReader()
+      // const reader = new FileReader()
       const file = e.target.files[0]
-      const inputErrors = []
-      if (file.size > 1024 * 1024) {
-        inputErrors.push('图片过大，请选择较小的图片')
-      }
-      this.inputErrors = inputErrors
-
-      reader.onload = (e) => {
-        this.showImg = {'background-image': `url(${e.target.result})`}
-      }
-      reader.readAsDataURL(file)
-      this.selectedImg = file
+      lrz(file).then(rst => {
+        const inputErrors = []
+        if (rst.fileLen > 1024 * 1024) {
+          inputErrors.push('图片过大，请选择较小的图片')
+        }
+        this.inputErrors = inputErrors
+        this.showImg = URL.createObjectURL(rst.file)
+        this.selectedImg = rst
+      })
     },
     submit () {
       if (this.loading) {
         return
       }
-      const inputErrors = []
+      let formData
       if (!this.selectedImg) {
-        inputErrors.push('请选择头像')
-      } else if (this.selectedImg.size > 1024 * 1024) {
-        inputErrors.push('图片过大，请选择较小的图片')
+        formData = {avatar: ''}
+      } else {
+        const inputErrors = []
+        if (this.selectedImg.file.size > 1024 * 1024) {
+          inputErrors.push('图片过大，请选择较小的图片')
+          this.inputErrors = inputErrors
+          return
+        } else {
+          formData = new FormData()
+          formData.append('avatar', this.selectedImg.file, this.selectedImg.origin.name)
+        }
       }
-      this.inputErrors = inputErrors
-      if (inputErrors.length === 0) {
-        this.loading = true
-        let formData = new window.FormData()
-        formData.append('avatar', this.selectedImg)
-        changeUserInfo(this.$store.state.user.id, formData).then((response) => {
-          this.changed = true
-          setTimeout(() => {
-            this.loading = false
-            this.$store.dispatch('fetchUser').then(() => {
-              this.$router.push({path: '/'})
-            })
-          }, 2000)
-        }, (response) => {
+      this.loading = true
+      changeUserInfo(this.$store.state.user.id, formData).then((response) => {
+        this.changed = true
+        setTimeout(() => {
           this.loading = false
-          this.errorMsg = msgFormatter(response)
-        })
-      }
+          this.$store.dispatch('fetchUser').then(() => {
+            this.$router.push({path: '/'})
+          })
+        }, 2000)
+      }, (response) => {
+        this.loading = false
+        this.errorMsg = msgFormatter(response)
+      })
+    },
+    resetImg () {
+      this.showImg = ''
+      this.selectedImg = ''
+      this.$refs.fileImgSend.value = ''
     }
   }
 }
 </script>
 
-<style lang="scss" scoped>
-.current-img {
+<style lang="less" scoped>
+@import '../../styles/vars.less';
+.display-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  .reset-img {
+    display: block;
+    text-align: center;
+    color: @red;
+    height: 40px;
+    line-height: 40px;
+  }
+}
+.default-img,.current-img {
   width: 100%;
   height: 200px;
   display: flex;
@@ -114,6 +153,9 @@ export default {
   background-position: center center;
   justify-content: center;
   align-items: center;
+}
+.default-img {
+  background-image: url('../../assets/avatar.png')
 }
 .setting-img {
   margin: 20px auto;
@@ -138,6 +180,7 @@ export default {
     transform: rotate(90deg);
   }
 }
+
 </style>
 
 
