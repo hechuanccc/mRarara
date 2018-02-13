@@ -21,7 +21,8 @@
           </div>
         </div>
         <div v-if="!$route.meta.showBack" slot="right" class="group">
-          <div class="user-img" :style="avatar"></div>
+          <div v-if="user.avatar" class="avatar" :style="{'background-image': `url(${user.avatar})`}"></div>
+          <div v-else class="default-avatar"></div>
           <div class="user-name">{{user.nickname}}</div>
           <router-link class="user-info" to="/my">
             <icon scale="1.5" name="user-circle"></icon>
@@ -160,11 +161,14 @@ export default {
       height: 30px;
     }
   }
-  .user-img {
-    width: 20px;
-    height: 20px;
+  .default-avatar,.avatar {
+    width: 30px;
+    height: 30px;
     background-repeat: no-repeat;
     background-size: contain;
+  }
+  .default-avatar {
+    background-image: url('./assets/avatar.png')
   }
   .user-name {
     font-size: 14px;
