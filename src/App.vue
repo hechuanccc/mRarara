@@ -144,7 +144,6 @@ export default {
     }
   }
   & /deep/ .vux-header{
-    height: 40px;
     background-color: #383636;
   }
   & /deep/ .vux-header-left {
