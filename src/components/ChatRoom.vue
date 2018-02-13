@@ -27,7 +27,7 @@
                 </div>
                 <div :class="['bubble', 'bubble' + item.type]">
                   <p>
-                    <span v-if="item.type === 0 || item.type === 4" v-html="item.content"></span>
+                    <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
                     <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content">
                   </p>
                 </div>
@@ -106,6 +106,7 @@ import { TransferDom, Tab, TabItem, AlertModule, Popup, Popover } from 'vux'
 import MarqueeTips from 'vue-marquee-tips'
 import config from '../../config'
 import urls from '../api/urls'
+import lrz from 'lrz'
 const WSHOST = config.chatHost
 
 export default {
@@ -303,7 +304,10 @@ export default {
                   })
                   break
                 case 6:
-                  this.errMsgCnt = data.msg
+                  this.$vux.toast.show({
+                    text: data.msg,
+                    type: 'warn'
+                  })
                   setTimeout(() => {
                     this.errMsgCnt = ''
                     this.$store.dispatch('logout').then(res => {
@@ -345,22 +349,27 @@ export default {
       let file = fileInp.files[0]
 
       if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
-        this.errMsgCnt = '文件格式不正确或您目前尚不符合发言条件'
-        this.errMsg = true
+        this.$vux.toast.show({
+          text: '文件格式不正确或您目前尚不符合发言条件',
+          type: 'warn'
+        })
         return false
       }
-      if (file.size > 1024 * 1024) {
-        this.errMsg = true
-        this.errMsgCnt = '图片尺寸太大，请选择较小尺寸的图片。'
-        return
-      }
 
-      let formData = new FormData()
-      formData.append('receiver', this.RECEIVER)
-      formData.append('image', file)
-
-      sendImgToChat(formData).then((data) => {
-        fileInp.value = ''
+      lrz(file).then(rst => {
+        if (rst.fileLen > 1024 * 1024) {
+          this.$vux.toast.show({
+            text: '图片尺寸太大，请选择较小尺寸的图片',
+            type: 'warn'
+          })
+          return
+        }
+        let formData = new FormData()
+        formData.append('receiver', this.RECEIVER)
+        formData.append('image', rst.file)
+        sendImgToChat(formData).then((data) => {
+          fileInp.value = ''
+        })
       })
     },
     sendMsg () {
