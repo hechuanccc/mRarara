@@ -13,7 +13,7 @@
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in messages" :class="['clearfix', 'item', item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
+          <li v-for="(item, index) in messages" :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
               <div class="avatar">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
