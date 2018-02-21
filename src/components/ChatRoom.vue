@@ -520,6 +520,9 @@ export default {
           h4 {
             text-align: right;
             float: right;
+            width: calc(~"100%" - 110px);
+            overflow: hidden;
+            text-overflow: ellipsis;
             padding-top: 2px;
             font-size: 14px;
           }
@@ -575,19 +578,19 @@ export default {
 .msg-header {
   overflow: hidden;
   h4 {
+    float: left;
+    width: calc(~"100%" - 110px);
     font-size: 14px;
     color: #4f77ab;
-    display: inline-block;
     font-weight: 400;
-    max-width: 73px;
-    text-overflow:ellipsis;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     line-height: 12px;
-    float: left;
     padding-top: 2px;
   }
   .msg-time {
     color: #9f9f9f;
-    margin-left: 10px;
     float: left;
     font-size: 12px;
   }
