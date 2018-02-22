@@ -60,6 +60,8 @@ axios.interceptors.response.use(res => {
         text: msg,
         type: 'warn'
       })
+      let errRes = {response: {data: '系统发生了错误, 请联系客服'}}
+      return Promise.reject(errRes)
     }
   }
   return Promise.reject(error)
@@ -83,12 +85,17 @@ router.beforeEach((to, from, next) => {
 let firstEnter = true
 router.beforeEach((to, from, next) => {
   if (firstEnter && to.meta.requiresAuth === true) {
-    store.dispatch('fetchUser').then(res => {
-      firstEnter = false
-      next()
-    }).catch(() => {
+    let token = VueCookie.get('access_token')
+    if (token) {
+      store.dispatch('fetchUser').then(res => {
+        firstEnter = false
+        next()
+      }).catch(() => {
+        toLogin(router)
+      })
+    } else {
       toLogin(router)
-    })
+    }
   } else {
     next()
   }

@@ -9,12 +9,14 @@
         </ul>
       </div>
       <x-input
+        :class="{'weui-cell_warn': !validators['nickname'].valid}"
         autocapitalize="off"
         title="昵称"
         @on-change="validate($event, 'nickname')"
         :value="member.nickname">
       </x-input>
       <x-input
+        :class="{'weui-cell_warn': !validators['mobile'].valid}"
         autocapitalize="off"
         title="手机号码"
         @on-change="validate($event, 'mobile')"
@@ -23,6 +25,7 @@
         :value="member.mobile">
       </x-input>
       <x-input
+        :class="{'weui-cell_warn': !validators['QQ'].valid}"
         autocapitalize="off"
         title="QQ号"
         :max="8"
@@ -31,7 +34,7 @@
         :value="member.QQ">
       </x-input>
     </group>
-    <div class="vux-group-tip text-danger">{{errorMsg}}</div>
+    <div :class="['text-center', 'm-t', response.success? 'text-success':'text-danger']">{{response.msg}}</div>
     <div class="m-a">
       <x-button type="primary" :disabled="!hasChange" @click.native="submit">
         <spinner v-if="loading" :type="'spiral'" class="vux-spinner-inverse"></spinner>
@@ -95,7 +98,10 @@ export default {
         QQ: ''
       },
       loading: false,
-      errorMsg: '',
+      response: {
+        msg: '',
+        success: true
+      },
       valid: false
     }
   },
@@ -114,6 +120,11 @@ export default {
       return inputs.filter(input => {
         return this.validators[input].origin !== this.member[input]
       }).length
+    }
+  },
+  watch: {
+    'hasChange': function (hasChange) {
+      this.response.msg = ''
     }
   },
   created () {
@@ -153,16 +164,22 @@ export default {
       return !this.inputErrors.length
     },
     submit () {
+      this.response.msg = ''
       if (this.validateAll()) {
         this.loading = true
         changeUserInfo(this.user.id, this.member).then((response) => {
           this.loading = false
           this.$store.dispatch('fetchUser').then(() => {
             this.init()
+            this.$nextTick(() => {
+              this.loading = false
+              this.response.success = true
+              this.response.msg = '已修改完成'
+            })
           })
         }, (response) => {
-          this.loading = false
-          this.errorMsg = msgFormatter(response)
+          this.response.success = false
+          this.response.msg = msgFormatter(response)
         })
       }
     }
