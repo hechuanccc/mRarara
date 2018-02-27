@@ -13,7 +13,9 @@
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in messages" :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
+          <li v-for="(item, index) in messages"
+            :key="index"
+            :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
               <div class="avatar">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
@@ -520,7 +522,7 @@ export default {
           h4 {
             text-align: right;
             float: right;
-            width: calc(~"100%" - 110px);
+            max-width: 150px;
             overflow: hidden;
             text-overflow: ellipsis;
             padding-top: 2px;
@@ -568,6 +570,8 @@ export default {
   border-radius: 10px;
   font-weight: 400;
   font-size: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
   float: left;
 }
 .lay-content {
@@ -579,7 +583,7 @@ export default {
   overflow: hidden;
   h4 {
     float: left;
-    width: calc(~"100%" - 110px);
+    max-width: 150px;
     font-size: 14px;
     color: #4f77ab;
     font-weight: 400;
