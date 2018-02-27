@@ -570,6 +570,8 @@ export default {
   border-radius: 10px;
   font-weight: 400;
   font-size: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
   float: left;
 }
 .lay-content {
