@@ -13,7 +13,7 @@
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in $store.state.messages"
+          <li v-for="(item, index) in messages"
             :key="index"
             :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -134,7 +134,6 @@ export default {
       ws: null,
       chatAnnounce: [],
       chatAnnounceIndex: 0,
-      messages: [],
       showSmile: false,
       msgCnt: '',
       showNickNameBox: false,
@@ -145,11 +144,11 @@ export default {
       emojis: {
         people: []
       },
+      RECEIVER: parseInt(this.$route.params.receiver) || 1,
       showCheckUser: false,
       checkUser: {},
       chatLoading: true,
       routeHasChange: this.routeChanged,
-      RECEIVER: parseInt(this.$route.params.receiver) || 1,
       host: urls.host,
       marqueeInterval: ''
     }
@@ -163,15 +162,16 @@ export default {
     ]),
     resultsHeight () {
       return (document.documentElement.clientHeight || document.body.clientHeight) - 40 - 44
+    },
+    messages () {
+      return this.$store.state.messages[this.RECEIVER]
     }
   },
   created () {
     let ws = this.$store.state.ws
     if (ws && ws.readyState === 1) {
-      this.chatLoading = false
-      this.$nextTick(() => {
-        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-      })
+      this.ws = ws
+      this.handleMsg()
     } else {
       this.joinChatRoom()
     }
@@ -199,6 +199,11 @@ export default {
             console.log(err)
           })
         }
+        this.ws.send(JSON.stringify({
+          'command': 'join',
+          'receivers': [1]
+        }))
+
         this.handleMsg()
         const hearbeat = setInterval(() => {
           let ws = this.$store.state.ws
@@ -212,9 +217,6 @@ export default {
           }
         }, 300000)
       }
-      this.ws.onclose = () => {
-        this.ws = null
-      }
       setTimeout(() => {
         if (!this.ws || (this.ws && this.ws.readyState !== 1)) {
           this.joinChatRoom()
@@ -223,16 +225,6 @@ export default {
     },
     handleMsg () {
       this.chatLoading = false
-      if (this.RECEIVER === 1) { // 進入遊戲大廳
-        this.ws.send(JSON.stringify({
-          'command': 'join',
-          'receivers': [this.RECEIVER]
-        }))
-      } else { // 私聊
-        let personalSetting = this.$store.state.personal_setting
-        personalSetting.chat.status = 1
-        this.$store.dispatch('updatePersonalSetting', personalSetting)
-      }
       this.ws.onmessage = (resData) => {
         let data
         if (typeof resData.data === 'string') {
@@ -242,9 +234,13 @@ export default {
               this.$store.dispatch('updatePersonalSetting', data.personal_setting)
             } else if (!data.error_type) {
               // 只顯示目前房間的歷史訊息
-              if (data.latest_message && data.latest_message.length > 0 && data.latest_message[1].receivers === this.RECEIVER) {
-                let messages = this.$store.state.messages
-                messages = messages.concat(data.latest_message.reverse())
+              if (data.latest_message && data.latest_message.length > 0) {
+                let messages = this.$store.state.messages[this.RECEIVER]
+                if (!messages) {
+                  messages = data.latest_message.reverse()
+                } else {
+                  messages = messages.concat(data.latest_message.reverse())
+                }
                 this.$store.dispatch('setMessage', messages)
                 let personalSetting = this.$store.state.personal_setting
                 if (personalSetting.chat.reasons.length) {
@@ -280,13 +276,19 @@ export default {
                     break
                   default:
                     if (data.receivers === this.RECEIVER) {
-                      this.$store.dispatch('addMessage', data)
+                      let messages = this.$store.state.messages[this.RECEIVER]
+                      if (!messages) {
+                        messages = [data]
+                      } else {
+                        messages.push(data)
+                      }
+                      this.$store.dispatch('setMessage', messages)
                     }
                 }
 
                 let chatBody = document.getElementById('chatContent')
                 this.$nextTick(() => { // 有新訊息則下拉至底部
-                  if (chatBody.scrollHeight > chatBody.clientHeight) {
+                  if (chatBody && chatBody.scrollHeight > chatBody.clientHeight) {
                     chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight
                   }
                 })
@@ -407,7 +409,6 @@ export default {
     }
   },
   beforeDestroy () {
-    this.$store.dispatch('setCustomTitle', '')
     clearInterval(this.marqueeInterval)
   }
 }

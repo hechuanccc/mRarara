@@ -28,7 +28,7 @@
             <icon scale="1.5" name="user-circle"></icon>
           </router-link>
         </div>
-        {{$store.state.customTitle || $route.meta.title}}
+        {{$route.meta.title}}
       </x-header>
       <div class="tab-content" v-if="!$route.meta.tabbarHidden">
         <tab :line-width="2" active-color="#fc378c">
@@ -69,23 +69,6 @@ export default {
   },
   data () {
     return {
-      pages: [{
-        name: '计划聊天室',
-        path: '/chatroom'
-      },
-      // {
-      //   name: '客服',
-      //   path: '/private'
-      // },
-      {
-        name: '开奖',
-        path: '/results'
-      }
-      // , {
-      //   name: '投注',
-      //   path: '/bet'
-      // }
-      ],
       index: 0,
       showAccountPanel: false
     }
@@ -107,6 +90,31 @@ export default {
     avatar () {
       return {
         'background-image': `url(${this.user.avatar})`
+      }
+    },
+    pages () {
+      if (this.user.roles && this.user.roles.some(role => role.id === 4 || role.id === 1)) {
+        return [{
+          name: '计划聊天室',
+          path: '/chatroom'
+        },
+        {
+          name: '开奖',
+          path: '/results'
+        }]
+      } else {
+        return [{
+          name: '计划聊天室',
+          path: '/chatroom'
+        },
+        {
+          name: '联系客服',
+          path: '/private'
+        },
+        {
+          name: '开奖',
+          path: '/results'
+        }]
       }
     }
   },
