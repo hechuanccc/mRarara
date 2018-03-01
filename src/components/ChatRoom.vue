@@ -172,6 +172,9 @@ export default {
     if (ws && ws.readyState === 1) {
       this.ws = ws
       this.handleMsg()
+      this.$nextTick(() => {
+        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+      })
     } else {
       this.joinChatRoom()
     }
@@ -205,6 +208,9 @@ export default {
         }))
 
         this.handleMsg()
+        this.$nextTick(() => {
+          this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+        })
         const hearbeat = setInterval(() => {
           let ws = this.$store.state.ws
           if (ws) {
@@ -340,9 +346,6 @@ export default {
           }
         }
       }
-      setTimeout(() => {
-        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-      }, 1000)
     },
     getAnnouce () {
       fetchAnnouce().then(result => {
