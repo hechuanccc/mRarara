@@ -32,9 +32,10 @@ export default {
       return Promise.reject(error)
     })
   },
-  logout: ({ commit, state }) => {
+  logout: ({ commit, state, dispatch }) => {
     return logout().then(
       res => {
+        dispatch('leaveRoom')
         router.push('/')
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
@@ -70,5 +71,25 @@ export default {
   },
   setCustomTitle: ({ commit }, title) => {
     commit(types.SET_CUSTOM_TITLE, title)
+  },
+  setWs: ({ commit }, ws) => {
+    commit(types.SET_WS, ws)
+  },
+  leaveRoom: ({ commit, state }) => {
+    state.ws.send(JSON.stringify({
+      'command': 'leave',
+      'receivers': [1]
+    }))
+    state.ws.close()
+    commit(types.LEAVE_ROOM)
+  },
+  setMessage: ({ commit }, messages) => {
+    commit(types.SET_MESSAGE, messages)
+  },
+  addMessage: ({ commit }, data) => {
+    commit(types.ADD_MESSAGE, data)
+  },
+  updatePersonalSetting: ({ commit }, setting) => {
+    commit(types.UPDATE_PERSONAL_SETTING, setting)
   }
 }

@@ -72,6 +72,10 @@ Vue.config.productionTip = false
 const store = createStore()
 
 const toLogin = function (router) {
+  store.commit('RESET_USER')
+  if (store.state.ws) {
+    store.dispatch('leaveRoom')
+  }
   router.push({
     path: '/login'
   })

@@ -13,7 +13,7 @@
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in messages"
+          <li v-for="(item, index) in $store.state.messages"
             :key="index"
             :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -145,20 +145,12 @@ export default {
       emojis: {
         people: []
       },
-      personal_setting: {
-        chat: {
-          reasons: [],
-          status: ''
-        },
-        manager: true
-      },
       showCheckUser: false,
       checkUser: {},
       chatLoading: true,
       routeHasChange: this.routeChanged,
       RECEIVER: parseInt(this.$route.params.receiver) || 1,
       host: urls.host,
-      hearbeat: '',
       marqueeInterval: ''
     }
   },
@@ -167,40 +159,38 @@ export default {
       'user'
     ]),
     ...mapState([
-      'systemConfig'
+      'systemConfig', 'personal_setting'
     ]),
     resultsHeight () {
       return (document.documentElement.clientHeight || document.body.clientHeight) - 40 - 44
     }
   },
   created () {
-    this.joinChatRoom()
+    let ws = this.$store.state.ws
+    if (ws && ws.readyState === 1) {
+      this.chatLoading = false
+      this.$nextTick(() => {
+        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+      })
+    } else {
+      this.joinChatRoom()
+    }
     this.getAnnouce()
   },
   methods: {
-    leaveRoom () {
-      if (this.$route.name === 'GameDetail') { return }
-      this.messages = []
-      this.ws && this.ws.send(JSON.stringify({
-        'command': 'leave',
-        'receivers': [this.RECEIVER]
-      }))
-      if (this.ws) {
-        this.ws.close()
-      }
-    },
     joinChatRoom () {
       let token = Vue.cookie.get('access_token')
-      if ((this.ws && this.ws.readyState === 1 && this.messages.length)) {
+      let ws = this.$store.state.ws
+      if ((ws && ws.readyState === 1)) {
         return false
       }
       if (!token) {
-        this.$store.commit('CLEAR_MEMBER')
         return this.$router.push('/login?next=' + this.$route.path)
       }
       this.chatLoading = true
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
       this.ws.onopen = () => {
+        this.$store.dispatch('setWs', this.ws)
         if (!this.emojis.people.length) {
           fetchChatEmoji().then((resData) => {
             resData.people = resData.people.reverse()
@@ -210,11 +200,16 @@ export default {
           })
         }
         this.handleMsg()
-        this.hearbeat = setInterval(() => {
-          this.ws.send(JSON.stringify({
-            'command': 'live',
-            'user_id': this.user.id
-          }))
+        const hearbeat = setInterval(() => {
+          let ws = this.$store.state.ws
+          if (ws) {
+            ws.send(JSON.stringify({
+              'command': 'live',
+              'user_id': this.user.id
+            }))
+          } else {
+            clearInterval(hearbeat)
+          }
         }, 300000)
       }
       this.ws.onclose = () => {
@@ -234,7 +229,9 @@ export default {
           'receivers': [this.RECEIVER]
         }))
       } else { // 私聊
-        this.personal_setting.chat.status = 1
+        let personalSetting = this.$store.state.personal_setting
+        personalSetting.chat.status = 1
+        this.$store.dispatch('updatePersonalSetting', personalSetting)
       }
       this.ws.onmessage = (resData) => {
         let data
@@ -242,15 +239,19 @@ export default {
           try {
             data = JSON.parse(resData.data)
             if (data.personal_setting) {
-              this.personal_setting = data.personal_setting
+              this.$store.dispatch('updatePersonalSetting', data.personal_setting)
             } else if (!data.error_type) {
               // 只顯示目前房間的歷史訊息
               if (data.latest_message && data.latest_message.length > 0 && data.latest_message[1].receivers === this.RECEIVER) {
-                this.messages = this.messages.concat(data.latest_message.reverse())
-                if (this.personal_setting.chat.reasons.length) {
-                  this.messages = this.messages.concat([{
+                let messages = this.$store.state.messages
+                messages = messages.concat(data.latest_message.reverse())
+                this.$store.dispatch('setMessage', messages)
+                let personalSetting = this.$store.state.personal_setting
+                if (personalSetting.chat.reasons.length) {
+                  messages.concat([{
                     type: -2
                   }])
+                  this.$store.dispatch('setMessage', messages)
                 }
                 this.$nextTick(() => {
                   this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
@@ -259,25 +260,27 @@ export default {
               } else {
                 switch (data.type) {
                   case 2:
+                    let personalSetting = this.$store.state.personal_setting
                     if (data.command === 'unblock') {
-                      this.personal_setting.blocked = false
+                      personalSetting.blocked = false
                       this.joinChatRoom()
                       AlertModule.show({
                         content: data.content
                       })
                     } else if (data.command === 'unbanned') {
-                      this.personal_setting.chat.status = 1
+                      personalSetting.chat.status = 1
                       AlertModule.show({
                         content: data.content
                       })
                     }
+                    this.$store.dispatch('updatePersonalSetting', personalSetting)
                     break
                   case 3:
                     this.announcement = data.content
                     break
                   default:
                     if (data.receivers === this.RECEIVER) {
-                      this.messages.push(data)
+                      this.$store.dispatch('addMessage', data)
                     }
                 }
 
@@ -289,18 +292,23 @@ export default {
                 })
               }
             } else {
+              let personalSetting
               switch (data.error_type) {
                 case 4:
                   AlertModule.show({
                     content: '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
                   })
-                  this.personal_setting.banned = true
-                  this.personal_setting.chat.status = 0
+                  personalSetting = this.$store.state.personal_setting
+                  personalSetting.banned = true
+                  personalSetting.chat.status = 0
+                  this.$store.dispatch('updatePersonalSetting', personalSetting)
                   break
                 case 5:
-                  this.messages = []
-                  this.personal_setting.blocked = true
-                  this.personal_setting.chat.status = 0
+                  this.$store.dispatch('setMessage', [])
+                  personalSetting = this.$store.state.personal_setting
+                  personalSetting.blocked = true
+                  personalSetting.chat.status = 0
+                  this.$store.dispatch('updatePersonalSetting', personalSetting)
                   AlertModule.show({
                     content: data.msg
                   })
@@ -400,9 +408,7 @@ export default {
   },
   beforeDestroy () {
     this.$store.dispatch('setCustomTitle', '')
-    clearInterval(this.hearbeat)
     clearInterval(this.marqueeInterval)
-    this.leaveRoom()
   }
 }
 </script>
