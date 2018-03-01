@@ -19,7 +19,16 @@ export function createStore () {
         webLotteryRegisterUrl: '',
         lotteryResultUrl: ''
       },
-      customTitle: ''
+      customTitle: '',
+      ws: '',
+      messages: [],
+      personal_setting: {
+        chat: {
+          reasons: [],
+          status: ''
+        },
+        manager: true
+      }
     },
     actions,
     mutations,

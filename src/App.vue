@@ -124,6 +124,12 @@ export default {
     switchTab (path) {
       this.$router.push({path})
     }
+  },
+  beforeDestroy () {
+    let ws = this.$store.state.ws
+    if (ws) {
+      this.$store.dispatch('leaveRoom')
+    }
   }
 }
 </script>
