@@ -5,11 +5,11 @@
       :key="'room' + index"
       v-for="(room, index) in rooms"
       is-link
-      :title="`${isCustomerService(room.users[1].roles)? '客服人员 ':''}${room.users[1].nickname}`"
+      :title="isCustomerService(room.users[1].roles)?`客服人员${index+1}`:room.users[1].nickname"
       :link="{path:'/private/'+room.id}"
-      :border-intent="false"
-      @click.native="chooseRoom(room.users[1].nickname)">
-      {{ room.last_message.content }}
+      :border-intent="false">
+      {{ room.last_message ? room.last_message.content : '' }}
+      <div slot="icon" class="serviceIcon"></div>
     </cell>
   </group>
 </template>
@@ -47,9 +47,6 @@ export default {
         const results = res.results
         const rooms = this.page === 0 ? results : this.rooms.concat(results)
         this.page += 1
-        if (results.length < this.limit) {
-          this.ended = true
-        }
         this.loading = false
         this.rooms = rooms.map(room => {
           return {
@@ -58,9 +55,6 @@ export default {
           }
         })
       })
-    },
-    chooseRoom (nickname) {
-      this.$store.dispatch('setCustomTitle', nickname)
     },
     isCustomerService (roles) {
       return roles.some(role => role.id === 4)
@@ -72,5 +66,12 @@ export default {
 <style lang="scss" scoped="">
 .rooms /deep/ .weui-cells {
   margin-top: 5px;
+}
+.serviceIcon {
+  width: 35px;
+  height: 35px;
+  background: url('../assets/stick_admin.png') no-repeat;
+  background-size: contain;
+  margin-right: 10px;
 }
 </style>

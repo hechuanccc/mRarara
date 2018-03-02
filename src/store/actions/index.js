@@ -69,9 +69,6 @@ export default {
   setSystemConfig: ({ commit }, data) => {
     commit(types.SET_SYSTEM_CONFIG, data)
   },
-  setCustomTitle: ({ commit }, title) => {
-    commit(types.SET_CUSTOM_TITLE, title)
-  },
   setWs: ({ commit }, ws) => {
     commit(types.SET_WS, ws)
   },

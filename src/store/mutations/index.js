@@ -21,9 +21,6 @@ export default {
   [types.SET_SYSTEM_CONFIG]: (state, data) => {
     state.systemConfig = data
   },
-  [types.SET_CUSTOM_TITLE]: (state, title) => {
-    state.customTitle = title
-  },
   [types.SET_WS]: (state, ws) => {
     state.ws = ws
   },
@@ -32,10 +29,11 @@ export default {
     state.messages = []
   },
   [types.SET_MESSAGE]: (state, messages) => {
-    state.messages = messages
-  },
-  [types.ADD_MESSAGE]: (state, data) => {
-    state.messages.push(data)
+    if (messages.length === 0) {
+      state.messages = {}
+    } else {
+      Vue.set(state.messages, messages[0].receivers, messages)
+    }
   },
   [types.UPDATE_PERSONAL_SETTING]: (state, setting) => {
     state.personal_setting = setting
