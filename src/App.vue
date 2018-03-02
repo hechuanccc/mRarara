@@ -49,11 +49,13 @@
 </template>
 
 <script>
-import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem } from 'vux'
+import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
 import { mapGetters, mapState } from 'vuex'
 import AccountPanel from './components/AccountPanel'
+import { fetchAnnouce } from './api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/user-circle'
+import config from '../config'
 const homeLinks = ['/', '/chatroom', '/private', '/results', '/bet']
 export default {
   name: 'app',
@@ -65,12 +67,14 @@ export default {
     Swiper,
     SwiperItem,
     AccountPanel,
-    Icon
+    Icon,
+    AlertModule
   },
   data () {
     return {
       index: 0,
-      showAccountPanel: false
+      showAccountPanel: false,
+      ws: undefined
     }
   },
   computed: {
@@ -123,7 +127,21 @@ export default {
       if (to.path === '/') {
         this.$router.replace({path: '/chatroom'})
       }
+    },
+    'user.logined': function (logined) {
+      if (logined) {
+        this.initWebSocket()
+      }
     }
+  },
+  created () {
+    fetchAnnouce().then(result => {
+      result.forEach((item) => {
+        if (item.platform !== 0) {
+          this.$store.dispatch('setAnnouncement', [item.content])
+        }
+      })
+    })
   },
   methods: {
     closeAccountPanel () {
@@ -131,6 +149,101 @@ export default {
     },
     switchTab (path) {
       this.$router.push({path})
+    },
+    initWebSocket () {
+      let token = this.$cookie.get('access_token')
+      const ws = new WebSocket(`${config.chatHost}/chat/stream?token=${token}`)
+      ws.onopen = () => {
+        this.$store.dispatch('setWs', ws)
+        ws.send(JSON.stringify({
+          'command': 'join',
+          'receivers': [1]
+        }))
+        const hearbeat = setInterval(() => {
+          ws.send(JSON.stringify({
+            'command': 'live',
+            'user_id': this.user.id
+          }))
+        }, 300000)
+        ws.onclose = () => {
+          clearInterval(hearbeat)
+        }
+        ws.onmessage = (resData) => {
+          let data
+          if (typeof resData.data === 'string') {
+            try {
+              data = JSON.parse(resData.data)
+              if (data.personal_setting) {
+                this.$store.dispatch('initPersonalSetting', data.personal_setting)
+              } else if (!data.error_type) {
+                // 只顯示目前房間的歷史訊息
+                if (data.latest_message && data.latest_message.length > 0) {
+                  let messages = data.latest_message.reverse()
+                  let personalSetting = this.$store.state.personal_setting
+                  if (personalSetting.reasons.length) {
+                    messages.concat([{
+                      type: -2
+                    }])
+                  }
+                  this.$store.dispatch('setMessage', messages)
+                  return
+                } else {
+                  switch (data.type) {
+                    case 0:
+                      this.$store.dispatch('setMessage', [data])
+                      break
+                    case 1:
+                      this.$store.dispatch('setMessage', [data])
+                      break
+                    case 2:
+                      break
+                    case 3:
+                      let announcement = this.$store.state.announcement
+                      announcement = announcement.push(data.content)
+                      this.$store.dispatch('setAnnouncement', announcement)
+                      break
+                  }
+                }
+              } else {
+                switch (data.error_type) {
+                  case 4:
+                    this.$store.dispatch('updatePersonalSetting', 'banned')
+                    AlertModule.show({
+                      content: '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
+                    })
+                    break
+                  case 5:
+                    this.$store.dispatch('setMessage', [])
+                    this.$store.dispatch('updatePersonalSetting', 'blocked')
+                    AlertModule.show({
+                      content: data.msg
+                    })
+                    break
+                  case 6:
+                    this.$vux.toast.show({
+                      text: data.msg,
+                      type: 'warn'
+                    })
+                    setTimeout(() => {
+                      this.$store.dispatch('logout').then(res => {
+                        this.$router.push({name: 'Login'})
+                      })
+                    }, 3000)
+                    break
+                  default:
+                    if (data.error_type !== 3 && data.error_type !== 2) {
+                      AlertModule.show({
+                        content: data.msg
+                      })
+                    }
+                }
+              }
+            } catch (e) {
+              console.log(e)
+            }
+          }
+        }
+      }
     }
   },
   beforeDestroy () {

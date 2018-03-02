@@ -22,12 +22,11 @@ export function createStore () {
       ws: '',
       messages: {},
       personal_setting: {
-        chat: {
-          reasons: [],
-          status: ''
-        },
-        manager: true
-      }
+        banned: false,
+        blocked: false,
+        reasons: []
+      },
+      announcement: []
     },
     actions,
     mutations,
