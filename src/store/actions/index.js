@@ -83,10 +83,13 @@ export default {
   setMessage: ({ commit }, messages) => {
     commit(types.SET_MESSAGE, messages)
   },
-  addMessage: ({ commit }, data) => {
-    commit(types.ADD_MESSAGE, data)
+  initPersonalSetting: ({ commit }, setting) => {
+    commit(types.INIT_PERSONAL_SETTING, setting)
   },
-  updatePersonalSetting: ({ commit }, setting) => {
-    commit(types.UPDATE_PERSONAL_SETTING, setting)
+  updatePersonalSetting: ({ commit }, type) => {
+    commit(types.UPDATE_PERSONAL_SETTING, type)
+  },
+  setAnnouncement: ({commit}, announcement) => {
+    commit(types.SET_ANNOUNCE, announcement)
   }
 }

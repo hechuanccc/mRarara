@@ -1,19 +1,19 @@
 <template>
   <div class="chat-box" id="chatBox" :style="{backgroundImage: `url(${systemConfig.mobileBackground})`}">
-    <div class="chat-announce" v-if="chatAnnounce.length > 0">
+    <div class="chat-announce" v-if="announcement.length > 0">
       <div class="annouce-info clearfix">
         <icon class="volume-up" name="volume-up"></icon>
         公告
       </div>
       <div class="scroll">
-        <MarqueeTips :content="chatAnnounce[chatAnnounceIndex]" :speed="10"></MarqueeTips>
+        <MarqueeTips :content="announcement[announcementIndex]" :speed="10"></MarqueeTips>
       </div>
     </div>
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in messages"
+          <li v-for="(item, index) in messages[RECEIVER]"
             :key="index"
             :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -51,7 +51,7 @@
             v-for="(item, index) in emojis.people.slice(0, 80)"
             :key="index"
             class="emoji"
-            @click="personal_setting.chat.status ? msgCnt = msgCnt + item.emoji + ' ' : ''">
+            @click="!personal_setting.banned ? msgCnt = msgCnt + item.emoji + ' ' : ''">
             {{item.emoji}}
           </a>
         </div>
@@ -76,7 +76,7 @@
               validateevent="true"
               :class="['el-textarea-inner', !personal_setting.chat ? 'is-disabled' : '']"
               v-model="msgCnt"
-              :disabled="personal_setting.chat.status ? false : true">
+              :disabled="personal_setting.banned">
             </textarea>
           </div>
           <div class="txt-right clearfix">
@@ -97,19 +97,16 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/picture-o'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
 import { mapGetters, mapState } from 'vuex'
-import { sendImgToChat, fetchAnnouce, fetchChatEmoji } from '../api'
+import { sendImgToChat, fetchChatEmoji } from '../api'
 import { TransferDom, Tab, TabItem, AlertModule, Popup, Popover } from 'vux'
 import MarqueeTips from 'vue-marquee-tips'
-import config from '../../config'
 import urls from '../api/urls'
 import lrz from 'lrz'
-const WSHOST = config.chatHost
 
 export default {
   components: {
@@ -132,25 +129,23 @@ export default {
   data () {
     return {
       ws: null,
-      chatAnnounce: [],
-      chatAnnounceIndex: 0,
+      announcementIndex: 0,
       showSmile: false,
       msgCnt: '',
       showNickNameBox: false,
       nickname: this.$store.state.user.nickname,
       showImageMsg: false,
       showImageMsgUrl: '',
-      announcement: '',
       emojis: {
         people: []
       },
-      RECEIVER: parseInt(this.$route.params.receiver) || 1,
       showCheckUser: false,
       checkUser: {},
       chatLoading: true,
       routeHasChange: this.routeChanged,
       host: urls.host,
-      marqueeInterval: ''
+      marqueeInterval: '',
+      RECEIVER: parseInt(this.$route.params.receiver) || 1
     }
   },
   computed: {
@@ -158,212 +153,46 @@ export default {
       'user'
     ]),
     ...mapState([
-      'systemConfig', 'personal_setting'
-    ]),
-    resultsHeight () {
-      return (document.documentElement.clientHeight || document.body.clientHeight) - 40 - 44
-    },
-    messages () {
-      return this.$store.state.messages[this.RECEIVER]
-    }
+      'systemConfig', 'personal_setting', 'announcement', 'messages'
+    ])
   },
   created () {
-    let ws = this.$store.state.ws
-    if (ws && ws.readyState === 1) {
-      this.ws = ws
-      this.handleMsg()
-      this.$nextTick(() => {
-        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-      })
-    } else {
-      this.joinChatRoom()
+    this.chatLoading = false
+    this.$nextTick(() => {
+      this.scrollToBottom()
+    })
+    this.marqueeInterval = setInterval(() => {
+      this.announcementIndex = (this.announcementIndex + 1) % this.announcement.length
+    }, 10000)
+    fetchChatEmoji().then((resData) => {
+      resData.people = resData.people.reverse()
+      this.emojis = resData
+    }).catch(err => {
+      console.log(err)
+    })
+  },
+  watch: {
+    'messages': {
+      handler: function () {
+        this.$nextTick(() => {
+          this.scrollToBottom()
+        })
+      },
+      deep: true
     }
-    this.getAnnouce()
   },
   methods: {
-    joinChatRoom () {
-      let token = Vue.cookie.get('access_token')
-      let ws = this.$store.state.ws
-      if ((ws && ws.readyState === 1)) {
-        return false
+    scrollToBottom () {
+      let chatBody = document.getElementById('chatContent')
+      if (chatBody && chatBody.scrollHeight > chatBody.clientHeight) {
+        chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight
       }
-      if (!token) {
-        return this.$router.push('/login?next=' + this.$route.path)
-      }
-      this.chatLoading = true
-      this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
-      this.ws.onopen = () => {
-        this.$store.dispatch('setWs', this.ws)
-        if (!this.emojis.people.length) {
-          fetchChatEmoji().then((resData) => {
-            resData.people = resData.people.reverse()
-            this.emojis = resData
-          }).catch(err => {
-            console.log(err)
-          })
-        }
-        this.ws.send(JSON.stringify({
-          'command': 'join',
-          'receivers': [1]
-        }))
-
-        this.handleMsg()
-        this.$nextTick(() => {
-          this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-        })
-        const hearbeat = setInterval(() => {
-          let ws = this.$store.state.ws
-          if (ws) {
-            ws.send(JSON.stringify({
-              'command': 'live',
-              'user_id': this.user.id
-            }))
-          } else {
-            clearInterval(hearbeat)
-          }
-        }, 300000)
-      }
-      setTimeout(() => {
-        if (!this.ws || (this.ws && this.ws.readyState !== 1)) {
-          this.joinChatRoom()
-        }
-      }, 2000)
-    },
-    handleMsg () {
-      this.chatLoading = false
-      this.ws.onmessage = (resData) => {
-        let data
-        if (typeof resData.data === 'string') {
-          try {
-            data = JSON.parse(resData.data)
-            if (data.personal_setting) {
-              this.$store.dispatch('updatePersonalSetting', data.personal_setting)
-            } else if (!data.error_type) {
-              // 只顯示目前房間的歷史訊息
-              if (data.latest_message && data.latest_message.length > 0) {
-                let messages = this.$store.state.messages[this.RECEIVER]
-                if (!messages) {
-                  messages = data.latest_message.reverse()
-                } else {
-                  messages = messages.concat(data.latest_message.reverse())
-                }
-                this.$store.dispatch('setMessage', messages)
-                let personalSetting = this.$store.state.personal_setting
-                if (personalSetting.chat.reasons.length) {
-                  messages.concat([{
-                    type: -2
-                  }])
-                  this.$store.dispatch('setMessage', messages)
-                }
-                this.$nextTick(() => {
-                  this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-                })
-                return
-              } else {
-                switch (data.type) {
-                  case 2:
-                    let personalSetting = this.$store.state.personal_setting
-                    if (data.command === 'unblock') {
-                      personalSetting.blocked = false
-                      this.joinChatRoom()
-                      AlertModule.show({
-                        content: data.content
-                      })
-                    } else if (data.command === 'unbanned') {
-                      personalSetting.chat.status = 1
-                      AlertModule.show({
-                        content: data.content
-                      })
-                    }
-                    this.$store.dispatch('updatePersonalSetting', personalSetting)
-                    break
-                  case 3:
-                    this.announcement = data.content
-                    break
-                  default:
-                    if (data.receivers === this.RECEIVER) {
-                      let messages = this.$store.state.messages[this.RECEIVER]
-                      if (!messages) {
-                        messages = [data]
-                      } else {
-                        messages.push(data)
-                      }
-                      this.$store.dispatch('setMessage', messages)
-                    }
-                }
-
-                let chatBody = document.getElementById('chatContent')
-                this.$nextTick(() => { // 有新訊息則下拉至底部
-                  if (chatBody && chatBody.scrollHeight > chatBody.clientHeight) {
-                    chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight
-                  }
-                })
-              }
-            } else {
-              let personalSetting
-              switch (data.error_type) {
-                case 4:
-                  AlertModule.show({
-                    content: '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
-                  })
-                  personalSetting = this.$store.state.personal_setting
-                  personalSetting.banned = true
-                  personalSetting.chat.status = 0
-                  this.$store.dispatch('updatePersonalSetting', personalSetting)
-                  break
-                case 5:
-                  this.$store.dispatch('setMessage', [])
-                  personalSetting = this.$store.state.personal_setting
-                  personalSetting.blocked = true
-                  personalSetting.chat.status = 0
-                  this.$store.dispatch('updatePersonalSetting', personalSetting)
-                  AlertModule.show({
-                    content: data.msg
-                  })
-                  break
-                case 6:
-                  this.$vux.toast.show({
-                    text: data.msg,
-                    type: 'warn'
-                  })
-                  setTimeout(() => {
-                    this.errMsgCnt = ''
-                    this.$store.dispatch('logout').then(res => {
-                      this.$router.push({name: 'Login'})
-                    })
-                  }, 3000)
-                  break
-                default:
-                  if (data.error_type !== 3 && data.error_type !== 2) {
-                    AlertModule.show({
-                      content: data.msg
-                    })
-                  }
-              }
-            }
-          } catch (e) {
-            console.log(e)
-          }
-        }
-      }
-    },
-    getAnnouce () {
-      fetchAnnouce().then(result => {
-        result.forEach((item) => {
-          if (item.platform !== 0) {
-            this.chatAnnounce.push(item.content)
-          }
-        })
-        this.marqueeInterval = setInterval(() => {
-          this.chatAnnounceIndex = (this.chatAnnounceIndex + 1) % this.chatAnnounce.length
-        }, 10000)
-      })
     },
     sendMsgImg (e) {
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
 
-      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
+      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || this.personal_setting.banned) {
         this.$vux.toast.show({
           text: '文件格式不正确或您目前尚不符合发言条件',
           type: 'warn'
@@ -390,7 +219,7 @@ export default {
     sendMsg () {
       this.showSmile = false
       if (!this.msgCnt.trim()) { return false }
-      this.ws.send(JSON.stringify({
+      this.$store.state.ws.send(JSON.stringify({
         'command': 'send',
         'receivers': [this.RECEIVER],
         'type': 0,
