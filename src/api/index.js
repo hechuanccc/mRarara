@@ -15,8 +15,8 @@ export function fetchUser () {
   return axios.get(urls.user)
 }
 
-export function fetchMemberRoom (limit, page) {
-  return axios.get(`${urls.memberRoom}?offset=${page * limit}&limit=${limit}&type=2,3`)
+export function fetchChatlist () {
+  return axios.get(urls.chatlist).then(data => data.results)
 }
 
 export function register (user) {
@@ -49,4 +49,15 @@ export function fetchChatEmoji () {
 
 export function setCookie (cookie) {
   return axios.post(urls.setCookie, {cookie}, { 'Content-Type': 'application/json', withCredentials: true })
+}
+
+export function buildRoom (users) {
+  return axios.post(urls.buildRoom, {
+    type: 2,
+    status: '1',
+    last_message: '',
+    users: users
+  }, {
+    'Content-Type': 'application/json'
+  })
 }

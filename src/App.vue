@@ -33,6 +33,7 @@
       <div class="tab-content" v-if="!$route.meta.tabbarHidden">
         <tab :line-width="2" active-color="#fc378c">
           <tab-item
+            :badge-label="page.path === '/private' ? unreadCount : ''"
             class="vux-center"
             :selected="`/${$route.path.split('/')[1]}` === page.path"
             v-for="(page, index) in pages"
@@ -52,7 +53,7 @@
 import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
 import { mapGetters, mapState } from 'vuex'
 import AccountPanel from './components/AccountPanel'
-import { fetchAnnouce } from './api'
+import { fetchAnnouce, fetchChatlist } from './api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/user-circle'
 import config from '../config'
@@ -74,7 +75,8 @@ export default {
     return {
       index: 0,
       showAccountPanel: false,
-      ws: undefined
+      ws: undefined,
+      unreadCount: ''
     }
   },
   computed: {
@@ -97,29 +99,34 @@ export default {
       }
     },
     pages () {
-      if (this.user.roles && this.user.roles.some(role => role.id === 4 || role.id === 1)) {
-        return [{
-          name: '计划聊天室',
-          path: '/chatroom'
-        },
-        {
-          name: '开奖',
-          path: '/results'
-        }]
-      } else {
-        return [{
-          name: '计划聊天室',
-          path: '/chatroom'
-        },
-        {
-          name: '联系客服',
-          path: '/private'
-        },
-        {
-          name: '开奖',
-          path: '/results'
-        }]
+      if (this.user.roles) {
+        let roles = this.user.roles
+        for (let i = 0, length = roles.length; i < length; i++) {
+          let role = roles[i]
+          if (role.id === 1 || role.id === 4) {
+            return [{
+              name: '计划聊天室',
+              path: '/chatroom'
+            },
+            {
+              name: '开奖',
+              path: '/results'
+            }]
+          }
+        }
       }
+      return [{
+        name: '计划聊天室',
+        path: '/chatroom'
+      },
+      {
+        name: '联系客服',
+        path: '/private'
+      },
+      {
+        name: '开奖',
+        path: '/results'
+      }]
     }
   },
   watch: {
@@ -131,6 +138,16 @@ export default {
     'user.logined': function (logined) {
       if (logined) {
         this.initWebSocket()
+        if (!this.user.roles.some(role => { return role.id === 4 || role.id === 1 })) {
+          fetchChatlist().then(chatlist => {
+            let unreadCount = chatlist.filter(member => {
+              return member.read === false
+            }).length
+            if (unreadCount !== 0) {
+              this.unreadCount = unreadCount
+            }
+          })
+        }
       }
     }
   },
