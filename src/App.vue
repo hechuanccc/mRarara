@@ -103,20 +103,7 @@ export default {
         let roles = this.user.roles
         for (let i = 0, length = roles.length; i < length; i++) {
           let role = roles[i]
-          if (role.id === 4) {
-            return [{
-              name: '计划聊天室',
-              path: '/chatroom'
-            },
-            {
-              name: '会员列表',
-              path: '/private'
-            },
-            {
-              name: '开奖',
-              path: '/results'
-            }]
-          } else if (role.id === 1) {
+          if (role.id === 1 || role.id === 4) {
             return [{
               name: '计划聊天室',
               path: '/chatroom'
