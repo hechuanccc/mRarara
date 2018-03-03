@@ -26,22 +26,22 @@ export default {
   },
   [types.LEAVE_ROOM]: (state) => {
     state.ws = ''
-    state.messages = []
+    state.rooms = []
   },
   [types.SET_MESSAGE]: (state, messages) => {
     if (messages.length === 0) {
-      state.messages = {}
+      state.rooms = {}
     } else {
-      let msgArray = state.messages
+      let msgArray = state.rooms
       const receiver = messages[0].receivers
-      if (state.messages[receiver]) {
-        msgArray = state.messages[receiver]
+      if (state.rooms[receiver]) {
+        msgArray = state.rooms[receiver]
       } else {
         msgArray = []
-        Vue.set(state.messages, receiver, msgArray)
+        Vue.set(state.rooms, receiver, msgArray)
       }
       msgArray = msgArray.concat(messages)
-      Vue.set(state.messages, receiver, msgArray)
+      Vue.set(state.rooms, receiver, msgArray)
     }
   },
   [types.SET_ANNOUNCE]: (state, announcement) => {
@@ -67,5 +67,19 @@ export default {
         state.personal_setting.banned = true
         break
     }
+  },
+  [types.INIT_CHATLIST]: (state, chatlist) => {
+    state.chatlist = chatlist
+    const unreadRooms = {}
+    chatlist.forEach(member => {
+      unreadRooms[member.id] = member.read
+      if (!member.read) {
+        state.unreadCount++
+      }
+    })
+    state.unreadRooms = unreadRooms
+  },
+  [types.UPDATE_READ_STATUS]: (state, {id, status}) => {
+    state.unreadRooms[id] = status
   }
 }
