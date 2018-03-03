@@ -2,7 +2,7 @@
   <group class="rooms">
     <cell
       :key="index"
-      v-for="(member, index) in memberList"
+      v-for="(member, index) in chatlist"
       is-link
       :title="`客服人员${index+1}`"
       @click.native="buildRoom(member.id)"
@@ -10,13 +10,13 @@
       <div
         slot="icon"
         class="avatar"></div>
-      <div v-if="!member.read" class="notify"></div>
+      <div v-if="!unreadRooms[member.id]" class="notify"></div>
     </cell>
   </group>
 </template>
 
 <script>
-import { fetchChatlist, buildRoom } from '../api'
+import { buildRoom } from '../api'
 import { Group, Cell } from 'vux'
 import { mapState } from 'vuex'
 
@@ -30,34 +30,34 @@ export default {
     return {
       limit: 20,
       page: 0,
-      loading: false,
-      chatlist: []
+      loading: false
     }
   },
   computed: {
     ...mapState([
-      'user', 'messages'
+      'user', 'chatlist', 'unreadRooms'
     ]),
-    memberList () {
-      return this.chatlist.filter(member => member.id !== 1)
-    },
     isCustomerService () {
       return this.$store.state.user.roles.some(role => role.id === 4)
     }
   },
-  created () {
-    this.fetchChatlist()
-  },
   methods: {
-    fetchChatlist () {
-      this.loading = true
-      fetchChatlist().then(chatlist => {
-        this.chatlist = chatlist
-      })
-    },
     buildRoom (id) {
       buildRoom([this.user.id, id]).then(data => {
-        this.$router.push({path: '/private/' + data.room.id})
+        let state = this.$store.state
+        let roomId = data.room.id
+        let currentMessage = state.rooms[roomId]
+        if (currentMessage && currentMessage.length > 0) { // 有訊息才需告知已讀
+          let lastMessage = currentMessage[currentMessage.length - 1]
+          state.ws.send(JSON.stringify({
+            command: 'read_msg',
+            message: lastMessage.id,
+            sender: lastMessage.sender.username,
+            room: roomId,
+            user: this.user.username
+          }))
+        }
+        this.$router.push({path: '/private/' + roomId})
       })
     }
   }

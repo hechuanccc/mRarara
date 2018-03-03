@@ -33,7 +33,7 @@
       <div class="tab-content" v-if="!$route.meta.tabbarHidden">
         <tab :line-width="2" active-color="#fc378c">
           <tab-item
-            :badge-label="page.path === '/private' ? unreadCount : ''"
+            :badge-label="page.path === '/private' && unreadCount ? unreadCount+'' : ''"
             class="vux-center"
             :selected="`/${$route.path.split('/')[1]}` === page.path"
             v-for="(page, index) in pages"
@@ -75,8 +75,7 @@ export default {
     return {
       index: 0,
       showAccountPanel: false,
-      ws: undefined,
-      unreadCount: ''
+      ws: undefined
     }
   },
   computed: {
@@ -86,6 +85,13 @@ export default {
     ...mapState([
       'systemConfig'
     ]),
+    unreadCount () {
+      const unreadRooms = this.$store.state.unreadRooms
+      const ids = Object.keys(unreadRooms)
+      return ids.filter(id => {
+        return !unreadRooms[id]
+      }).length
+    },
     headerType () {
       if (homeLinks.includes(this.$route.path)) {
         return 'home'
@@ -140,12 +146,7 @@ export default {
         this.initWebSocket()
         if (!this.user.roles.some(role => { return role.id === 4 || role.id === 1 })) {
           fetchChatlist().then(chatlist => {
-            let unreadCount = chatlist.filter(member => {
-              return member.read === false
-            }).length
-            if (unreadCount !== 0) {
-              this.unreadCount = unreadCount
-            }
+            this.$store.dispatch('initChatlist', chatlist)
           })
         }
       }
@@ -207,9 +208,11 @@ export default {
                 } else {
                   switch (data.type) {
                     case 0:
+                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
                       this.$store.dispatch('setMessage', [data])
                       break
                     case 1:
+                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
                       this.$store.dispatch('setMessage', [data])
                       break
                     case 2:

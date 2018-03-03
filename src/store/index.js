@@ -20,13 +20,15 @@ export function createStore () {
         lotteryResultUrl: ''
       },
       ws: '',
-      messages: {},
+      rooms: {},
       personal_setting: {
         banned: false,
         blocked: false,
         reasons: []
       },
-      announcement: []
+      announcement: [],
+      unreadRooms: {},
+      chatlist: []
     },
     actions,
     mutations,

@@ -91,5 +91,11 @@ export default {
   },
   setAnnouncement: ({commit}, announcement) => {
     commit(types.SET_ANNOUNCE, announcement)
+  },
+  initChatlist: ({commit}, chatlist) => {
+    commit(types.INIT_CHATLIST, chatlist)
+  },
+  updateReadStatus: ({commit}, setting) => {
+    commit(types.UPDATE_READ_STATUS, setting)
   }
 }

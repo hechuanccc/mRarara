@@ -13,7 +13,7 @@
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in messages[RECEIVER]"
+          <li v-for="(item, index) in rooms[RECEIVER]"
             :key="index"
             :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -154,7 +154,7 @@ export default {
       'user'
     ]),
     ...mapState([
-      'systemConfig', 'personal_setting', 'announcement', 'messages'
+      'systemConfig', 'personal_setting', 'announcement', 'rooms'
     ])
   },
   created () {
@@ -173,25 +173,11 @@ export default {
     })
   },
   watch: {
-    'messages': {
-      handler: function (messages) {
-        let currentMsg = messages[this.RECEIVER]
-        if (currentMsg && currentMsg.length > 0) {
-          let lastMessage = currentMsg[currentMsg.length - 1]
-          if (this.isFirst) {
-            this.isFirst = false
-            this.$store.state.ws.send(JSON.stringify({
-              command: 'read_msg',
-              message: lastMessage.id,
-              sender: lastMessage.sender.username,
-              room: this.RECEIVER,
-              user: this.user.username
-            }))
-          }
-          this.$nextTick(() => {
-            this.scrollToBottom()
-          })
-        }
+    'rooms': {
+      handler: function (rooms) {
+        this.$nextTick(() => {
+          this.scrollToBottom()
+        })
       },
       deep: true
     }
@@ -257,6 +243,20 @@ export default {
   },
   beforeDestroy () {
     clearInterval(this.marqueeInterval)
+    if (this.RECEIVER !== 1) {
+      let currentMessage = this.rooms[this.RECEIVER]
+      if (currentMessage && currentMessage.length > 0) {
+        let lastMessage = currentMessage[currentMessage.length - 1]
+        this.$store.state.ws.send(JSON.stringify({
+          command: 'read_msg',
+          message: lastMessage.id,
+          sender: lastMessage.sender.username,
+          room: this.RECEIVER,
+          user: this.user.username
+        }))
+        this.$store.dispatch('updateReadStatus', {id: lastMessage.sender.id, status: true})
+      }
+    }
   }
 }
 </script>
