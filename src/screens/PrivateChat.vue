@@ -1,22 +1,24 @@
 <template>
   <group class="rooms">
     <cell
-      v-if="room.target && room.users.length > 1"
-      :key="'room' + index"
-      v-for="(room, index) in rooms"
+      :key="index"
+      v-for="(member, index) in memberList"
       is-link
-      :title="isCustomerService(room.users[1].roles)?`客服人员${index+1}`:room.users[1].nickname"
-      :link="{path:'/private/'+room.id}"
+      :title="member.nickname"
+      @click.native="buildRoom(member.id)"
       :border-intent="false">
-      {{ room.last_message ? room.last_message.content : '' }}
-      <div slot="icon" class="serviceIcon"></div>
+      <div
+        slot="icon"
+        class="avatar"></div>
+      <div v-if="!member.read" class="notify"></div>
     </cell>
   </group>
 </template>
 
 <script>
-import { fetchMemberRoom } from '../api'
+import { fetchChatlist, buildRoom } from '../api'
 import { Group, Cell } from 'vux'
+import { mapState } from 'vuex'
 
 export default {
   name: 'PrivateChat',
@@ -29,35 +31,34 @@ export default {
       limit: 20,
       page: 0,
       loading: false,
-      rooms: []
+      chatlist: []
     }
   },
   computed: {
-    user () {
-      return this.$store.state.user
+    ...mapState([
+      'user', 'messages'
+    ]),
+    memberList () {
+      return this.chatlist.filter(member => member.id !== 1)
+    },
+    isCustomerService () {
+      return this.$store.state.user.roles.some(role => role.id === 4)
     }
   },
   created () {
-    this.fetchRooms()
+    this.fetchChatlist()
   },
   methods: {
-    fetchRooms () {
+    fetchChatlist () {
       this.loading = true
-      return fetchMemberRoom(20, 0).then(res => {
-        const results = res.results
-        const rooms = this.page === 0 ? results : this.rooms.concat(results)
-        this.page += 1
-        this.loading = false
-        this.rooms = rooms.map(room => {
-          return {
-            ...room,
-            target: room.type !== 1 ? room.users[0] : undefined
-          }
-        })
+      fetchChatlist().then(chatlist => {
+        this.chatlist = chatlist
       })
     },
-    isCustomerService (roles) {
-      return roles.some(role => role.id === 4)
+    buildRoom (id) {
+      buildRoom([this.user.id, id]).then(data => {
+        this.$router.push({path: '/private/' + data.room.id})
+      })
     }
   }
 }
@@ -67,11 +68,18 @@ export default {
 .rooms /deep/ .weui-cells {
   margin-top: 5px;
 }
-.serviceIcon {
+.avatar {
   width: 35px;
   height: 35px;
-  background: url('../assets/stick_admin.png') no-repeat;
+  background-image: url('../assets/stick_admin.png');
+  background-repeat: no-repeat;
   background-size: contain;
   margin-right: 10px;
+}
+.notify {
+  width: 6px;
+  height: 6px;
+  background-color: #f5a623;
+  border-radius: 50%;
 }
 </style>

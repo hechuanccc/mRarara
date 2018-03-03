@@ -145,7 +145,8 @@ export default {
       routeHasChange: this.routeChanged,
       host: urls.host,
       marqueeInterval: '',
-      RECEIVER: parseInt(this.$route.params.receiver) || 1
+      RECEIVER: parseInt(this.$route.params.receiver) || 1,
+      isFirst: true
     }
   },
   computed: {
@@ -173,10 +174,24 @@ export default {
   },
   watch: {
     'messages': {
-      handler: function () {
-        this.$nextTick(() => {
-          this.scrollToBottom()
-        })
+      handler: function (messages) {
+        let currentMsg = messages[this.RECEIVER]
+        if (currentMsg && currentMsg.length > 0) {
+          let lastMessage = currentMsg[currentMsg.length - 1]
+          if (this.isFirst) {
+            this.isFirst = false
+            this.$store.state.ws.send(JSON.stringify({
+              command: 'read_msg',
+              message: lastMessage.id,
+              sender: lastMessage.sender.username,
+              room: this.RECEIVER,
+              user: this.user.username
+            }))
+          }
+          this.$nextTick(() => {
+            this.scrollToBottom()
+          })
+        }
       },
       deep: true
     }
