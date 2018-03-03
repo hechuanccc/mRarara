@@ -4,7 +4,7 @@
       :key="index"
       v-for="(member, index) in memberList"
       is-link
-      :title="member.nickname"
+      :title="`客服人员${index+1}`"
       @click.native="buildRoom(member.id)"
       :border-intent="false">
       <div
