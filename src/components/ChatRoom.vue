@@ -171,16 +171,13 @@ export default {
     }).catch(err => {
       console.log(err)
     })
-  },
-  watch: {
-    'rooms': {
-      handler: function (rooms) {
-        this.$nextTick(() => {
-          this.scrollToBottom()
-        })
-      },
-      deep: true
-    }
+    this.$watch(function () {
+      return this.rooms[this.RECEIVER]
+    }, function (rooms) {
+      this.$nextTick(() => {
+        this.scrollToBottom()
+      })
+    })
   },
   methods: {
     scrollToBottom () {
