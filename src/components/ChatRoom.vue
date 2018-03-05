@@ -1,6 +1,6 @@
 <template>
   <div class="chat-box" id="chatBox" :style="{backgroundImage: `url(${systemConfig.mobileBackground})`}">
-    <div class="chat-announce" v-if="announcement.length > 0">
+    <div class="chat-announce" v-if="announcement.length > 0 && RECEIVER === 1">
       <div class="annouce-info clearfix">
         <icon class="volume-up" name="volume-up"></icon>
         公告
