@@ -91,7 +91,7 @@ const isCommonMember = (roles) => {
 }
 
 router.beforeEach((to, from, next) => {
-  if (!store.logined && to.meta.requiresAuth === true) {
+  if (!store.state.user.logined && to.meta.requiresAuth === true) {
     let token = VueCookie.get('access_token')
     if (token) {
       store.dispatch('fetchUser').then(res => {

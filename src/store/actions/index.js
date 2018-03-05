@@ -5,7 +5,8 @@ import axios from 'axios'
 import {
   fetchUser,
   login,
-  logout
+  logout,
+  fetchChatlist
 } from '../../api'
 
 export default {
@@ -21,12 +22,12 @@ export default {
         })
         axios.defaults.withCredentials = true
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.access_token
+        commit(types.SET_USER, {
+          user: {
+            logined: true
+          }
+        })
       }
-      commit(types.SET_USER, {
-        user: {
-          logined: true
-        }
-      })
       return Promise.resolve(res)
     }, error => {
       return Promise.reject(error)
@@ -44,7 +45,7 @@ export default {
       errRes => Promise.reject(errRes)
     )
   },
-  fetchUser: ({ commit, state }) => {
+  fetchUser: ({ commit, state, dispatch }) => {
     return fetchUser().then(res => {
       if (!res.error) {
         commit(types.SET_USER, {
@@ -53,6 +54,13 @@ export default {
             logined: true
           }
         })
+        if (state.chatlist.length === 0) {
+          if (!res.roles.some(role => { return role.id === 4 || role.id === 1 })) {
+            fetchChatlist().then(chatlist => {
+              dispatch('initChatlist', chatlist)
+            })
+          }
+        }
         return Promise.resolve(res)
       } else {
         return Promise.reject(res)
@@ -97,5 +105,8 @@ export default {
   },
   updateReadStatus: ({commit}, setting) => {
     commit(types.UPDATE_READ_STATUS, setting)
+  },
+  setChatWith: ({commit}, chatWith) => {
+    commit(types.SET_CHATWITH, chatWith)
   }
 }
