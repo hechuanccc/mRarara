@@ -12,6 +12,7 @@ export default {
     state.user = {
       logined: false
     }
+    state.chatlist = []
     Vue.cookie.delete('access_token')
     Vue.cookie.delete('refresh_token')
   },
@@ -72,14 +73,16 @@ export default {
     state.chatlist = chatlist
     const unreadRooms = {}
     chatlist.forEach(member => {
-      unreadRooms[member.id] = member.read
-      if (!member.read) {
-        state.unreadCount++
-      }
+      unreadRooms[member.username] = member.read
     })
     state.unreadRooms = unreadRooms
   },
-  [types.UPDATE_READ_STATUS]: (state, {id, status}) => {
-    state.unreadRooms[id] = status
+  [types.UPDATE_READ_STATUS]: (state, {username, status}) => {
+    if (state.unreadRooms[username] !== undefined) {
+      state.unreadRooms[username] = status
+    }
+  },
+  [types.SET_CHATWITH]: (state, chatWith) => {
+    state.chatWith = chatWith
   }
 }

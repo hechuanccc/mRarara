@@ -247,15 +247,17 @@ export default {
       let currentMessage = this.rooms[this.RECEIVER]
       if (currentMessage && currentMessage.length > 0) {
         let lastMessage = currentMessage[currentMessage.length - 1]
+        const chatWithName = this.$store.state.chatWith.username
         this.$store.state.ws.send(JSON.stringify({
           command: 'read_msg',
           message: lastMessage.id,
-          sender: lastMessage.sender.username,
+          chat_with: chatWithName,
           room: this.RECEIVER,
           user: this.user.username
         }))
-        this.$store.dispatch('updateReadStatus', {id: lastMessage.sender.id, status: true})
+        this.$store.dispatch('updateReadStatus', {username: chatWithName, status: true})
       }
+      this.$store.dispatch('setChatWith', {username: '', title: ''})
     }
   }
 }

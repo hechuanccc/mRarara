@@ -5,12 +5,12 @@
       v-for="(member, index) in chatlist"
       is-link
       :title="`客服人员${index+1}`"
-      @click.native="buildRoom(member.id)"
+      @click.native="buildRoom(member.username, member.id, `客服人员${index+1}`)"
       :border-intent="false">
       <div
         slot="icon"
         class="avatar"></div>
-      <div v-if="!unreadRooms[member.id]" class="notify"></div>
+      <div v-if="!unreadRooms[member.username]" class="notify"></div>
     </cell>
   </group>
 </template>
@@ -42,8 +42,8 @@ export default {
     }
   },
   methods: {
-    buildRoom (id) {
-      buildRoom([this.user.id, id]).then(data => {
+    buildRoom (otherUsername, otherId, title) {
+      buildRoom([this.user.id, otherId]).then(data => {
         let state = this.$store.state
         let roomId = data.room.id
         let currentMessage = state.rooms[roomId]
@@ -52,11 +52,12 @@ export default {
           state.ws.send(JSON.stringify({
             command: 'read_msg',
             message: lastMessage.id,
-            sender: lastMessage.sender.username,
+            chat_with: otherUsername,
             room: roomId,
             user: this.user.username
           }))
         }
+        this.$store.dispatch('setChatWith', {username: otherUsername, title: title})
         this.$router.push({path: '/private/' + roomId})
       })
     }

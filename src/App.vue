@@ -28,7 +28,7 @@
             <icon scale="1.5" name="user-circle"></icon>
           </router-link>
         </div>
-        {{$route.meta.title}}
+        {{$route.meta.title || $store.state.chatWith.title}}
       </x-header>
       <div class="tab-content" v-if="!$route.meta.tabbarHidden">
         <tab :line-width="2" active-color="#fc378c">
@@ -53,7 +53,7 @@
 import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
 import { mapGetters, mapState } from 'vuex'
 import AccountPanel from './components/AccountPanel'
-import { fetchAnnouce, fetchChatlist } from './api'
+import { fetchAnnouce } from './api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/user-circle'
 import config from '../config'
@@ -87,9 +87,9 @@ export default {
     ]),
     unreadCount () {
       const unreadRooms = this.$store.state.unreadRooms
-      const ids = Object.keys(unreadRooms)
-      return ids.filter(id => {
-        return !unreadRooms[id]
+      const usernames = Object.keys(unreadRooms)
+      return usernames.filter(username => {
+        return !unreadRooms[username]
       }).length
     },
     headerType () {
@@ -144,11 +144,6 @@ export default {
     'user.logined': function (logined) {
       if (logined) {
         this.initWebSocket()
-        if (!this.user.roles.some(role => { return role.id === 4 || role.id === 1 })) {
-          fetchChatlist().then(chatlist => {
-            this.$store.dispatch('initChatlist', chatlist)
-          })
-        }
       }
     }
   },
@@ -208,11 +203,11 @@ export default {
                 } else {
                   switch (data.type) {
                     case 0:
-                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
+                      this.$store.dispatch('updateReadStatus', {username: data.sender.username, status: false})
                       this.$store.dispatch('setMessage', [data])
                       break
                     case 1:
-                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
+                      this.$store.dispatch('updateReadStatus', {username: data.sender.username, status: false})
                       this.$store.dispatch('setMessage', [data])
                       break
                     case 2:
