@@ -166,7 +166,7 @@ export default {
       this.announcementIndex = (this.announcementIndex + 1) % this.announcement.length
     }, 10000)
     fetchChatEmoji().then((resData) => {
-      resData.people = resData.people.reverse()
+      resData.people = resData.people
       this.emojis = resData
     }).catch(err => {
       console.log(err)
