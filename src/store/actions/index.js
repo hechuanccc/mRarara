@@ -22,11 +22,6 @@ export default {
         axios.defaults.withCredentials = true
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.access_token
       }
-      commit(types.SET_USER, {
-        user: {
-          logined: true
-        }
-      })
       return Promise.resolve(res)
     }, error => {
       return Promise.reject(error)
