@@ -41,7 +41,7 @@
               </p>
             </div>
           </li>
-          <li v-if="personal_setting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
+          <li v-if="RECEIVER===1&&personal_setting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
       </div>
@@ -51,7 +51,7 @@
             v-for="(item, index) in emojis.people.slice(0, 80)"
             :key="index"
             class="emoji"
-            @click="!personal_setting.banned ? msgCnt = msgCnt + item.emoji + ' ' : ''">
+            @click="!noPermission ? msgCnt = msgCnt + item.emoji + ' ' : ''">
             {{item.emoji}}
           </a>
         </div>
@@ -76,7 +76,7 @@
               validateevent="true"
               :class="['el-textarea-inner', !personal_setting.chat ? 'is-disabled' : '']"
               v-model="msgCnt"
-              :disabled="personal_setting.banned">
+              :disabled="noPermission">
             </textarea>
           </div>
           <div class="txt-right clearfix">
@@ -155,7 +155,10 @@ export default {
     ]),
     ...mapState([
       'systemConfig', 'personal_setting', 'announcement', 'rooms'
-    ])
+    ]),
+    noPermission () {
+      return this.RECEIVER === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+    }
   },
   created () {
     this.chatLoading = false
@@ -190,7 +193,7 @@ export default {
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
 
-      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || this.personal_setting.banned) {
+      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || this.noPermission) {
         this.$vux.toast.show({
           text: '文件格式不正确或您目前尚不符合发言条件',
           type: 'warn'

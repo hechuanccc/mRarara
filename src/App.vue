@@ -211,6 +211,21 @@ export default {
                       this.$store.dispatch('setMessage', [data])
                       break
                     case 2:
+                      const command = data.command
+                      if (command === 'unbanned' || command === 'unblock') {
+                        this.$store.dispatch('updatePersonalSetting', command)
+                        if (this.$route.path === '/chatroom') {
+                          AlertModule.show({
+                            content: data.content
+                          })
+                        }
+                        if (command === 'unblock') {
+                          ws.send(JSON.stringify({
+                            'command': 'join',
+                            'receivers': [1]
+                          }))
+                        }
+                      }
                       break
                     case 3:
                       let announcement = this.$store.state.announcement
@@ -223,16 +238,20 @@ export default {
                 switch (data.error_type) {
                   case 4:
                     this.$store.dispatch('updatePersonalSetting', 'banned')
-                    AlertModule.show({
-                      content: '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
-                    })
+                    if (this.$route.path === '/chatroom') {
+                      AlertModule.show({
+                        content: '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
+                      })
+                    }
                     break
                   case 5:
                     this.$store.dispatch('setMessage', [])
                     this.$store.dispatch('updatePersonalSetting', 'blocked')
-                    AlertModule.show({
-                      content: data.msg
-                    })
+                    if (this.$route.path === '/chatroom') {
+                      AlertModule.show({
+                        content: data.msg
+                      })
+                    }
                     break
                   case 6:
                     this.$vux.toast.show({

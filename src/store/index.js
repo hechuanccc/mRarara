@@ -20,7 +20,9 @@ export function createStore () {
         lotteryResultUrl: ''
       },
       ws: '',
-      rooms: {},
+      rooms: {
+        1: []
+      },
       personal_setting: {
         banned: false,
         blocked: false,
