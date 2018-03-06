@@ -28,7 +28,7 @@
             <icon scale="1.5" name="user-circle"></icon>
           </router-link>
         </div>
-        {{$route.meta.title || $store.state.chatWith.title}}
+        {{$route.meta.title || chatWithTitle}}
       </x-header>
       <div class="tab-content" v-if="!$route.meta.tabbarHidden">
         <tab :line-width="2" active-color="#fc378c">
@@ -83,13 +83,13 @@ export default {
       'user'
     ]),
     ...mapState([
-      'systemConfig'
+      'systemConfig', 'chatlist'
     ]),
     unreadCount () {
       const unreadRooms = this.$store.state.unreadRooms
-      const usernames = Object.keys(unreadRooms)
-      return usernames.filter(username => {
-        return !unreadRooms[username]
+      const ids = Object.keys(unreadRooms)
+      return ids.filter(id => {
+        return !unreadRooms[id]
       }).length
     },
     headerType () {
@@ -133,6 +133,16 @@ export default {
         name: '开奖',
         path: '/results'
       }]
+    },
+    chatWithTitle () {
+      const chatWithId = parseInt(this.$route.params.chatWithId)
+      if (chatWithId) {
+        const index = this.$store.state.chatlist.findIndex(member => member.id === chatWithId)
+        if (index !== -1) {
+          return `客服人员${index + 1}`
+        }
+      }
+      return ''
     }
   },
   watch: {
@@ -203,11 +213,11 @@ export default {
                 } else {
                   switch (data.type) {
                     case 0:
-                      this.$store.dispatch('updateReadStatus', {username: data.sender.username, status: false})
+                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
                       this.$store.dispatch('setMessage', [data])
                       break
                     case 1:
-                      this.$store.dispatch('updateReadStatus', {username: data.sender.username, status: false})
+                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
                       this.$store.dispatch('setMessage', [data])
                       break
                     case 2:

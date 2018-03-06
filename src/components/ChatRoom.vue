@@ -1,6 +1,6 @@
 <template>
   <div class="chat-box" id="chatBox" :style="{backgroundImage: `url(${systemConfig.mobileBackground})`}">
-    <div class="chat-announce" v-if="announcement.length > 0 && RECEIVER === 1">
+    <div class="chat-announce" v-if="announcement.length > 0 && roomId === 1">
       <div class="annouce-info clearfix">
         <icon class="volume-up" name="volume-up"></icon>
         公告
@@ -13,7 +13,7 @@
     <div v-else class="chat-body">
       <div class="chat-content" id="chatContent" @click="showSmile = false">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in rooms[RECEIVER]"
+          <li v-for="(item, index) in rooms[roomId]"
             :key="index"
             :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
             <div class="lay-block clearfix" v-if="item.type >= 0">
@@ -41,7 +41,7 @@
               </p>
             </div>
           </li>
-          <li v-if="RECEIVER===1&&personal_setting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
+          <li v-if="roomId===1&&personal_setting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
       </div>
@@ -102,7 +102,7 @@ import 'vue-awesome/icons/picture-o'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
 import { mapGetters, mapState } from 'vuex'
-import { sendImgToChat, fetchChatEmoji } from '../api'
+import { sendImgToChat, fetchChatEmoji, buildRoom } from '../api'
 import { TransferDom, Tab, TabItem, AlertModule, Popup, Popover } from 'vux'
 import MarqueeTips from 'vue-marquee-tips'
 import urls from '../api/urls'
@@ -145,8 +145,8 @@ export default {
       routeHasChange: this.routeChanged,
       host: urls.host,
       marqueeInterval: '',
-      RECEIVER: parseInt(this.$route.params.receiver) || 1,
-      isFirst: true
+      roomId: '',
+      chatWithId: this.$route.params.chatWithId
     }
   },
   computed: {
@@ -154,17 +154,22 @@ export default {
       'user'
     ]),
     ...mapState([
-      'systemConfig', 'personal_setting', 'announcement', 'rooms'
+      'systemConfig', 'personal_setting', 'announcement', 'rooms', 'chatWith'
     ]),
     noPermission () {
-      return this.RECEIVER === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+      return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+    }
+  },
+  watch: {
+    'roomId': function (roomId) {
+      this.watchRoomMessages(roomId)
+      this.$nextTick(() => {
+        this.scrollToBottom()
+      })
     }
   },
   created () {
     this.chatLoading = false
-    this.$nextTick(() => {
-      this.scrollToBottom()
-    })
     this.marqueeInterval = setInterval(() => {
       this.announcementIndex = (this.announcementIndex + 1) % this.announcement.length
     }, 10000)
@@ -174,15 +179,33 @@ export default {
     }).catch(err => {
       console.log(err)
     })
-    this.$watch(function () {
-      return this.rooms[this.RECEIVER]
-    }, function (rooms) {
-      this.$nextTick(() => {
-        this.scrollToBottom()
-      })
-    })
+    const chatWithId = this.chatWithId
+    if (chatWithId) {
+      if (this.chatWith[chatWithId]) {
+        this.roomId = this.chatWith[chatWithId]
+      } else {
+        buildRoom([this.user.id, chatWithId]).then(data => {
+          this.roomId = data.room.id
+          this.$store.dispatch('setChatWith', ({
+            id: chatWithId,
+            roomId: data.room.id
+          }))
+        })
+      }
+    } else {
+      this.roomId = 1
+    }
   },
   methods: {
+    watchRoomMessages (roomId) {
+      this.$watch(function () {
+        return this.rooms[roomId]
+      }, function (rooms) {
+        this.$nextTick(() => {
+          this.scrollToBottom()
+        })
+      })
+    },
     scrollToBottom () {
       let chatBody = document.getElementById('chatContent')
       if (chatBody && chatBody.scrollHeight > chatBody.clientHeight) {
@@ -210,7 +233,7 @@ export default {
           return
         }
         let formData = new FormData()
-        formData.append('receiver', this.RECEIVER)
+        formData.append('receiver', this.roomId)
         formData.append('image', rst.file)
         sendImgToChat(formData).then((data) => {
           fileInp.value = ''
@@ -222,7 +245,7 @@ export default {
       if (!this.msgCnt.trim()) { return false }
       this.$store.state.ws.send(JSON.stringify({
         'command': 'send',
-        'receivers': [this.RECEIVER],
+        'receivers': [this.roomId],
         'type': 0,
         'content': this.msgCnt
       }))
@@ -243,21 +266,19 @@ export default {
   },
   beforeDestroy () {
     clearInterval(this.marqueeInterval)
-    if (this.RECEIVER !== 1) {
-      let currentMessage = this.rooms[this.RECEIVER]
+    if (this.roomId !== 1) {
+      let currentMessage = this.rooms[this.roomId]
       if (currentMessage && currentMessage.length > 0) {
         let lastMessage = currentMessage[currentMessage.length - 1]
-        const chatWithName = this.$store.state.chatWith.username
         this.$store.state.ws.send(JSON.stringify({
           command: 'read_msg',
           message: lastMessage.id,
-          chat_with: chatWithName,
-          room: this.RECEIVER,
+          chat_with: this.chatWithId,
+          room: this.roomId,
           user: this.user.username
         }))
-        this.$store.dispatch('updateReadStatus', {username: chatWithName, status: true})
+        this.$store.dispatch('updateReadStatus', {id: this.chatWithId, status: true})
       }
-      this.$store.dispatch('setChatWith', {username: '', title: ''})
     }
   }
 }

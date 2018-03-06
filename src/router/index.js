@@ -42,7 +42,7 @@ export default new Router({
       }
     },
     {
-      path: '/private/:receiver',
+      path: '/private/:chatWithId',
       name: 'PrivateChatroom',
       component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
       meta: {
