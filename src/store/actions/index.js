@@ -106,7 +106,7 @@ export default {
   updateReadStatus: ({commit}, setting) => {
     commit(types.UPDATE_READ_STATUS, setting)
   },
-  setChatWith: ({commit}, chatWith) => {
-    commit(types.SET_CHATWITH, chatWith)
+  setChatWith: ({commit}, options) => {
+    commit(types.SET_CHATWITH, options)
   }
 }
