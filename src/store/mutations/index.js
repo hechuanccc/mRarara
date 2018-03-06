@@ -27,11 +27,11 @@ export default {
   },
   [types.LEAVE_ROOM]: (state) => {
     state.ws = ''
-    state.rooms = []
+    state.rooms = {1: []}
   },
   [types.SET_MESSAGE]: (state, messages) => {
     if (messages.length === 0) {
-      state.rooms = {}
+      state.rooms = {1: []}
     } else {
       let msgArray = state.rooms
       const receiver = messages[0].receivers
