@@ -10,41 +10,8 @@
       </div>
     </div>
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
-    <div v-else class="chat-body">
-      <div class="chat-content" id="chatContent" @click="showSmile = false">
-        <ul class="lay-scroll">
-          <li v-for="(item, index) in rooms[roomId]"
-            :key="index"
-            :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
-            <div class="lay-block clearfix" v-if="item.type >= 0">
-              <div class="avatar">
-                <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
-                <img :src="getImgSrc(item.sender)" v-else> </div> <div class="lay-content">
-                <div class="msg-header">
-                  <h4 v-html="item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)"></h4>
-                  <span class="common-member" v-if="item.type !== 4">
-                    {{item.sender && item.sender.level_name && item.sender.level_name.indexOf('管理员') !== -1 ? '管理员' : '普通会员'}}
-                  </span>
-                  <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
-                </div>
-                <div :class="['bubble', 'bubble' + item.type]">
-                  <p>
-                    <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
-                    <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content">
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div v-else-if="item.type === -2 || item.type === -3" class="inner type-warning">
-              <p>
-                <span v-for="(item, index) in personal_setting.chat.reasons" :key="index">{{item}}</span>
-              </p>
-            </div>
-          </li>
-          <li v-if="roomId===1&&personal_setting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
-          <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
-        </ul>
-      </div>
+    <div v-else class="chat-container">
+      <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="showSmile = false"/>
       <div class="footer">
         <div class="smile-box" v-if='showSmile'>
           <a href="javascript:void(0)"
@@ -84,14 +51,6 @@
           </div>
         </div>
       </div>
-      <div v-transfer-dom>
-        <popup v-model="showImageMsg" height="100%">
-          <div class="close-pop-btn" @click="showImageMsg = false">完成</div>
-          <div>
-            <img :src="showImageMsgUrl" width="100%">
-          </div>
-        </popup>
-      </div>
     </div>
   </div>
 </template>
@@ -103,23 +62,20 @@ import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
 import { mapGetters, mapState } from 'vuex'
 import { sendImgToChat, fetchChatEmoji, buildRoom } from '../api'
-import { TransferDom, Tab, TabItem, AlertModule, Popup, Popover } from 'vux'
+import { Tab, TabItem, AlertModule, Popover } from 'vux'
 import MarqueeTips from 'vue-marquee-tips'
-import urls from '../api/urls'
+import ChatBody from './ChatBody'
 import lrz from 'lrz'
 
 export default {
   components: {
-    Popup,
     Tab,
     TabItem,
     AlertModule,
     Icon,
     MarqueeTips,
-    Popover
-  },
-  directives: {
-    TransferDom
+    Popover,
+    ChatBody
   },
   props: {
     routeChanged: {
@@ -143,7 +99,6 @@ export default {
       checkUser: {},
       chatLoading: true,
       routeHasChange: this.routeChanged,
-      host: urls.host,
       marqueeInterval: '',
       roomId: '',
       chatWithId: this.$route.params.chatWithId
@@ -158,14 +113,6 @@ export default {
     ]),
     noPermission () {
       return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
-    }
-  },
-  watch: {
-    'roomId': function (roomId) {
-      this.watchRoomMessages(roomId)
-      this.$nextTick(() => {
-        this.scrollToBottom()
-      })
     }
   },
   created () {
@@ -250,18 +197,6 @@ export default {
         'content': this.msgCnt
       }))
       this.msgCnt = ''
-    },
-    getImgSrc (sender) {
-      if (sender) {
-        if (sender.id === this.user.id) {
-          if (this.user.avatar) {
-            return this.user.avatar
-          }
-        } else if (sender.avatar) {
-          return this.host + sender.avatar
-        }
-      }
-      return require('../assets/avatar.png')
     }
   },
   beforeDestroy () {
@@ -335,192 +270,10 @@ export default {
     margin-left: 72px;
   }
 }
-.chat-body {
+.chat-container {
   display: flex;
   height: 100%;
   flex-direction: column;
-}
-.chat-content {
-  flex: 1 1 auto;
-  height: 100%;
-  overflow-y: auto;
-}
-.lay-scroll {
-  .block-user-info {
-    text-align: center;
-    padding-top: 100px;
-    font-size: 16px;
-    color: red;
-  }
-}
-.item {
-  padding: 0 5px;
-  overflow: hidden;
-  &.sys-msg {
-    text-align: center;
-    margin: 5px 0;
-    .inner {
-      color: #999;
-      display: inline-block;
-      background: #efefef;
-      border-radius: 8px;
-      border: 1px solid #dddddc;
-      padding: 5px 10px;
-      font-size: 13px;
-    }
-    .type-warning {
-      color: #f60;
-      .btn-here {
-        color: rgb(25, 158, 216);
-      }
-    }
-  }
-  &.item-left {
-    .lay-block {
-      .lay-content {
-        .bubble:after {
-          left: 0;
-          border-left: 0;
-          margin-left: -8px;
-          border-right-color: inherit;
-        }
-      }
-    }
-  }
-  &.item-right {
-    .lay-block {
-      .avatar {
-        float: right;
-      }
-      .lay-content {
-        float: right;
-        margin-right: 15px;
-        .msg-header {
-          h4 {
-            text-align: right;
-            float: right;
-            max-width: 150px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-top: 2px;
-            font-size: 14px;
-          }
-
-          span {
-            float: right;
-          }
-        }
-        .bubble {
-          float: right;
-        }
-        .bubble:after {
-          right: 0;
-          border-right: 0;
-          margin-right: -9px;
-          border-left-color: inherit;
-        }
-      }
-    }
-  }
-}
-.lay-block {
-  .avatar {
-    width: 42px;
-    height: 42px;
-    float: left;
-    .font-cog {
-      color: #7285d6;
-    }
-    img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border-radius: 7px;
-    }
-  }
-}
-.common-member {
-  margin: 0 2px;
-  background: #cb9b64;
-  color: #fff;
-  padding: 0 6px;
-  border-radius: 10px;
-  font-weight: 400;
-  font-size: 10px;
-  margin-left: 5px;
-  margin-right: 5px;
-  float: left;
-}
-.lay-content {
-  margin-left: 18px;
-  float: left;
-  max-width: 75%;
-}
-.msg-header {
-  overflow: hidden;
-  h4 {
-    float: left;
-    max-width: 150px;
-    font-size: 14px;
-    color: #4f77ab;
-    font-weight: 400;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 12px;
-    padding-top: 2px;
-  }
-  .msg-time {
-    color: #9f9f9f;
-    float: left;
-    font-size: 12px;
-  }
-}
-.bubble {
-  background: linear-gradient(to right, #1976D2, rgb(25, 158, 216));
-  border-left-color: rgb(25, 158, 216);
-  border-right-color: #1976D2;
-  color: rgb(255, 255, 255);
-  margin-top: 3px;
-  position: relative;
-  border-radius: 5px;
-  padding: 5px 8px;
-  font-size: 13px;
-  display: inline-block;
-  p {
-    width: 100%;
-  }
-  &.bubble1 {
-    width: 55%;
-  }
-  &.bubble4 {
-    background: #ab47bc;
-    background: linear-gradient(to right,#ab47bc,#5169DE);
-    border-left-color: #5169de;
-    border-right-color: #ab47bc;
-  }
-  p {
-    display: inline-block;
-    span {
-      white-space: pre-wrap;
-      word-break: break-all;
-      font-size: 14px;
-    }
-    img {
-      width: 100%;
-      min-height: 50px;
-    }
-  }
-}
-.bubble:after {
-  content: '';
-  position: absolute;
-  top: 14px;
-  width: 0;
-  height: 0;
-  border: 9px solid transparent;
-  border-top: 0;
-  margin-top: -7px;
 }
 .footer {
   display: flex;
@@ -622,10 +375,5 @@ export default {
   line-height: 52px;
   background: #72aadb;
   color: #fff;
-}
-.close-pop-btn {
-  text-align: right;
-  padding: 4px;
-  color: #444;
 }
 </style>
