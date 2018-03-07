@@ -1,9 +1,10 @@
 <template>
   <view-box
     class='content-box'
-    body-padding-top="44px"
+    :body-padding-top="user.logined?'44px':'46px'"
     body-padding-bottom="0">
     <div
+      v-if="user.logined"
       class="tab-content"
       slot="header"
       :style="{
@@ -23,12 +24,23 @@
           :key="index">{{page.name}}</tab-item>
       </tab>
     </div>
+    <x-header
+      v-else
+      :left-options="{showBack: false}"
+      slot="header"
+      :style="{
+        width: '100%',
+        position: 'fixed', // lay over the default
+        left:'0',
+        top:'0',
+        'z-index':'100'
+      }">彩票计划聊天室</x-header>
     <router-view :key="$route.path"></router-view>
   </view-box>
 </template>
 
 <script>
-import { ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
+import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
 import { mapGetters, mapState } from 'vuex'
 import { fetchAnnouce } from './api'
 import Icon from 'vue-awesome/components/Icon'
@@ -43,7 +55,8 @@ export default {
     Swiper,
     SwiperItem,
     Icon,
-    AlertModule
+    AlertModule,
+    XHeader
   },
   data () {
     return {
