@@ -1,9 +1,10 @@
 <template>
   <view-box
     class='content-box'
-    :body-padding-top="$route.meta.tabbarHidden?'40px':'84px'"
+    body-padding-top="44px"
     body-padding-bottom="0">
     <div
+      class="tab-content"
       slot="header"
       :style="{
         width: '100%',
@@ -12,62 +13,35 @@
         top:'0',
         'z-index':'100'
       }">
-      <x-header :class="headerType"
-        :left-options="{showBack: $route.meta.showBack || false}"
-        @on-click-more="showAccountPanel = true">
-        <div v-if="!$route.meta.showBack" slot="left">
-          <div class="chat-logo">
-            <img :src="systemConfig.logo" alt="logo">
-          </div>
-        </div>
-        <div v-if="!$route.meta.showBack" slot="right" class="group">
-          <div v-if="user.avatar" class="avatar" :style="{'background-image': `url(${user.avatar})`}"></div>
-          <div v-else class="default-avatar"></div>
-          <div class="user-name">{{user.nickname}}</div>
-          <router-link class="user-info" to="/my">
-            <icon scale="1.5" name="user-circle"></icon>
-          </router-link>
-        </div>
-        {{$route.meta.title || chatWithTitle}}
-      </x-header>
-      <div class="tab-content" v-if="!$route.meta.tabbarHidden">
-        <tab :line-width="2" active-color="#fc378c">
-          <tab-item
-            :badge-label="page.path === '/private' && unreadCount ? unreadCount+'' : ''"
-            class="vux-center"
-            :selected="`/${$route.path.split('/')[1]}` === page.path"
-            v-for="(page, index) in pages"
-            @on-item-click="switchTab(page.path)"
-            :key="index">{{page.name}}</tab-item>
-        </tab>
-      </div>
+      <tab :line-width="2" active-color="#fc378c">
+        <tab-item
+          :badge-label="page.path === '/private' && unreadCount ? unreadCount+'' : ''"
+          class="vux-center"
+          :selected="`/${$route.path.split('/')[1]}` === page.path"
+          v-for="(page, index) in pages"
+          @on-item-click="switchTab(page.path)"
+          :key="index">{{page.name}}</tab-item>
+      </tab>
     </div>
-    <router-view></router-view>
-    <account-panel
-      v-model="showAccountPanel"
-      @handleClose="closeAccountPanel" />
+    <router-view :key="$route.path"></router-view>
   </view-box>
 </template>
 
 <script>
-import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
+import { ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
 import { mapGetters, mapState } from 'vuex'
-import AccountPanel from './components/AccountPanel'
 import { fetchAnnouce } from './api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/user-circle'
 import config from '../config'
-const homeLinks = ['/', '/chatroom', '/private', '/results', '/bet']
 export default {
   name: 'app',
   components: {
-    XHeader,
     ViewBox,
     Tab,
     TabItem,
     Swiper,
     SwiperItem,
-    AccountPanel,
     Icon,
     AlertModule
   },
@@ -86,18 +60,12 @@ export default {
       'systemConfig', 'chatlist'
     ]),
     unreadCount () {
+      const chatWithId = this.$route.params.chatWithId
       const unreadRooms = this.$store.state.unreadRooms
       const ids = Object.keys(unreadRooms)
       return ids.filter(id => {
-        return !unreadRooms[id]
+        return !unreadRooms[id] && chatWithId !== id
       }).length
-    },
-    headerType () {
-      if (homeLinks.includes(this.$route.path)) {
-        return 'home'
-      } else {
-        return 'page'
-      }
     },
     avatar () {
       return {
@@ -117,6 +85,10 @@ export default {
             {
               name: '开奖',
               path: '/results'
+            },
+            {
+              name: '帐户',
+              path: '/my'
             }]
           }
         }
@@ -132,6 +104,10 @@ export default {
       {
         name: '开奖',
         path: '/results'
+      },
+      {
+        name: '帐户',
+        path: '/my'
       }]
     },
     chatWithTitle () {
@@ -202,12 +178,6 @@ export default {
                 // 只顯示目前房間的歷史訊息
                 if (data.latest_message && data.latest_message.length > 0) {
                   let messages = data.latest_message.reverse()
-                  let personalSetting = this.$store.state.personal_setting
-                  if (personalSetting.reasons.length) {
-                    messages.concat([{
-                      type: -2
-                    }])
-                  }
                   this.$store.dispatch('setMessage', messages)
                   return
                 } else {
