@@ -12,7 +12,7 @@
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
       <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="showSmile = false"/>
-      <div class="footer">
+      <div :class="['footer', isFocus?'isFocus':'']">
         <div class="smile-box" v-if='showSmile'>
           <a href="javascript:void(0)"
             v-for="(item, index) in emojis.people.slice(0, 80)"
@@ -37,7 +37,9 @@
           </label>
           <div class="txtinput el-textarea">
             <textarea
-              @focus="showSmile = false"
+              @focus="showSmile = false;isFocus = true"
+              @blur="isFocus = false"
+              ref="chatpannel"
               type="textarea"
               autocomplete="off"
               validateevent="true"
@@ -101,7 +103,8 @@ export default {
       routeHasChange: this.routeChanged,
       marqueeInterval: '',
       roomId: '',
-      chatWithId: this.$route.params.chatWithId
+      chatWithId: this.$route.params.chatWithId,
+      isFocus: false
     }
   },
   computed: {
@@ -142,6 +145,10 @@ export default {
     } else {
       this.roomId = 1
     }
+    document.addEventListener('visibilitychange', () => {
+      this.isFocus = false
+      this.$refs.chatpannel.blur()
+    })
   },
   methods: {
     watchRoomMessages (roomId) {
@@ -200,6 +207,7 @@ export default {
     }
   },
   beforeDestroy () {
+    document.removeEventListener('visibilitychange')
     clearInterval(this.marqueeInterval)
     if (this.roomId !== 1) {
       let currentMessage = this.rooms[this.roomId]
@@ -282,6 +290,9 @@ export default {
   width: 100%;
   height: 65px;
   background: #f5f5f5;
+  &.isFocus {
+    transform: translateY(-28px);
+  }
   .smile-box {
     position: absolute;
     width: 100%;
