@@ -1,9 +1,11 @@
 <template>
   <view-box
     class='content-box'
-    :body-padding-top="$route.meta.tabbarHidden?'40px':'84px'"
+    :body-padding-top="user.logined?'44px':'46px'"
     body-padding-bottom="0">
     <div
+      v-if="user.logined"
+      class="tab-content"
       slot="header"
       :style="{
         width: '100%',
@@ -12,82 +14,55 @@
         top:'0',
         'z-index':'100'
       }">
-      <x-header :class="headerType"
-        :left-options="{showBack: $route.meta.showBack || false}"
-        @on-click-more="showAccountPanel = true">
-        <div v-if="!$route.meta.showBack" slot="left">
-          <div class="chat-logo">
-            <img :src="systemConfig.logo" alt="logo">
-          </div>
-        </div>
-        <div v-if="!$route.meta.showBack" slot="right" class="group">
-          <div v-if="user.avatar" class="avatar" :style="{'background-image': `url(${user.avatar})`}"></div>
-          <div v-else class="default-avatar"></div>
-          <div class="user-name">{{user.nickname}}</div>
-          <router-link class="user-info" to="/my">
-            <icon scale="1.5" name="user-circle"></icon>
-          </router-link>
-        </div>
-        {{$store.state.customTitle || $route.meta.title}}
-      </x-header>
-      <div class="tab-content" v-if="!$route.meta.tabbarHidden">
-        <tab :line-width="2" active-color="#fc378c">
-          <tab-item
-            class="vux-center"
-            :selected="`/${$route.path.split('/')[1]}` === page.path"
-            v-for="(page, index) in pages"
-            @on-item-click="switchTab(page.path)"
-            :key="index">{{page.name}}</tab-item>
-        </tab>
-      </div>
+      <tab :line-width="2" active-color="#fc378c">
+        <tab-item
+          :badge-label="page.path === '/private' && unreadCount ? unreadCount+'' : ''"
+          class="vux-center"
+          :selected="`/${$route.path.split('/')[1]}` === page.path"
+          v-for="(page, index) in pages"
+          @on-item-click="switchTab(page.path)"
+          :key="index">{{page.name}}</tab-item>
+      </tab>
     </div>
-    <router-view></router-view>
-    <account-panel
-      v-model="showAccountPanel"
-      @handleClose="closeAccountPanel" />
+    <x-header
+      v-else
+      :left-options="{showBack: false}"
+      slot="header"
+      :style="{
+        width: '100%',
+        position: 'fixed', // lay over the default
+        left:'0',
+        top:'0',
+        'z-index':'100'
+      }">彩票计划聊天室</x-header>
+    <router-view :key="$route.path"></router-view>
   </view-box>
 </template>
 
 <script>
-import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem } from 'vux'
+import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
 import { mapGetters, mapState } from 'vuex'
-import AccountPanel from './components/AccountPanel'
+import { fetchAnnouce } from './api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/user-circle'
-const homeLinks = ['/', '/chatroom', '/private', '/results', '/bet']
+import config from '../config'
 export default {
   name: 'app',
   components: {
-    XHeader,
     ViewBox,
     Tab,
     TabItem,
     Swiper,
     SwiperItem,
-    AccountPanel,
-    Icon
+    Icon,
+    AlertModule,
+    XHeader
   },
   data () {
     return {
-      pages: [{
-        name: '计划聊天室',
-        path: '/chatroom'
-      },
-      // {
-      //   name: '客服',
-      //   path: '/private'
-      // },
-      {
-        name: '开奖',
-        path: '/results'
-      }
-      // , {
-      //   name: '投注',
-      //   path: '/bet'
-      // }
-      ],
       index: 0,
-      showAccountPanel: false
+      showAccountPanel: false,
+      ws: undefined
     }
   },
   computed: {
@@ -95,19 +70,68 @@ export default {
       'user'
     ]),
     ...mapState([
-      'systemConfig'
+      'systemConfig', 'chatlist'
     ]),
-    headerType () {
-      if (homeLinks.includes(this.$route.path)) {
-        return 'home'
-      } else {
-        return 'page'
-      }
+    unreadCount () {
+      const chatWithId = this.$route.params.chatWithId
+      const unreadRooms = this.$store.state.unreadRooms
+      const ids = Object.keys(unreadRooms)
+      return ids.filter(id => {
+        return !unreadRooms[id] && chatWithId !== id
+      }).length
     },
     avatar () {
       return {
         'background-image': `url(${this.user.avatar})`
       }
+    },
+    pages () {
+      if (this.user.roles) {
+        let roles = this.user.roles
+        for (let i = 0, length = roles.length; i < length; i++) {
+          let role = roles[i]
+          if (role.id === 1 || role.id === 4) {
+            return [{
+              name: '计划聊天室',
+              path: '/chatroom'
+            },
+            {
+              name: '开奖',
+              path: '/results'
+            },
+            {
+              name: '帐户',
+              path: '/my'
+            }]
+          }
+        }
+      }
+      return [{
+        name: '计划聊天室',
+        path: '/chatroom'
+      },
+      {
+        name: '联系客服',
+        path: '/private'
+      },
+      {
+        name: '开奖',
+        path: '/results'
+      },
+      {
+        name: '帐户',
+        path: '/my'
+      }]
+    },
+    chatWithTitle () {
+      const chatWithId = parseInt(this.$route.params.chatWithId)
+      if (chatWithId) {
+        const index = this.$store.state.chatlist.findIndex(member => member.id === chatWithId)
+        if (index !== -1) {
+          return `客服人员${index + 1}`
+        }
+      }
+      return ''
     }
   },
   watch: {
@@ -115,7 +139,21 @@ export default {
       if (to.path === '/') {
         this.$router.replace({path: '/chatroom'})
       }
+    },
+    'user.logined': function (logined) {
+      if (logined) {
+        this.initWebSocket()
+      }
     }
+  },
+  created () {
+    fetchAnnouce().then(result => {
+      result.forEach((item) => {
+        if (item.platform !== 0) {
+          this.$store.dispatch('setAnnouncement', [item.content])
+        }
+      })
+    })
   },
   methods: {
     closeAccountPanel () {
@@ -123,6 +161,122 @@ export default {
     },
     switchTab (path) {
       this.$router.push({path})
+    },
+    initWebSocket () {
+      let token = this.$cookie.get('access_token')
+      const ws = new WebSocket(`${config.chatHost}/chat/stream?token=${token}`)
+      ws.onopen = () => {
+        this.$store.dispatch('setWs', ws)
+        ws.send(JSON.stringify({
+          'command': 'join',
+          'receivers': [1]
+        }))
+        const hearbeat = setInterval(() => {
+          ws.send(JSON.stringify({
+            'command': 'live',
+            'user_id': this.user.id
+          }))
+        }, 300000)
+        ws.onclose = () => {
+          clearInterval(hearbeat)
+        }
+        ws.onmessage = (resData) => {
+          let data
+          if (typeof resData.data === 'string') {
+            try {
+              data = JSON.parse(resData.data)
+              if (data.personal_setting) {
+                this.$store.dispatch('initPersonalSetting', data.personal_setting)
+              } else if (!data.error_type) {
+                // 只顯示目前房間的歷史訊息
+                if (data.latest_message && data.latest_message.length > 0) {
+                  let messages = data.latest_message.reverse()
+                  this.$store.dispatch('setMessage', messages)
+                  return
+                } else {
+                  switch (data.type) {
+                    case 0:
+                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
+                      this.$store.dispatch('setMessage', [data])
+                      break
+                    case 1:
+                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
+                      this.$store.dispatch('setMessage', [data])
+                      break
+                    case 2:
+                      const command = data.command
+                      if (command === 'unbanned' || command === 'unblock') {
+                        this.$store.dispatch('updatePersonalSetting', command)
+                        if (this.$route.path === '/chatroom') {
+                          AlertModule.show({
+                            content: data.content
+                          })
+                        }
+                        if (command === 'unblock') {
+                          ws.send(JSON.stringify({
+                            'command': 'join',
+                            'receivers': [1]
+                          }))
+                        }
+                      }
+                      break
+                    case 3:
+                      let announcement = this.$store.state.announcement
+                      announcement = announcement.push(data.content)
+                      this.$store.dispatch('setAnnouncement', announcement)
+                      break
+                  }
+                }
+              } else {
+                switch (data.error_type) {
+                  case 4:
+                    this.$store.dispatch('updatePersonalSetting', 'banned')
+                    if (this.$route.path === '/chatroom') {
+                      AlertModule.show({
+                        content: '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
+                      })
+                    }
+                    break
+                  case 5:
+                    this.$store.dispatch('setMessage', [])
+                    this.$store.dispatch('updatePersonalSetting', 'blocked')
+                    if (this.$route.path === '/chatroom') {
+                      AlertModule.show({
+                        content: data.msg
+                      })
+                    }
+                    break
+                  case 6:
+                    this.$vux.toast.show({
+                      text: data.msg,
+                      type: 'warn'
+                    })
+                    setTimeout(() => {
+                      this.$store.dispatch('logout').then(res => {
+                        this.$router.push({name: 'Login'})
+                      })
+                    }, 3000)
+                    break
+                  default:
+                    if (data.error_type !== 3 && data.error_type !== 2) {
+                      AlertModule.show({
+                        content: data.msg
+                      })
+                    }
+                }
+              }
+            } catch (e) {
+              console.log(e)
+            }
+          }
+        }
+      }
+    }
+  },
+  beforeDestroy () {
+    let ws = this.$store.state.ws
+    if (ws) {
+      this.$store.dispatch('leaveRoom')
     }
   }
 }

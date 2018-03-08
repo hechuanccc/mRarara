@@ -9,9 +9,7 @@ export default new Router({
       path: '/login',
       name: 'Login',
       meta: {
-        tabbarHidden: true,
-        title: '登录',
-        showBack: true
+        title: '登录'
       },
       component: resolve => { require(['../screens/Login.vue'], resolve) }
     },
@@ -27,30 +25,26 @@ export default new Router({
       path: '/register',
       name: 'Register',
       meta: {
-        tabbarHidden: true,
-        title: '注册',
-        showBack: true
+        title: '注册'
       },
       component: resolve => { require(['../screens/Register.vue'], resolve) }
     },
-    // {
-    //   path: '/private',
-    //   name: 'PrivateChat',
-    //   component: resolve => { require(['../screens/PrivateChat.vue'], resolve) },
-    //   meta: {
-    //     requiresAuth: true
-    //   }
-    // },
-    // {
-    //   path: '/private/:receiver',
-    //   name: 'PrivateChatroom',
-    //   component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
-    //   meta: {
-    //     requiresAuth: true,
-    //     showBack: true,
-    //     tabbarHidden: true
-    //   }
-    // },
+    {
+      path: '/private',
+      name: 'PrivateChat',
+      component: resolve => { require(['../screens/PrivateChat.vue'], resolve) },
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/private/:chatWithId',
+      name: 'PrivateChatroom',
+      component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
+      meta: {
+        requiresAuth: true
+      }
+    },
     // {
     //   path: '/bet',
     //   name: 'Bet',
@@ -81,9 +75,7 @@ export default new Router({
       component: resolve => { require(['../screens/My.vue'], resolve) },
       meta: {
         title: '个人中心',
-        showBack: true,
-        requiresAuth: true,
-        tabbarHidden: true
+        requiresAuth: true
       }
     },
     {
@@ -91,8 +83,6 @@ export default new Router({
       name: 'profile',
       meta: {
         title: '修改账户资料',
-        showBack: true,
-        tabbarHidden: true,
         requiresAuth: true
       },
       component: resolve => { require(['../screens/my/Profile.vue'], resolve) }
@@ -102,8 +92,6 @@ export default new Router({
       name: 'password',
       meta: {
         title: '重设密码',
-        showBack: true,
-        tabbarHidden: true,
         requiresAuth: true
       },
       component: resolve => { require(['../screens/my/Password.vue'], resolve) }
@@ -113,8 +101,6 @@ export default new Router({
       name: 'image',
       meta: {
         title: '修改头像',
-        showBack: true,
-        tabbarHidden: true,
         requiresAuth: true
       },
       component: resolve => { require(['../screens/my/Img.vue'], resolve) }

@@ -18,7 +18,8 @@ export default {
   systemConfig: host + '/v1/global-data/',
   changeUserInfo: host + '/v1/member/user/',
   latest_results: ghost + '/latest_results/',
-  memberRoom: host + '/v1/member/room/',
+  chatlist: host + '/v1/member/user/chat_list/?offset=0&limit=50',
   setCookie: host + '/set_cookie/',
-  decode
+  decode,
+  buildRoom: host + '/v1/room/'
 }

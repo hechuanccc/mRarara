@@ -72,6 +72,10 @@ Vue.config.productionTip = false
 const store = createStore()
 
 const toLogin = function (router) {
+  store.commit('RESET_USER')
+  if (store.state.ws) {
+    store.dispatch('leaveRoom')
+  }
   router.push({
     path: '/login'
   })
@@ -82,14 +86,20 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-let firstEnter = true
+const isCommonMember = (roles) => {
+  return roles.every(role => role.id !== 4 && role.id !== 1)
+}
+
 router.beforeEach((to, from, next) => {
-  if (firstEnter && to.meta.requiresAuth === true) {
+  if (!store.state.user.logined && to.meta.requiresAuth === true) {
     let token = VueCookie.get('access_token')
     if (token) {
       store.dispatch('fetchUser').then(res => {
-        firstEnter = false
-        next()
+        if (to.matched[0].path !== '/private' || isCommonMember(res.roles)) {
+          next()
+        } else {
+          next('/chatroom')
+        }
       }).catch(() => {
         toLogin(router)
       })
@@ -97,7 +107,11 @@ router.beforeEach((to, from, next) => {
       toLogin(router)
     }
   } else {
-    next()
+    if (to.matched[0].path !== '/private' || isCommonMember(store.state.user.roles)) {
+      next()
+    } else {
+      next('/chatroom')
+    }
   }
 })
 

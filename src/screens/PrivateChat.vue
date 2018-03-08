@@ -1,22 +1,23 @@
 <template>
   <group class="rooms">
     <cell
-      v-if="room.target && room.users.length > 1"
-      :key="'room' + index"
-      v-for="(room, index) in rooms"
+      :key="index"
+      v-for="(member, index) in chatlist"
       is-link
-      :title="`${isCustomerService(room.users[1].roles)? '客服人员 ':''}${room.users[1].nickname}`"
-      :link="{path:'/private/'+room.id}"
-      :border-intent="false"
-      @click.native="chooseRoom(room.users[1].nickname)">
-      {{ room.last_message.content }}
+      :title="`客服人员${index+1}`"
+      :link="{path: '/private/' + member.id}"
+      :border-intent="false">
+      <div
+        slot="icon"
+        class="avatar"></div>
+      <div v-if="!unreadRooms[member.id]" class="notify"></div>
     </cell>
   </group>
 </template>
 
 <script>
-import { fetchMemberRoom } from '../api'
 import { Group, Cell } from 'vux'
+import { mapState } from 'vuex'
 
 export default {
   name: 'PrivateChat',
@@ -28,42 +29,15 @@ export default {
     return {
       limit: 20,
       page: 0,
-      loading: false,
-      rooms: []
+      loading: false
     }
   },
   computed: {
-    user () {
-      return this.$store.state.user
-    }
-  },
-  created () {
-    this.fetchRooms()
-  },
-  methods: {
-    fetchRooms () {
-      this.loading = true
-      return fetchMemberRoom(20, 0).then(res => {
-        const results = res.results
-        const rooms = this.page === 0 ? results : this.rooms.concat(results)
-        this.page += 1
-        if (results.length < this.limit) {
-          this.ended = true
-        }
-        this.loading = false
-        this.rooms = rooms.map(room => {
-          return {
-            ...room,
-            target: room.type !== 1 ? room.users[0] : undefined
-          }
-        })
-      })
-    },
-    chooseRoom (nickname) {
-      this.$store.dispatch('setCustomTitle', nickname)
-    },
-    isCustomerService (roles) {
-      return roles.some(role => role.id === 4)
+    ...mapState([
+      'user', 'chatlist', 'unreadRooms'
+    ]),
+    isCustomerService () {
+      return this.$store.state.user.roles.some(role => role.id === 4)
     }
   }
 }
@@ -72,5 +46,19 @@ export default {
 <style lang="scss" scoped="">
 .rooms /deep/ .weui-cells {
   margin-top: 5px;
+}
+.avatar {
+  width: 35px;
+  height: 35px;
+  background-image: url('../assets/stick_admin.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-right: 10px;
+}
+.notify {
+  width: 6px;
+  height: 6px;
+  background-color: #f5a623;
+  border-radius: 50%;
 }
 </style>

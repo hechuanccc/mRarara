@@ -10,7 +10,7 @@ export function createStore () {
   return new Vuex.Store({
     state: {
       user: {
-        logined: ''
+        logined: false
       },
       isLoading: false,
       systemConfig: {
@@ -19,7 +19,19 @@ export function createStore () {
         webLotteryRegisterUrl: '',
         lotteryResultUrl: ''
       },
-      customTitle: ''
+      ws: '',
+      rooms: {
+        1: []
+      },
+      personal_setting: {
+        banned: false,
+        blocked: false,
+        reasons: []
+      },
+      announcement: [],
+      unreadRooms: {},
+      chatlist: [],
+      chatWith: {}
     },
     actions,
     mutations,
