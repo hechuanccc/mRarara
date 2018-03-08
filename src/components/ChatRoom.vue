@@ -112,7 +112,7 @@ export default {
       'user'
     ]),
     ...mapState([
-      'systemConfig', 'personal_setting', 'announcement', 'rooms', 'chatWith'
+      'systemConfig', 'personal_setting', 'announcement', 'rooms'
     ]),
     noPermission () {
       return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
@@ -131,39 +131,19 @@ export default {
     })
     const chatWithId = this.chatWithId
     if (chatWithId) {
-      if (this.chatWith[chatWithId]) {
-        this.roomId = this.chatWith[chatWithId]
-      } else {
-        buildRoom([this.user.id, chatWithId]).then(data => {
-          this.roomId = data.room.id
-          this.$store.dispatch('setChatWith', ({
-            id: chatWithId,
-            roomId: data.room.id
-          }))
-        })
-      }
+      buildRoom([this.user.id, chatWithId]).then(data => {
+        this.roomId = data.room.id
+      })
     } else {
       this.roomId = 1
     }
-    document.addEventListener('visibilitychange', () => {
-      this.isFocus = false
-      this.$refs.chatpannel.blur()
-    })
+    document.addEventListener('visibilitychange', this.visibilitychange)
   },
   methods: {
-    watchRoomMessages (roomId) {
-      this.$watch(function () {
-        return this.rooms[roomId]
-      }, function (rooms) {
-        this.$nextTick(() => {
-          this.scrollToBottom()
-        })
-      })
-    },
-    scrollToBottom () {
-      let chatBody = document.getElementById('chatContent')
-      if (chatBody && chatBody.scrollHeight > chatBody.clientHeight) {
-        chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight
+    visibilitychange () {
+      this.isFocus = false
+      if (this.$refs.chatpannel) {
+        this.$refs.chatpannel.blur()
       }
     },
     sendMsgImg (e) {
@@ -207,7 +187,7 @@ export default {
     }
   },
   beforeDestroy () {
-    document.removeEventListener('visibilitychange')
+    document.removeEventListener('visibilitychange', this.visibilitychange)
     clearInterval(this.marqueeInterval)
     if (this.roomId !== 1) {
       let currentMessage = this.rooms[this.roomId]

@@ -13,6 +13,7 @@ export default {
       logined: false
     }
     state.chatlist = []
+    state.unreadRooms = {}
     Vue.cookie.delete('access_token')
     Vue.cookie.delete('refresh_token')
   },
@@ -43,12 +44,6 @@ export default {
       }
       msgArray = msgArray.concat(messages)
       Vue.set(state.rooms, roomId, msgArray)
-      let senderId = messages[0].sender.id
-      if (roomId !== 1) {
-        if (!state.chatWith[senderId] && senderId !== state.user.id) { // 從websocke得知私聊對象房間，緩存起來
-          Vue.set(state.chatWith, senderId, roomId)
-        }
-      }
     }
   },
   [types.SET_ANNOUNCE]: (state, announcement) => {
@@ -86,12 +81,6 @@ export default {
   [types.UPDATE_READ_STATUS]: (state, {id, status}) => {
     if (state.unreadRooms[id] !== undefined) {
       state.unreadRooms[id] = status
-    }
-  },
-  [types.SET_CHATWITH]: (state, options) => {
-    Vue.set(state.chatWith, options.id, options.roomId)
-    if (!state.rooms[options.roomId]) {
-      Vue.set(state.rooms, options.roomId, [])
     }
   }
 }

@@ -30,8 +30,7 @@ export function createStore () {
       },
       announcement: [],
       unreadRooms: {},
-      chatlist: [],
-      chatWith: {}
+      chatlist: []
     },
     actions,
     mutations,
