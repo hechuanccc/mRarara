@@ -56,9 +56,7 @@ export default {
         })
         if (state.chatlist.length === 0) {
           if (!res.roles.some(role => { return role.id === 4 || role.id === 1 })) {
-            fetchChatlist().then(chatlist => {
-              dispatch('initChatlist', chatlist)
-            })
+            dispatch('initChatlist')
           }
         }
         return Promise.resolve(res)
@@ -88,8 +86,11 @@ export default {
     state.ws.close()
     commit(types.LEAVE_ROOM)
   },
-  setMessage: ({ commit }, messages) => {
-    commit(types.SET_MESSAGE, messages)
+  initMessage: ({ commit }, setting) => {
+    commit(types.INIT_MESSAGE, setting)
+  },
+  addMessage: ({ commit }, setting) => {
+    commit(types.ADD_MESSAGE, setting)
   },
   initPersonalSetting: ({ commit }, setting) => {
     commit(types.INIT_PERSONAL_SETTING, setting)
@@ -101,7 +102,9 @@ export default {
     commit(types.SET_ANNOUNCE, announcement)
   },
   initChatlist: ({commit}, chatlist) => {
-    commit(types.INIT_CHATLIST, chatlist)
+    return fetchChatlist().then(chatlist => {
+      commit(types.INIT_CHATLIST, chatlist)
+    })
   },
   updateReadStatus: ({commit}, setting) => {
     commit(types.UPDATE_READ_STATUS, setting)

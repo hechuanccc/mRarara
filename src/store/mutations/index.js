@@ -30,20 +30,18 @@ export default {
     state.ws = ''
     state.rooms = {1: []}
   },
-  [types.SET_MESSAGE]: (state, messages) => {
+  [types.INIT_MESSAGE]: (state, {roomId, messages}) => {
     if (messages.length === 0) {
       state.rooms = {1: []}
     } else {
-      let msgArray = state.rooms
-      const roomId = messages[0].receivers
-      if (state.rooms[roomId]) {
-        msgArray = state.rooms[roomId]
-      } else {
-        msgArray = []
-        Vue.set(state.rooms, roomId, msgArray)
-      }
-      msgArray = msgArray.concat(messages)
-      Vue.set(state.rooms, roomId, msgArray)
+      Vue.set(state.rooms, roomId, messages)
+    }
+  },
+  [types.ADD_MESSAGE]: (state, {roomId, message}) => {
+    if (state.rooms[roomId]) {
+      state.rooms[roomId].push(message)
+    } else {
+      Vue.set(state.rooms, roomId, [message])
     }
   },
   [types.SET_ANNOUNCE]: (state, announcement) => {
