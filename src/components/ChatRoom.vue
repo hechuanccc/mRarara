@@ -65,6 +65,7 @@ import 'vue-awesome/icons/smile-o'
 import { mapGetters, mapState } from 'vuex'
 import { sendImgToChat, fetchChatEmoji, buildRoom } from '../api'
 import { Tab, TabItem, AlertModule, Popover } from 'vux'
+import { msgFormatter } from '../utils'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatBody from './ChatBody'
 import lrz from 'lrz'
@@ -133,6 +134,13 @@ export default {
     if (chatWithId) {
       buildRoom([this.user.id, chatWithId]).then(data => {
         this.roomId = data.room.id
+      }, errRes => {
+        AlertModule.show({
+          content: msgFormatter(errRes)
+        })
+        this.$store.dispatch('initChatlist').then(() => {
+          this.$router.push('/private')
+        })
       })
     } else {
       this.roomId = 1

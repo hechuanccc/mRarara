@@ -190,18 +190,20 @@ export default {
               } else if (!data.error_type) {
                 // 只顯示目前房間的歷史訊息
                 if (data.latest_message && data.latest_message.length > 0) {
-                  let messages = data.latest_message.reverse()
-                  this.$store.dispatch('setMessage', messages)
+                  this.$store.dispatch('initMessage', {
+                    roomId: data.room_id,
+                    messages: data.latest_message.length === 0 ? [] : data.latest_message.reverse()
+                  })
                   return
                 } else {
                   switch (data.type) {
                     case 0:
                       this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
-                      this.$store.dispatch('setMessage', [data])
+                      this.$store.dispatch('addMessage', {roomId: data.receivers, message: data})
                       break
                     case 1:
                       this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
-                      this.$store.dispatch('setMessage', [data])
+                      this.$store.dispatch('addMessage', {roomId: data.receivers, message: data})
                       break
                     case 2:
                       const command = data.command
@@ -238,7 +240,7 @@ export default {
                     }
                     break
                   case 5:
-                    this.$store.dispatch('setMessage', [])
+                    this.$store.dispatch('addMessage', {messages: []})
                     this.$store.dispatch('updatePersonalSetting', 'blocked')
                     if (this.$route.path === '/chatroom') {
                       AlertModule.show({
