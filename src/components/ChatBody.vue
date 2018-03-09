@@ -135,19 +135,11 @@ export default {
 }
 .item {
   padding: 0 5px;
+  margin-top: 20px;
   overflow: hidden;
   &.sys-msg {
     text-align: center;
     margin: 5px 0;
-    .inner {
-      color: #999;
-      display: inline-block;
-      background: #efefef;
-      border-radius: 8px;
-      border: 1px solid #dddddc;
-      padding: 5px 10px;
-      font-size: 13px;
-    }
     .type-warning {
       color: #f60;
       .btn-here {
@@ -183,7 +175,7 @@ export default {
             overflow: hidden;
             text-overflow: ellipsis;
             padding-top: 2px;
-            font-size: 14px;
+            font-size: 10px;
           }
 
           span {
