@@ -83,10 +83,15 @@ export default {
     }
   },
   [types.UPDATE_ENVELOPE]: (state, {id, data}) => {
-    if (!state.envelope[id]) {
+    const envelope = state.envelope[id]
+    if (!envelope) {
       Vue.set(state.envelope, id, data)
     } else {
-      Object.assign(state.envelope[id], data)
+      // 不能用優先度較低的狀態更新較高的 例如已領完不能覆蓋掉已領取
+      if (envelope.status && data.status && data.status > envelope.status) {
+        data.status = envelope.status
+      }
+      Object.assign(envelope, data)
     }
   }
 }

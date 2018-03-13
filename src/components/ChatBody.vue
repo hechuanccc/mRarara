@@ -48,7 +48,7 @@
           'max-width': '355px',
           width: '355px',
           'box-sizing': 'border-box',
-          'padding-top': '25px',
+          'padding-top': '15px',
           'background-image': `url('${require('../assets/envelop-top.png')}'), linear-gradient(to right, #de5547, #de5547)`,
           'background-size': 'contain, cover',
           'background-position': 'top, center',
@@ -61,15 +61,15 @@
         </div>
         <div class="envelope-owner">{{selectedEnvelope.sendername}} 的红包</div>
         <div class="envelope-content">{{selectedEnvelope.content?`“${selectedEnvelope.content}”`:''}}</div>
-        <div v-if="selectedEnvelope.status === 3" class="loader">
+        <div v-if="selectedEnvelope.status === 4" class="loader">
           <div class="loading"></div>
           <div class="moneys"></div>
         </div>
-        <div v-else-if="selectedEnvelope.status === 1" class="get-amount">
+        <div v-else-if="selectedEnvelope.status === 2" class="get-amount">
           <div class="moneys"></div>
           <div class="amount">{{selectedEnvelope.amount | currency('￥')}}</div>
         </div>
-        <div v-else class="not-remain">手慢了...红包派完了...</div>
+        <div v-else class="not-remain">手慢了，红包已派完。</div>
         <div class="userlist">
           <div class="count">{{selectedEnvelope.users&&selectedEnvelope.users.length}}人已抢到</div>
           <div class="view">
@@ -130,13 +130,13 @@ export default {
   mounted () {
     const view = this.$refs.view
     view.scrollTop = view.scrollHeight
-    this.messageCount = this.messages.length
   },
-  updated () {
-    if (this.messages.length > this.messageCount) {
-      const view = this.$refs.view
-      view.scrollTop = view.scrollHeight
-      this.messageCount = this.messages.length
+  watch: {
+    'messages.length': function (newVal, oldVal) {
+      this.$nextTick(() => {
+        const view = this.$refs.view
+        view.scrollTop = view.scrollHeight
+      })
     }
   },
   methods: {
@@ -176,25 +176,25 @@ export default {
       return this.roleCache[id]
     },
     openEnvelop (id) {
-      if (this.envelope[id].status !== 0) {
+      if (this.envelope[id].status !== 1) {
         this.selectedEnvelope = this.envelope[id]
         this.showEnvelopeDialog = true
-        if (this.envelope[id].status === 3) {
+        if (this.envelope[id].status === 4) {
           takeEnvelope(id, this.user.id).then(res => {
             const status = res.status
             switch (status) {
               case 'success':
-                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 1, amount: res.amount}})
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 2, amount: res.amount}})
                 break
               case 'fail':
-                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 2}})
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 3}})
                 break
               case 'expired':
                 this.showEnvelopeDialog = false
-                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 0}})
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 1}})
                 break
               case 'repeat':
-                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 1}})
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 2}})
                 break
             }
           })

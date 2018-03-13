@@ -14,13 +14,13 @@ export default {
   filters: {
     statusFilter (val) {
       switch (val) {
-        case 0:
-          return '已过期'
         case 1:
-          return '已领取'
+          return '已过期'
         case 2:
-          return '已领完'
+          return '已领取'
         case 3:
+          return '已领完'
+        case 4:
           return '待领取'
       }
     }
@@ -66,18 +66,18 @@ export default {
         avatar: item.sender.avatar,
         sendername: item.sender.nickname,
         content: item.content,
-        users: envelopeStatus.users
+        users: envelopeStatus.users,
+        amount: envelopeStatus.amount
       }
 
       if (envelopeStatus.expired) {
-        status = 0
-      } else if (this.checkIfUserExist(envelopeStatus.users)) {
         status = 1
-        data.amount = envelopeStatus.amount
-      } else if (envelopeStatus.remaining === 0) {
+      } else if (this.checkIfUserExist(envelopeStatus.users)) {
         status = 2
-      } else {
+      } else if (envelopeStatus.remaining === 0) {
         status = 3
+      } else {
+        status = 4
       }
       data.status = status
       return {
@@ -96,11 +96,12 @@ export default {
   margin-top: 3px;
   box-sizing: border-box;
   width: 193px;
-  height: 60px;
+  height: 55px;
   border-radius: 5px;
   background-color: #fa9d3b;
-  padding: 13px 12px;
+  padding: 10px;
   color: #fff;
+  font-weight: lighter;
   .icon {
     height: 36px;
     width: 36px;
@@ -110,17 +111,21 @@ export default {
   }
   .content {
     height: 36px;
+    width: calc(100% - 36px);
     .msg {
       height: 18px;
+      width: 100%;
+      overflow : hidden;
       line-height: 18px;
       font-size: 12px;
+      text-overflow : ellipsis;
+      white-space : nowrap;
     }
     .status {
       height: 18px;
+      width: 100%;
       line-height: 18px;
       font-weight: bold;
-      transform: scale(0.8);
-      transform-origin: left;
       font-size: 12px;
     }
   }

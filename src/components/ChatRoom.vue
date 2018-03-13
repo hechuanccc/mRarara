@@ -23,7 +23,7 @@
               class="img-upload-input"
               accept="image/*">
           </label>
-          <label class="control-bar envelope-bar" @click="showEnvelopeDialog = true">
+          <label v-if="roomId === 1" class="control-bar envelope-bar" @click="showEnvelopeDialog = true">
             <div class="envelope-icon"></div>
           </label>
           <div class="txtinput el-textarea">
@@ -55,7 +55,7 @@
           'max-width': '355px',
           width: '355px',
           'box-sizing': 'border-box',
-          'padding': '25px 10px 10px 10px',
+          'padding': '15px 10px 10px 10px',
           'background-image': `url('${require('../assets/envelop-top.png')}'), linear-gradient(to right, #de5547, #de5547)`,
           'background-size': 'contain, cover',
           'background-position': 'top, center',
@@ -65,6 +65,9 @@
         <div class="envelope-avatar">
           <div class="money"></div>
         </div>
+        <div class="text-field">
+          拼手气红包
+        </div>
         <div class="balance-field">
           <span>我的余额</span>
           <span class="balance">{{user.balance | currency('￥')}}</span>
@@ -72,7 +75,7 @@
         <group label-width="120px" label-align="left" label-margin-right="10px">
           <x-input
             autocapitalize="off"
-            title="单个红包金额"
+            title="红包金额"
             placeholder="请输入红包金额"
             placeholder-align="right"
             type="number"
@@ -102,7 +105,7 @@
           </div>
           <x-textarea
             title=""
-            placeholder="请输入附言"
+            placeholder="大吉大利，恭喜发财"
             :height="50"
             v-model="envelope.content"></x-textarea>
         </group>
@@ -181,11 +184,11 @@ export default {
           error: '',
           validate: (value) => {
             if (!value) {
-              return '金额必须输入'
+              return '请输入金额'
             } else if (value < this.systemConfig.envelopeSettings.min_amount) {
-              return '須高於最低金額'
+              return '须高于最低金额限制'
             } else if (value > this.systemConfig.envelopeSettings.max_amount) {
-              return '須低於最高金額'
+              return '不能超过最高金额限制'
             } else {
               return ''
             }
@@ -195,9 +198,9 @@ export default {
           error: '',
           validate: (value) => {
             if (!value) {
-              return '个数必须输入'
+              return '请输入个数'
             } else if (value > this.systemConfig.envelopeSettings.per_max_count) {
-              return '须少于最多个数'
+              return '红包数量超出限制'
             } else {
               return ''
             }
@@ -291,7 +294,11 @@ export default {
       const errors = this.validateAll()
       if (errors.length === 0) {
         this.loading = true
-        sendEnvelope({...this.envelope, sender_id: this.user.id}).then(data => {
+        const envelope = {...this.envelope, sender_id: this.user.id}
+        if (!envelope.content) {
+          envelope.content = '大吉大利，恭喜发财'
+        }
+        sendEnvelope(envelope).then(data => {
           this.loading = false
           this.showEnvelopeDialog = false
         }, error => {
@@ -492,6 +499,7 @@ export default {
 }
 
 .envelope-dialog {
+  font-weight: lighter;
   .close {
     position: absolute;
       right: 8px;
@@ -531,22 +539,27 @@ export default {
       background-image: url('../assets/money.png')
     }
   }
-
+  .text-field {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #ffffff;
+  }
   .balance-field {
+    width: 100%;
     margin-top: 10px;
     font-size: 12px;
     color: #ffffff;
-    width: 100%;
-    height: 20px;
     .balance {
       margin-left: 10px;
     }
   }
   .input-validate{
-    height: 30px;
-    line-height: 30px;
+    text-align: left;
+    height: 40px;
+    line-height: 40px;
     background: #de5547;
-    color: #fff;
+    color: rgba(255, 255, 255, .8);
     font-size: 12px;
   }
 
