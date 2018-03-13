@@ -17,7 +17,8 @@ export function createStore () {
         mobileLotteryUrl: '',
         customerServiceUrl: '',
         webLotteryRegisterUrl: '',
-        lotteryResultUrl: ''
+        lotteryResultUrl: '',
+        envelopeSettings: {}
       },
       ws: '',
       rooms: {
@@ -30,7 +31,8 @@ export function createStore () {
       },
       announcement: [],
       unreadRooms: {},
-      chatlist: []
+      chatlist: [],
+      envelope: {}
     },
     actions,
     mutations,

@@ -108,5 +108,8 @@ export default {
   },
   updateReadStatus: ({commit}, setting) => {
     commit(types.UPDATE_READ_STATUS, setting)
+  },
+  updateEnvelope: ({commit}, setting) => {
+    commit(types.UPDATE_ENVELOPE, setting)
   }
 }

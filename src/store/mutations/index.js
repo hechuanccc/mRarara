@@ -14,6 +14,7 @@ export default {
     }
     state.chatlist = []
     state.unreadRooms = {}
+    state.envelope = {}
     Vue.cookie.delete('access_token')
     Vue.cookie.delete('refresh_token')
   },
@@ -79,6 +80,13 @@ export default {
   [types.UPDATE_READ_STATUS]: (state, {id, status}) => {
     if (state.unreadRooms[id] !== undefined) {
       state.unreadRooms[id] = status
+    }
+  },
+  [types.UPDATE_ENVELOPE]: (state, {id, data}) => {
+    if (!state.envelope[id]) {
+      Vue.set(state.envelope, id, data)
+    } else {
+      Object.assign(state.envelope[id], data)
     }
   }
 }

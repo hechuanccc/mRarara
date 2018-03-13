@@ -198,9 +198,6 @@ export default {
                 } else {
                   switch (data.type) {
                     case 0:
-                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
-                      this.$store.dispatch('addMessage', {roomId: data.receivers, message: data})
-                      break
                     case 1:
                       this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
                       this.$store.dispatch('addMessage', {roomId: data.receivers, message: data})
@@ -226,6 +223,16 @@ export default {
                       let announcement = this.$store.state.announcement
                       announcement = announcement.push(data.content)
                       this.$store.dispatch('setAnnouncement', announcement)
+                      break
+                    case 5:
+                      this.$store.dispatch('addMessage', {roomId: data.receivers, message: data})
+                      break
+                    case 6:
+                      const envelopeStatue = data.envelope_status
+                      this.$store.dispatch('updateEnvelope', {id: envelopeStatue.id, data: {users: envelopeStatue.users}})
+                      if (data.sender.id === this.user.id) {
+                        this.$store.dispatch('addMessage', {roomId: 1, message: {type: -1, content: data.get_envelope_user + '抢到红包！'}})
+                      }
                       break
                   }
                 }
