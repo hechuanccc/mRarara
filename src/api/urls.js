@@ -21,5 +21,6 @@ export default {
   chatlist: host + '/v1/member/user/chat_list/?offset=0&limit=50',
   setCookie: host + '/set_cookie/',
   decode,
-  buildRoom: host + '/v1/room/'
+  buildRoom: host + '/v1/room/',
+  envelope: host + '/v1/envelope/'
 }

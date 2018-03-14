@@ -142,7 +142,8 @@ fetchSystemConfig().then(
         mobileBackground: pref.mobile_background,
         mobileUrl: pref.mobile_url,
         privateChatBlockedUsers: pref.private_chat_blocked_users,
-        title: pref.title
+        title: pref.title,
+        envelopeSettings: pref.envelope_settings
       })
   }
 )

@@ -14,6 +14,7 @@ export default {
     }
     state.chatlist = []
     state.unreadRooms = {}
+    state.envelope = {}
     Vue.cookie.delete('access_token')
     Vue.cookie.delete('refresh_token')
   },
@@ -79,6 +80,18 @@ export default {
   [types.UPDATE_READ_STATUS]: (state, {id, status}) => {
     if (state.unreadRooms[id] !== undefined) {
       state.unreadRooms[id] = status
+    }
+  },
+  [types.UPDATE_ENVELOPE]: (state, {id, data}) => {
+    const envelope = state.envelope[id]
+    if (!envelope) {
+      Vue.set(state.envelope, id, data)
+    } else {
+      // 不能用優先度較低的狀態更新較高的 例如已領完不能覆蓋掉已領取
+      if (envelope.status && data.status && data.status > envelope.status) {
+        data.status = envelope.status
+      }
+      Object.assign(envelope, data)
     }
   }
 }

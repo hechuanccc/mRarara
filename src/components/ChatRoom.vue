@@ -11,22 +11,10 @@
     </div>
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
-      <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="showSmile = false"/>
+      <chat-body :messages="rooms[roomId]" :roomId="roomId"/>
       <div :class="['footer', isFocus?'isFocus':'']">
-        <div class="smile-box" v-if='showSmile'>
-          <a href="javascript:void(0)"
-            v-for="(item, index) in emojis.people.slice(0, 80)"
-            :key="index"
-            class="emoji"
-            @click="!noPermission ? msgCnt = msgCnt + item.emoji + ' ' : ''">
-            {{item.emoji}}
-          </a>
-        </div>
         <div class="typing">
-          <label class="control-bar btn-smile" @click="showSmile = !showSmile">
-            <icon scale="1.3" name="smile-o" class="text-center el-icon-picture"></icon>
-          </label>
-          <label class="control-bar" for="capture" @click="showSmile = false">
+          <label class="control-bar" for="capture">
             <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
             <input @change="sendMsgImg"
               type="file"
@@ -35,9 +23,12 @@
               class="img-upload-input"
               accept="image/*">
           </label>
+          <label v-if="roomId === 1" class="control-bar envelope-bar" @click="showEnvelopeDialog = true">
+            <div class="envelope-icon"></div>
+          </label>
           <div class="txtinput el-textarea">
             <textarea
-              @focus="showSmile = false;isFocus = true"
+              @focus="isFocus = true"
               @blur="isFocus = false"
               ref="chatpannel"
               type="textarea"
@@ -54,6 +45,82 @@
         </div>
       </div>
     </div>
+    <div v-transfer-dom>
+      <x-dialog
+        class="envelope-dialog"
+        :show.sync="showEnvelopeDialog"
+        :hide-on-blur="true"
+        @on-hide="reset"
+        :dialog-style="{
+          'max-width': '355px',
+          width: '355px',
+          'box-sizing': 'border-box',
+          'padding': '15px 10px 10px 10px',
+          'background-image': `url('${require('../assets/envelop-top.png')}'), linear-gradient(to right, #de5547, #de5547)`,
+          'background-size': 'contain, cover',
+          'background-position': 'top, center',
+          'background-repeat': 'no-repeat, no-repeat'
+        }">
+        <div class="close" @click="showEnvelopeDialog = false"></div>
+        <div class="envelope-avatar">
+          <div class="money"></div>
+        </div>
+        <div class="text-field">
+          拼手气红包
+        </div>
+        <div class="balance-field">
+          <span>我的余额</span>
+          <span class="balance">{{user.balance | currency('￥')}}</span>
+        </div>
+        <group label-width="120px" label-align="left" label-margin-right="10px">
+          <x-input
+            autocapitalize="off"
+            title="红包金额"
+            placeholder="请输入红包金额"
+            placeholder-align="right"
+            type="number"
+            v-model.number="envelope.pack_amount"
+            @on-blur="validate($event, 'pack_amount')"
+            @on-change="validate($event, 'pack_amount')"
+            keyboard="number">
+          </x-input>
+          <div class="input-validate">
+            最高金额 {{systemConfig.envelopeSettings.max_amount | currency('￥')}}
+            &nbsp;
+            最低金额 {{systemConfig.envelopeSettings.min_amount | currency('￥')}}
+          </div>
+          <x-input
+            autocapitalize="off"
+            title="红包个数"
+            placeholder="请输入红包个数"
+            placeholder-align="right"
+            type="number"
+            v-model.number="envelope.pack_nums"
+            @on-blur="validate($event, 'pack_nums')"
+            @on-change="validate($event, 'pack_nums')"
+            keyboard="number">
+          </x-input>
+          <div class="input-validate">
+            最多个数 {{systemConfig.envelopeSettings.per_max_count}}
+          </div>
+          <x-textarea
+            title=""
+            placeholder="大吉大利，恭喜发财"
+            :height="50"
+            v-model="envelope.content"></x-textarea>
+        </group>
+        <div class="footer">
+          <div class="error">{{error}}</div>
+          <x-button
+            type="primary"
+            action-type ="button"
+            :show-loading="loading"
+            :disabled="false"
+            @click.native="submit">确认发出
+          </x-button>
+        </div>
+      </x-dialog>
+    </div>
   </div>
 </template>
 
@@ -63,13 +130,13 @@ import 'vue-awesome/icons/picture-o'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
 import { mapGetters, mapState } from 'vuex'
-import { sendImgToChat, fetchChatEmoji, buildRoom } from '../api'
-import { Tab, TabItem, AlertModule, Popover } from 'vux'
+import { sendImgToChat, buildRoom, sendEnvelope } from '../api'
+import { Group, XInput, XTextarea, XButton, Tab, TabItem, AlertModule, Popover, TransferDom, XDialog } from 'vux'
 import { msgFormatter } from '../utils'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatBody from './ChatBody'
 import lrz from 'lrz'
-
+const validateItems = ['pack_amount', 'pack_nums']
 export default {
   components: {
     Tab,
@@ -78,34 +145,68 @@ export default {
     Icon,
     MarqueeTips,
     Popover,
-    ChatBody
+    ChatBody,
+    XDialog,
+    Group,
+    XInput,
+    XTextarea,
+    XButton
   },
-  props: {
-    routeChanged: {
-      default: false
-    }
+  directives: {
+    TransferDom
   },
   data () {
     return {
       ws: null,
       announcementIndex: 0,
-      showSmile: false,
       msgCnt: '',
       showNickNameBox: false,
       nickname: this.$store.state.user.nickname,
       showImageMsg: false,
       showImageMsgUrl: '',
-      emojis: {
-        people: []
-      },
       showCheckUser: false,
       checkUser: {},
       chatLoading: true,
-      routeHasChange: this.routeChanged,
       marqueeInterval: '',
       roomId: '',
       chatWithId: this.$route.params.chatWithId,
-      isFocus: false
+      isFocus: false,
+      showEnvelopeDialog: false,
+      envelope: {
+        pack_amount: '',
+        pack_nums: '',
+        content: ''
+      },
+      loading: false,
+      error: '',
+      validators: {
+        'pack_amount': {
+          error: '',
+          validate: (value) => {
+            if (!value) {
+              return '请输入金额'
+            } else if (value < this.systemConfig.envelopeSettings.min_amount) {
+              return '须高于最低金额限制'
+            } else if (value > this.systemConfig.envelopeSettings.max_amount) {
+              return '不能超过最高金额限制'
+            } else {
+              return ''
+            }
+          }
+        },
+        'pack_nums': {
+          error: '',
+          validate: (value) => {
+            if (!value) {
+              return '请输入个数'
+            } else if (value > this.systemConfig.envelopeSettings.per_max_count) {
+              return '红包数量超出限制'
+            } else {
+              return ''
+            }
+          }
+        }
+      }
     }
   },
   computed: {
@@ -124,12 +225,6 @@ export default {
     this.marqueeInterval = setInterval(() => {
       this.announcementIndex = (this.announcementIndex + 1) % this.announcement.length
     }, 10000)
-    fetchChatEmoji().then((resData) => {
-      resData.people = resData.people
-      this.emojis = resData
-    }).catch(err => {
-      console.log(err)
-    })
     const chatWithId = this.chatWithId
     if (chatWithId) {
       buildRoom([this.user.id, chatWithId]).then(data => {
@@ -183,7 +278,6 @@ export default {
       })
     },
     sendMsg () {
-      this.showSmile = false
       if (!this.msgCnt.trim()) { return false }
       this.$store.state.ws.send(JSON.stringify({
         'command': 'send',
@@ -192,6 +286,40 @@ export default {
         'content': this.msgCnt
       }))
       this.msgCnt = ''
+    },
+    submit () {
+      if (this.loading) {
+        return
+      }
+      const errors = this.validateAll()
+      if (errors.length === 0) {
+        this.loading = true
+        const envelope = {...this.envelope, sender_id: this.user.id}
+        if (!envelope.content) {
+          envelope.content = '大吉大利，恭喜发财'
+        }
+        sendEnvelope(envelope).then(data => {
+          this.loading = false
+          this.showEnvelopeDialog = false
+        }, error => {
+          this.error = msgFormatter(error)
+          this.loading = false
+        })
+      } else {
+        this.error = errors[0]
+      }
+    },
+    reset () {
+      this.envelope = {}
+      this.error = ''
+    },
+    validate (value, input) {
+      this.error = this.validators[input].validate(value)
+    },
+    validateAll () {
+      return validateItems
+      .map(item => this.validators[item].validate(this.envelope[item]))
+      .filter(msg => msg)
     }
   },
   beforeDestroy () {
@@ -217,6 +345,7 @@ export default {
 
 <style lang="less" scoped>
 @import '../styles/vars.less';
+@import '~vux/src/styles/close';
 
 .chat-box {
   position: relative;
@@ -281,23 +410,6 @@ export default {
   &.isFocus {
     transform: translateY(-28px);
   }
-  .smile-box {
-    position: absolute;
-    width: 100%;
-    height: 136px;
-    background-color: #ffffff;
-    overflow: scroll;
-    bottom: 65px;
-    .emoji {
-      padding: 2px 6px 0 6px;
-      display: inline-block;
-      cursor: pointer;
-      position: relative;
-      font-size: 18px;
-      text-align: center;
-      border: 2px solid transparent;
-    }
-  }
   .typing {
     display: flex;
     box-sizing: border-box;
@@ -327,7 +439,17 @@ export default {
       font-size: 20px;
       color: #fff;
     }
+    &.envelope-bar {
+      background: #f5a623;
+    }
   }
+  .envelope-icon {
+    background: url('../assets/envelope_btn.png') no-repeat;
+    background-size: contain;
+    height: 20px;
+    width: 20px;
+  }
+
   .txtinput {
     flex: 3;
   }
@@ -374,5 +496,101 @@ export default {
   line-height: 52px;
   background: #72aadb;
   color: #fff;
+}
+
+.envelope-dialog {
+  font-weight: lighter;
+  .close {
+    position: absolute;
+      right: 8px;
+      top: 8px;
+      width: 30px;
+      height: 30px;
+    &::before, &::after {
+      position: absolute;
+      content: ' ';
+      top: 5px;
+      right: 15px;
+      height: 20px;
+      width: 2px;
+      background-color: #fff;
+    }
+    &::before {
+      transform: rotate(45deg);
+    }
+
+    &::after {
+      transform: rotate(-45deg);
+    }
+  }
+
+  .envelope-avatar {
+    height: 60px;
+    width: 100%;
+    .money {
+      height: 60px;
+      width: 60px;
+      margin: 0 auto;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+      box-shadow: 0 2px 1px 0 rgba(149, 8, 8, 0.5);
+      background-image: url('../assets/money.png')
+    }
+  }
+  .text-field {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #ffffff;
+  }
+  .balance-field {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #ffffff;
+    .balance {
+      margin-left: 10px;
+    }
+  }
+  .input-validate{
+    text-align: left;
+    height: 40px;
+    line-height: 40px;
+    background: #de5547;
+    color: rgba(255, 255, 255, .8);
+    font-size: 12px;
+  }
+
+  & /deep/ .weui-cells.vux-no-group-title::after {
+    border: none;
+  }
+
+  .footer {
+    width: 235px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    background: transparent;
+    margin: 0 auto;
+    & /deep/ .weui-btn.weui-btn_primary {
+      color: #4a4a4a;
+      background: #f5b723;
+    }
+    & /deep/ .weui-btn_disabled.weui-btn_primary {
+      color: #a4a4a4;
+      background: #fadb91;
+    }
+    .error {
+      width: 100%;
+      height: 30px;
+      line-height: 30px;
+      color: #fff;
+      text-align: center;
+    }
+  }
 }
 </style>

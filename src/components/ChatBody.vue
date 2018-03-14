@@ -3,7 +3,7 @@
     <ul class="lay-scroll">
       <li v-for="(item, index) in messages"
         :key="index"
-        :class="['clearfix', 'item', item.sender && user.username === item.sender.username ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
+        :class="['clearfix', 'item', item.sender && user.id === item.sender.id ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : '']">
         <div class="lay-block clearfix" v-if="item.type >= 0">
           <div class="avatar">
             <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
@@ -15,13 +15,17 @@
               </span>
               <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
             </div>
-            <div :class="['bubble', 'bubble' + item.type]">
+            <envelope v-if="item.type === 5" :item="item" @click.native="openEnvelop(item.envelope_status.id)"></envelope>
+            <div v-else :class="['bubble', 'bubble' + item.type]">
               <p>
                 <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
                 <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content">
               </p>
             </div>
           </div>
+        </div>
+        <div v-else>
+          {{item.content}}
         </div>
       </li>
       <li v-if="roomId===1&&personal_setting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
@@ -35,16 +39,65 @@
         </div>
       </popup>
     </div>
+    <div v-transfer-dom>
+      <x-dialog
+        class="envelope-dialog"
+        :show.sync="showEnvelopeDialog"
+        :hide-on-blur="true"
+        :dialog-style="{
+          'max-width': '355px',
+          width: '355px',
+          'box-sizing': 'border-box',
+          'padding-top': '15px',
+          'background-image': `url('${require('../assets/envelop-top.png')}'), linear-gradient(to right, #de5547, #de5547)`,
+          'background-size': 'contain, cover',
+          'background-position': 'top, center',
+          'background-repeat': 'no-repeat, no-repeat'
+        }">
+        <div class="close" @click="showEnvelopeDialog = false"></div>
+        <div class="envelope-avatar">
+          <div v-if="selectedEnvelope.avatar" class="avatar" :style="{'background-image': `url('${host+selectedEnvelope.avatar}')`}"></div>
+          <div v-else class="money"></div>
+        </div>
+        <div class="envelope-owner">{{selectedEnvelope.sendername}} 的红包</div>
+        <div class="envelope-content">{{selectedEnvelope.content?`“${selectedEnvelope.content}”`:''}}</div>
+        <div v-if="selectedEnvelope.status === 4" class="loader">
+          <div class="loading"></div>
+          <div class="moneys"></div>
+        </div>
+        <div v-else-if="selectedEnvelope.status === 2" class="get-amount">
+          <div class="moneys"></div>
+          <div class="amount">{{selectedEnvelope.amount | currency('￥')}}</div>
+        </div>
+        <div v-else class="not-remain">手慢了，红包已派完。</div>
+        <div class="userlist">
+          <div class="count">{{selectedEnvelope.users&&selectedEnvelope.users.length}}人已抢到</div>
+          <div class="view">
+            <ul>
+              <li :class="['group', member.receiver_id===user.id?'me':'']" v-for="(member, index) in selectedEnvelope.users" :key="index">
+                <span>{{member.nickname}}</span>
+                <span>{{selectedEnvelope.amount | currency('￥')}}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </x-dialog>
+    </div>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
-import { TransferDom, Popup } from 'vux'
+import { TransferDom, Popup, XDialog, XTable } from 'vux'
+import { takeEnvelope } from '../api'
+import Envelope from './Envelope'
 import urls from '../api/urls'
 export default {
   components: {
-    Popup
+    Popup,
+    Envelope,
+    XDialog,
+    XTable
   },
   directives: {
     TransferDom
@@ -63,21 +116,28 @@ export default {
       showImageMsg: false,
       showImageMsgUrl: '',
       host: urls.host,
-      roleCache: {}
+      roleCache: {},
+      showEnvelopeDialog: false,
+      selectedEnvelope: {},
+      messageCount: 0
     }
   },
   computed: {
     ...mapState([
-      'user', 'personal_setting', 'rooms'
+      'user', 'personal_setting', 'rooms', 'envelope'
     ])
   },
   mounted () {
     const view = this.$refs.view
     view.scrollTop = view.scrollHeight
   },
-  updated () {
-    const view = this.$refs.view
-    view.scrollTop = view.scrollHeight
+  watch: {
+    'messages.length': function (newVal, oldVal) {
+      this.$nextTick(() => {
+        const view = this.$refs.view
+        view.scrollTop = view.scrollHeight
+      })
+    }
   },
   methods: {
     getImgSrc (sender) {
@@ -114,6 +174,32 @@ export default {
         this.roleCache[id] = '普通会员'
       }
       return this.roleCache[id]
+    },
+    openEnvelop (id) {
+      if (this.envelope[id].status !== 1) {
+        this.selectedEnvelope = this.envelope[id]
+        this.showEnvelopeDialog = true
+        if (this.envelope[id].status === 4) {
+          takeEnvelope(id, this.user.id).then(res => {
+            const status = res.status
+            switch (status) {
+              case 'success':
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 2, amount: res.amount}})
+                break
+              case 'fail':
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 3}})
+                break
+              case 'expired':
+                this.showEnvelopeDialog = false
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 1}})
+                break
+              case 'repeat':
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 2}})
+                break
+            }
+          })
+        }
+      }
     }
   }
 }
@@ -134,12 +220,14 @@ export default {
   }
 }
 .item {
+  margin-top: 20px;
   padding: 0 5px;
   margin-top: 20px;
   overflow: hidden;
   &.sys-msg {
     text-align: center;
-    margin: 5px 0;
+    color: #fff;
+    font-size: 12px;
     .type-warning {
       color: #f60;
       .btn-here {
@@ -175,7 +263,7 @@ export default {
             overflow: hidden;
             text-overflow: ellipsis;
             padding-top: 2px;
-            font-size: 10px;
+            font-size: 12px;
           }
 
           span {
@@ -299,5 +387,182 @@ export default {
   text-align: right;
   padding: 4px;
   color: #444;
+}
+.envelope-dialog {
+  font-weight: lighter;
+  .close {
+    position: absolute;
+      right: 8px;
+      top: 8px;
+      width: 30px;
+      height: 30px;
+    &::before, &::after {
+      position: absolute;
+      content: ' ';
+      top: 5px;
+      right: 15px;
+      height: 20px;
+      width: 2px;
+      background-color: #fff;
+    }
+    &::before {
+      transform: rotate(45deg);
+    }
+
+    &::after {
+      transform: rotate(-45deg);
+    }
+  }
+  .envelope-avatar {
+    height: 60px;
+    width: 100%;
+    .money,.avatar {
+      height: 60px;
+      width: 60px;
+      margin: 0 auto;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+      box-shadow: 0 2px 1px 0 rgba(149, 8, 8, 0.5);
+    }
+    .money {
+      background-image: url('../assets/money.png')
+    }
+    .avatar {
+      box-sizing: border-box;
+      border: 3px solid #debd85;
+    }
+  }
+  .envelope-owner {
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    font-size: 14px;
+    color: #debd85;
+  }
+  .envelope-content {
+    height: 20px;
+    line-height: 20px;
+    font-size: 14px;
+    color: #fff;
+  }
+  .get-amount {
+    width: 100%;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .moneys {
+      height: 50px;
+      width: 50px;
+      background: url('../assets/moneys.png') no-repeat center;
+      background-size: contain;
+    }
+    .amount {
+      color: #fff;
+      font-size: 48px;
+      font-weight: 600;
+    }
+  }
+  .not-remain {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    width: 100%;
+    height: 100px;
+    line-height: 100px;
+  }
+  .userlist {
+    box-sizing: border-box;
+    width: 100%;
+    height: 260px;
+    padding:0 76px;
+    background: #fff;
+    font-size: 14px;
+    color: #4a4a4a;
+    .count {
+      height: 50px;
+      line-height: 50px;
+      font-size: 12px;
+      color: #de5547;
+    }
+    .view {
+      width: 100%;
+      height: 210px;
+      overflow-y: auto;
+      ul {
+        width: 100%;
+        li {
+          height: 20px;
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          &.me{
+            color: #c0493c;
+          }
+        }
+      }
+    }
+  }
+  .loader {
+    position: relative;
+    width: 100%;
+    height: 100px;
+    padding: 20px 0;
+    .moneys {
+      position: absolute;
+      top: 45px;
+      height: 50px;
+      width: 100%;
+      background: url('../assets/moneys.png') no-repeat center;
+      background-size: contain;
+    }
+    .loading {
+      font-size: 10px;
+      margin: 0 auto;
+      text-indent: -9999em;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: #f8e71c;
+      background: linear-gradient(to right, #f8e71c 10%, #de5547 42%);
+      position: relative;
+      animation: load3 1.4s infinite linear;
+      transform: translateZ(0);
+    }
+    .loading:before {
+      width: 50%;
+      height: 50%;
+      background: #f8e71c;
+      border-radius: 100% 0 0 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      content: '';
+    }
+    .loading:after {
+      background: #de5547;
+      width: 95%;
+      height: 95%;
+      border-radius: 50%;
+      content: '';
+      margin: auto;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+    }
+    @keyframes load3 {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
 }
 </style>

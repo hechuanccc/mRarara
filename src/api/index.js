@@ -61,3 +61,17 @@ export function buildRoom (users) {
     'Content-Type': 'application/json'
   })
 }
+
+export function sendEnvelope (data) {
+  return axios.post(urls.envelope, data, {
+    'Content-Type': 'application/json'
+  })
+}
+
+export function takeEnvelope (envelopId, userId) {
+  return axios.put(`${urls.envelope}${envelopId}/`, {
+    receiver_id: userId
+  }, {
+    'Content-Type': 'application/json'
+  })
+}
