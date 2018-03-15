@@ -62,6 +62,10 @@ export function buildRoom (users) {
   })
 }
 
+export function fetchEnvelopeRecord ({offset, limit}) {
+  return axios.get(`${urls.envelope}?offset=${offset}&limit=${limit}`)
+}
+
 export function sendEnvelope (data) {
   return axios.post(urls.envelope, data, {
     'Content-Type': 'application/json'

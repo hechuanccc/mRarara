@@ -45,14 +45,6 @@ export default new Router({
         requiresAuth: true
       }
     },
-    // {
-    //   path: '/bet',
-    //   name: 'Bet',
-    //   component: resolve => { require(['../screens/Bet.vue'], resolve) },
-    //   meta: {
-    //     requiresAuth: true
-    //   }
-    // },
     {
       path: '/chatroom',
       name: 'ChatRoom',
@@ -104,6 +96,15 @@ export default new Router({
         requiresAuth: true
       },
       component: resolve => { require(['../screens/my/Img.vue'], resolve) }
+    },
+    {
+      path: '/my/envelope',
+      name: 'EnvelopRecord',
+      meta: {
+        title: '红包纪录',
+        requiresAuth: true
+      },
+      component: resolve => { require(['../screens/my/EnvelopeRecord.vue'], resolve) }
     }
   ]
 })

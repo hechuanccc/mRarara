@@ -5,6 +5,7 @@
       <cell title="余额" :value="user.balance" ></cell>
       <cell title="修改个人资料" is-link link="/my/profile"></cell>
       <cell title="修改头像" is-link link="/my/image"></cell>
+      <cell title="红包纪录" is-link link="/my/envelope"></cell>
       <cell title="重设密码" is-link link="/my/password"></cell>
     </group>
     <group label-width="'100px'">
