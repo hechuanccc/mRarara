@@ -74,7 +74,7 @@
         </div>
         <div v-else class="not-remain">手慢了，红包已派完。</div>
         <div class="userlist">
-          <div class="count">{{selectedEnvelope.users&&selectedEnvelope.users.length}}人已抢到</div>
+          <div class="count">{{selectedEnvelope.users&&selectedEnvelope.users.length}} 已领取</div>
           <div class="view">
             <ul>
               <li :class="['group', member.receiver_id===user.id?'me':'']" v-for="(member, index) in selectedEnvelope.users" :key="index">
@@ -230,13 +230,19 @@ export default {
   overflow: hidden;
   &.sys-msg {
     text-align: center;
-    color: #fff;
+    color: #eee;
     font-size: 12px;
     .type-warning {
       color: #f60;
       .btn-here {
         color: rgb(25, 158, 216);
       }
+    }
+    div {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .2);
     }
   }
   &.item-left {
@@ -259,6 +265,7 @@ export default {
       .lay-content {
         float: right;
         margin-right: 15px;
+        margin-left: 0;
         .msg-header {
           h4 {
             text-align: right;
@@ -317,9 +324,9 @@ export default {
   float: left;
 }
 .lay-content {
-  margin-left: 18px;
+  margin-left: 15px;
   float: left;
-  max-width: 75%;
+  width: calc(~"100%" - 62px);
 }
 .msg-header {
   overflow: hidden;
@@ -457,22 +464,23 @@ export default {
     .row {
       display: flex;
       width: 100%;
-      height: 80px;
+      height: 60px;
       align-items: center;
       justify-content: center;
       .moneys {
-        height: 50px;
-        width: 50px;
+        height: 36px;
+        width: 36px;
         background: url('../assets/moneys.png') no-repeat center;
         background-size: contain;
       }
       .amount {
-        font-size: 48px;
+        font-size: 36px;
         font-weight: 600;
       }
     }
     .text{
       height: 20px;
+      font-size: 14px;
       line-height: 20px;
       width: 100%;
     }
@@ -488,7 +496,7 @@ export default {
     box-sizing: border-box;
     width: 100%;
     height: 260px;
-    padding:0 76px;
+    padding:0 35px;
     background: #fff;
     font-size: 14px;
     color: #4a4a4a;
