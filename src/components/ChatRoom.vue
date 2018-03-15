@@ -23,7 +23,7 @@
               class="img-upload-input"
               accept="image/*">
           </label>
-          <label v-if="roomId === 1" class="control-bar envelope-bar" @click="showEnvelopeDialog = true">
+          <label v-if="roomId === 1" class="control-bar envelope-bar" @click="openEnvelopeDialog">
             <div class="envelope-icon"></div>
           </label>
           <div class="txtinput el-textarea">
@@ -243,6 +243,12 @@ export default {
     document.addEventListener('visibilitychange', this.visibilitychange)
   },
   methods: {
+    openEnvelopeDialog () {
+      if (this.noPermission) {
+        return
+      }
+      this.showEnvelopeDialog = true
+    },
     visibilitychange () {
       this.isFocus = false
       if (this.$refs.chatpannel) {
@@ -301,6 +307,7 @@ export default {
         sendEnvelope(envelope).then(data => {
           this.loading = false
           this.showEnvelopeDialog = false
+          this.$store.dispatch('fetchUser')
         }, error => {
           this.error = msgFormatter(error)
           this.loading = false
