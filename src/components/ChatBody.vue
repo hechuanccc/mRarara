@@ -7,7 +7,9 @@
         <div class="lay-block clearfix" v-if="item.type >= 0">
           <div class="avatar">
             <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
-            <img :src="getImgSrc(item.sender)" v-else> </div> <div class="lay-content">
+            <img :src="getImgSrc(item.sender)" v-else>
+          </div>
+          <div class="lay-content">
             <div class="msg-header">
               <h4>{{item.type === 4 ? '计划消息' : item.sender.nickname}}</h4>
               <span class="common-member" v-if="item.type !== 4">
@@ -73,13 +75,13 @@
           <div class="text">恭喜你抢到红包啦！</div>
         </div>
         <div v-else class="not-remain">手慢了，红包已派完。</div>
-        <div class="userlist">
-          <div class="count">{{selectedEnvelope.users&&selectedEnvelope.users.length}}人已抢到</div>
+        <div v-if="selectedEnvelope.users && selectedEnvelope.users.length" class="userlist">
+          <div class="count">{{statistic}}</div>
           <div class="view">
             <ul>
               <li :class="['group', member.receiver_id===user.id?'me':'']" v-for="(member, index) in selectedEnvelope.users" :key="index">
                 <span>{{member.nickname}}</span>
-                <span>{{selectedEnvelope.amount | currency('￥')}}</span>
+                <span>{{member.amount | currency('￥')}}</span>
               </li>
             </ul>
           </div>
@@ -128,7 +130,21 @@ export default {
   computed: {
     ...mapState([
       'user', 'personal_setting', 'rooms', 'envelope'
-    ])
+    ]),
+    statistic () {
+      if (this.selectedEnvelope.users) {
+        const remaining = this.selectedEnvelope.remaining
+        const gottenNum = this.selectedEnvelope.users.length
+        const total = gottenNum + this.selectedEnvelope.remaining
+        if (remaining === 0) {
+          return `${gottenNum}/${total} 已领完`
+        } else {
+          return `${gottenNum}/${total} 已领取`
+        }
+      } else {
+        return ''
+      }
+    }
   },
   mounted () {
     const view = this.$refs.view
@@ -248,6 +264,8 @@ export default {
   &.item-left {
     .lay-block {
       .lay-content {
+        float: left;
+        margin-left: 15px;
         .bubble:after {
           left: 0;
           border-left: 0;
@@ -323,8 +341,6 @@ export default {
   float: left;
 }
 .lay-content {
-  margin-left: 15px;
-  float: left;
   width: calc(~"100%" - 62px);
 }
 .msg-header {
@@ -467,13 +483,14 @@ export default {
       align-items: center;
       justify-content: center;
       .moneys {
-        height: 36px;
+        height: 60px;
         width: 36px;
         background: url('../assets/moneys.png') no-repeat center;
         background-size: contain;
       }
       .amount {
         font-size: 36px;
+        height: 60px;
         font-weight: 600;
       }
     }

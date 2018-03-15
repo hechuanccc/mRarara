@@ -229,13 +229,14 @@ export default {
                       break
                     case 6:
                       const envelopeStatue = data.envelope_status
-                      const setting = {users: envelopeStatue.users}
+                      const setting = {users: envelopeStatue.users, remaining: envelopeStatue.remaining}
                       if (envelopeStatue.remaining === 0) {
                         setting.status = 3
                       }
                       this.$store.dispatch('updateEnvelope', {id: envelopeStatue.id, data: setting})
+                      const nickname = data.get_envelope_user.id === this.user.id ? '你' : data.get_envelope_user.nickname
                       if (data.sender.id === this.user.id) {
-                        this.$store.dispatch('addMessage', {roomId: 1, message: {type: -1, content: data.get_envelope_user + '领取了你的红包'}})
+                        this.$store.dispatch('addMessage', {roomId: 1, message: {type: -1, content: nickname + '领取了你的红包'}})
                       }
                       break
                   }
