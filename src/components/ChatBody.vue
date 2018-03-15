@@ -59,15 +59,18 @@
           <div v-if="selectedEnvelope.avatar" class="avatar" :style="{'background-image': `url('${host+selectedEnvelope.avatar}')`}"></div>
           <div v-else class="money"></div>
         </div>
-        <div class="envelope-owner">{{selectedEnvelope.sendername}} 的红包</div>
+        <div class="envelope-owner">{{selectedEnvelope.sendername}} 发红包</div>
         <div class="envelope-content">{{selectedEnvelope.content?`“${selectedEnvelope.content}”`:''}}</div>
         <div v-if="selectedEnvelope.status === 4" class="loader">
           <div class="loading"></div>
           <div class="moneys"></div>
         </div>
         <div v-else-if="selectedEnvelope.status === 2" class="get-amount">
-          <div class="moneys"></div>
-          <div class="amount">{{selectedEnvelope.amount | currency('￥')}}</div>
+          <div class="row">
+            <div class="moneys"></div>
+            <div class="amount">{{selectedEnvelope.amount | currency('￥')}}</div>
+          </div>
+          <div class="text">恭喜你抢到红包啦！</div>
         </div>
         <div v-else class="not-remain">手慢了，红包已派完。</div>
         <div class="userlist">
@@ -185,6 +188,7 @@ export default {
             switch (status) {
               case 'success':
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 2, amount: res.amount}})
+                this.$store.dispatch('fetchUser')
                 break
               case 'fail':
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 3}})
@@ -390,6 +394,7 @@ export default {
 }
 .envelope-dialog {
   font-weight: lighter;
+  color: #fff;
   .close {
     position: absolute;
       right: 8px;
@@ -445,28 +450,34 @@ export default {
     height: 20px;
     line-height: 20px;
     font-size: 14px;
-    color: #fff;
   }
   .get-amount {
     width: 100%;
     height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    .moneys {
-      height: 50px;
-      width: 50px;
-      background: url('../assets/moneys.png') no-repeat center;
-      background-size: contain;
+    .row {
+      display: flex;
+      width: 100%;
+      height: 80px;
+      align-items: center;
+      justify-content: center;
+      .moneys {
+        height: 50px;
+        width: 50px;
+        background: url('../assets/moneys.png') no-repeat center;
+        background-size: contain;
+      }
+      .amount {
+        font-size: 48px;
+        font-weight: 600;
+      }
     }
-    .amount {
-      color: #fff;
-      font-size: 48px;
-      font-weight: 600;
+    .text{
+      height: 20px;
+      line-height: 20px;
+      width: 100%;
     }
   }
   .not-remain {
-    color: #fff;
     font-size: 20px;
     font-weight: 600;
     width: 100%;
