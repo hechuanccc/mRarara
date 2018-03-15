@@ -23,7 +23,7 @@
               class="img-upload-input"
               accept="image/*">
           </label>
-          <label v-if="roomId === 1" class="control-bar envelope-bar" @click="openEnvelopeDialog">
+          <label v-if="roomId === 1" class="control-bar" @click="openEnvelopeDialog">
             <div class="envelope-icon"></div>
           </label>
           <div class="txtinput el-textarea">
@@ -105,7 +105,7 @@
           </div>
           <x-textarea
             title=""
-            placeholder="大吉大利，恭喜发财"
+            placeholder="恭喜发财，大吉大利"
             :height="50"
             v-model="envelope.content"></x-textarea>
         </group>
@@ -302,7 +302,7 @@ export default {
         this.loading = true
         const envelope = {...this.envelope, sender_id: this.user.id}
         if (!envelope.content) {
-          envelope.content = '大吉大利，恭喜发财'
+          envelope.content = '恭喜发财，大吉大利'
         }
         sendEnvelope(envelope).then(data => {
           this.loading = false
@@ -433,8 +433,8 @@ export default {
     justify-content: center;
     margin-right: 5px;
     flex: 0.5;
-    height: 100%;
-    background: #72aadb;
+    border: 1px solid #bfcbd9;
+    background: #efefef;
     color: #666;
     text-align: center;
     border-radius: 4px;
@@ -444,17 +444,14 @@ export default {
     }
     .el-icon-picture {
       font-size: 20px;
-      color: #fff;
-    }
-    &.envelope-bar {
-      background: #f5a623;
+      color: #72aadb;
     }
   }
   .envelope-icon {
-    background: url('../assets/envelope_btn.png') no-repeat;
+    background: url('../assets/envelope_btn.png') no-repeat center;
     background-size: contain;
-    height: 20px;
-    width: 20px;
+    height: 30px;
+    width: 38px;
   }
 
   .txtinput {
