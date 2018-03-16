@@ -62,7 +62,9 @@
           <div v-else class="money"></div>
         </div>
         <div class="envelope-owner">{{selectedEnvelope.sendername}} 发红包</div>
-        <div class="envelope-content">{{selectedEnvelope.content?`“${selectedEnvelope.content}”`:''}}</div>
+        <p class="envelope-content">
+          ”{{selectedEnvelope.content}}”
+        </p>
         <div v-if="selectedEnvelope.status === 4" class="loader">
           <div class="loading"></div>
           <div class="moneys"></div>
@@ -469,9 +471,12 @@ export default {
     color: #debd85;
   }
   .envelope-content {
-    height: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
     line-height: 20px;
     font-size: 14px;
+    padding: 0 20px;
   }
   .get-amount {
     width: 100%;
