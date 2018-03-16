@@ -178,6 +178,12 @@ export default {
           }))
         }, 300000)
         ws.onclose = () => {
+          if (this.user.logined) {
+            this.$store.commit('RESET_USER')
+            this.$router.push({
+              path: '/login'
+            })
+          }
           clearInterval(hearbeat)
         }
         ws.onmessage = (resData) => {
@@ -266,9 +272,7 @@ export default {
                       type: 'warn'
                     })
                     setTimeout(() => {
-                      this.$store.dispatch('logout').then(res => {
-                        this.$router.push({name: 'Login'})
-                      })
+                      this.$router.push({name: 'Login'})
                     }, 3000)
                     break
                   default:
