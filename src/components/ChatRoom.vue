@@ -107,6 +107,7 @@
             title=""
             placeholder="恭喜发财，大吉大利"
             :height="50"
+            :max="20"
             v-model="envelope.content"></x-textarea>
         </group>
         <div class="footer">
