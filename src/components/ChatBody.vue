@@ -76,7 +76,7 @@
           </div>
           <div class="text">恭喜你抢到红包啦！</div>
         </div>
-        <div v-else class="not-remain">手慢了，红包已派完。</div>
+        <div v-else class="not-remain">{{selectedEnvelope.status === 3 ?'手慢了，红包已派完。':'红包已过期'}}</div>
         <div v-if="selectedEnvelope.users && selectedEnvelope.users.length" class="userlist">
           <div class="count">{{statistic}}</div>
           <div class="view">
@@ -212,7 +212,6 @@ export default {
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 3}})
                 break
               case 'expired':
-                this.showEnvelopeDialog = false
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 1}})
                 break
               case 'repeat':
