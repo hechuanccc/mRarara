@@ -126,13 +126,17 @@ export default {
       roleCache: {},
       showEnvelopeDialog: false,
       selectedEnvelope: {},
-      messageCount: 0
+      messageCount: 0,
+      busy: false
     }
   },
   computed: {
     ...mapState([
       'user', 'personal_setting', 'rooms', 'envelope'
     ]),
+    noPermission () {
+      return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+    },
     statistic () {
       if (this.selectedEnvelope.users) {
         const remaining = this.selectedEnvelope.remaining
@@ -197,11 +201,16 @@ export default {
       return this.roleCache[id]
     },
     openEnvelop (id) {
+      if (this.noPermission || this.busy) {
+        return
+      }
       if (this.envelope[id].status !== 1) {
         this.selectedEnvelope = this.envelope[id]
         this.showEnvelopeDialog = true
         if (this.envelope[id].status === 4) {
+          this.busy = true
           takeEnvelope(id, this.user.id).then(res => {
+            this.busy = false
             const status = res.status
             switch (status) {
               case 'success':
@@ -218,7 +227,7 @@ export default {
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 2}})
                 break
             }
-          })
+          }).catch(() => { this.busy = false })
         }
       }
     }
