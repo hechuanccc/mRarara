@@ -7,7 +7,7 @@
         <div class="lay-block clearfix" v-if="item.type >= 0">
           <div class="avatar">
             <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
-            <img :src="getImgSrc(item.sender)" v-else>
+            <img :src="getAvatarSrc(item.sender)" v-else>
           </div>
           <div class="lay-content">
             <div class="msg-header">
@@ -21,7 +21,7 @@
             <div v-else :class="['bubble', 'bubble' + item.type]">
               <p>
                 <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
-                <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content">
+                <img-async @click.native="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content" @imgStart="imgLoadCount++" @imgLoad="imgLoadCount--"/>
               </p>
             </div>
           </div>
@@ -98,13 +98,15 @@ import { mapState } from 'vuex'
 import { TransferDom, Popup, XDialog, XTable } from 'vux'
 import { takeEnvelope } from '../api'
 import Envelope from './Envelope'
+import ImgAsync from './ImgAsync'
 import urls from '../api/urls'
 export default {
   components: {
     Popup,
     Envelope,
     XDialog,
-    XTable
+    XTable,
+    ImgAsync
   },
   directives: {
     TransferDom
@@ -127,7 +129,8 @@ export default {
       showEnvelopeDialog: false,
       selectedEnvelope: {},
       messageCount: 0,
-      busy: false
+      busy: false,
+      imgLoadCount: 0
     }
   },
   computed: {
@@ -162,10 +165,18 @@ export default {
         const view = this.$refs.view
         view.scrollTop = view.scrollHeight
       })
+    },
+    'imgLoadCount': function (count) {
+      if (count === 0) {
+        this.$nextTick(() => {
+          const view = this.$refs.view
+          view.scrollTop = view.scrollHeight
+        })
+      }
     }
   },
   methods: {
-    getImgSrc (sender) {
+    getAvatarSrc (sender) {
       if (sender) {
         if (sender.id === this.user.id) {
           if (this.user.avatar) {
