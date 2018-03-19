@@ -85,7 +85,7 @@ const pattern = {
   username: /^[a-zA-Z0-9]{6,15}$/,
   password: /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,15}$/,
   qq: /^[1-9]{4,8}$/,
-  phone: /^1[3|4|5|7|8|9][0-9]{9}$/,
+  phone: /^1[0-9]{10}$/,
   bankAccount: /^[0-9]{10,}$/,
   withdrawPassword: /^[0-9]{6}$/
 }
