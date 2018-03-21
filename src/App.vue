@@ -135,11 +135,6 @@ export default {
     }
   },
   watch: {
-    '$route': function (to, from) {
-      if (to.path === '/') {
-        this.$router.replace({path: '/chatroom'})
-      }
-    },
     'user.logined': function (logined) {
       if (logined) {
         this.initWebSocket()
@@ -166,6 +161,9 @@ export default {
       let token = this.$cookie.get('access_token')
       const ws = new WebSocket(`${config.chatHost}/chat/stream?token=${token}`)
       ws.onopen = () => {
+        window.addEventListener('beforeunload', () => {
+          this.beforeunloadHandler(ws)
+        })
         this.$store.dispatch('setWs', ws)
         ws.send(JSON.stringify({
           'command': 'join',
@@ -176,7 +174,7 @@ export default {
             'command': 'live',
             'user_id': this.user.id
           }))
-        }, 60000)
+        }, 30000)
         ws.onclose = () => {
           if (this.user.logined) {
             this.$store.commit('RESET_USER')
@@ -289,6 +287,13 @@ export default {
           }
         }
       }
+    },
+    beforeunloadHandler (ws) {
+      ws.send(JSON.stringify({
+        'command': 'live',
+        'user_id': this.user.id,
+        'status': 'disconnect'
+      }))
     }
   },
   beforeDestroy () {
@@ -296,6 +301,7 @@ export default {
     if (ws) {
       this.$store.dispatch('leaveRoom')
     }
+    window.removeEventListener('beforeunload', this.beforeunloadHandler)
   }
 }
 </script>

@@ -15,11 +15,7 @@ export default new Router({
     },
     {
       path: '/',
-      name: 'Home',
-      meta: {
-
-      },
-      component: resolve => { require(['../screens/Home.vue'], resolve) }
+      redirect: '/chatroom'
     },
     {
       path: '/register',
@@ -105,6 +101,10 @@ export default new Router({
         requiresAuth: true
       },
       component: resolve => { require(['../screens/my/EnvelopeRecord.vue'], resolve) }
+    },
+    {
+      path: '*',
+      redirect: '/chatroom'
     }
   ]
 })
