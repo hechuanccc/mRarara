@@ -176,7 +176,7 @@ export default {
             'command': 'live',
             'user_id': this.user.id
           }))
-        }, 300000)
+        }, 60000)
         ws.onclose = () => {
           if (this.user.logined) {
             this.$store.commit('RESET_USER')
