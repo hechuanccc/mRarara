@@ -91,6 +91,7 @@ const isCommonMember = (roles) => {
 }
 
 router.beforeEach((to, from, next) => {
+  document.title = `彩票计划聊天室 - ${to.meta.title}`
   if (!store.state.user.logined && to.meta.requiresAuth === true) {
     let token = VueCookie.get('access_token')
     if (token) {
