@@ -26,7 +26,7 @@
     </div>
     <x-header
       v-else
-      :left-options="{showBack: false}"
+      :left-options="{showBack: needShowBack}"
       slot="header"
       :style="{
         width: '100%',
@@ -132,6 +132,9 @@ export default {
         }
       }
       return ''
+    },
+    needShowBack () {
+      return this.$route.path === '/register'
     }
   },
   watch: {
