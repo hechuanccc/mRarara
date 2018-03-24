@@ -87,16 +87,17 @@ router.beforeEach((to, from, next) => {
 })
 
 const isCommonMember = (roles) => {
-  return roles.every(role => role.id !== 4 && role.id !== 1)
+  return roles && roles.every(role => role.id !== 4 && role.id !== 1)
 }
 
 router.beforeEach((to, from, next) => {
   document.title = `彩票计划聊天室 - ${to.meta.title}`
+  const matched = to.matched[0]
   if (!store.state.user.logined && to.meta.requiresAuth === true) {
     let token = VueCookie.get('access_token')
     if (token) {
       store.dispatch('fetchUser').then(res => {
-        if (to.matched[0].path !== '/private' || isCommonMember(res.roles)) {
+        if ((matched && matched.path !== '/private') || isCommonMember(res.roles)) {
           next()
         } else {
           next('/chatroom')
@@ -108,7 +109,7 @@ router.beforeEach((to, from, next) => {
       toLogin(router)
     }
   } else {
-    if (to.matched[0].path !== '/private' || isCommonMember(store.state.user.roles)) {
+    if ((matched && matched.path !== '/private') || isCommonMember(store.state.user.roles)) {
       next()
     } else {
       next('/chatroom')

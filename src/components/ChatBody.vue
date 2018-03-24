@@ -363,11 +363,6 @@ export default {
   float: left;
 }
 .lay-content {
-<<<<<<< HEAD
-  margin-left: 15px;
-  float: left;
-=======
->>>>>>> 11ef9c503e6d68c376256bbb33c076351e920d70
   width: calc(~"100%" - 62px);
 }
 .msg-header {
