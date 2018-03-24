@@ -36,11 +36,11 @@ export default {
   logout: ({ commit, state, dispatch }) => {
     return logout().then(
       res => {
+        commit(types.RESET_USER)
         dispatch('leaveRoom')
         router.push('/')
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
-        commit(types.RESET_USER)
       },
       errRes => Promise.reject(errRes)
     )

@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :class="{disabled: envelopDisabled(item)}">
+  <div :class="['container', {disabled:currentEnvelope.status === 1 || currentEnvelope.status === 3}]">
     <div class="icon"></div>
     <div class="content">
       <div class="msg">{{item.content || '恭喜发财，大吉大利'}}</div>
@@ -56,13 +56,6 @@ export default {
     }
   },
   methods: {
-    envelopDisabled (item) {
-      const status = this.checkEnvelopStatus(item).data.status
-      return status === 3 || status === 1
-    },
-    checkIfUserExist (users) {
-      return users.some(user => this.user.id === user.receiver_id)
-    },
     checkEnvelopStatus (item) {
       let status
       const envelopeStatus = item.envelope_status
@@ -71,17 +64,21 @@ export default {
         sendername: item.sender.nickname,
         content: item.content,
         users: envelopeStatus.users,
-        amount: envelopeStatus.amount
+        remaining: envelopeStatus.remaining
       }
 
       if (envelopeStatus.expired) {
         status = 1
-      } else if (this.checkIfUserExist(envelopeStatus.users)) {
-        status = 2
-      } else if (envelopeStatus.remaining === 0) {
-        status = 3
       } else {
-        status = 4
+        const me = envelopeStatus.users.find(user => this.user.id === user.receiver_id)
+        if (me) {
+          status = 2
+          data.amount = me.amount
+        } else if (envelopeStatus.remaining === 0) {
+          status = 3
+        } else {
+          status = 4
+        }
       }
       data.status = status
       return {
@@ -157,19 +154,17 @@ export default {
     border-right-color: #f5c38e;
   }
 }
-.item-right {
-  margin-left: 0;
-  .container{
-    float: right;
-    &:after {
-      right: 0;
-      border-right: 0;
-      margin-right: -9px;
-      border-left-color: #fa9d3b;
-    }
-    &.disabled:after {
-      border-left-color: #f5c38e;
-    }
+
+.item-right .container{
+  float: right;
+  &:after {
+    right: 0;
+    border-right: 0;
+    margin-right: -9px;
+    border-left-color: #fa9d3b;
+  }
+  &.disabled:after {
+    border-left-color: #f5c38e;
   }
 }
 </style>

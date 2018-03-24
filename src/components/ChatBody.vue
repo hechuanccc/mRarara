@@ -7,7 +7,9 @@
         <div class="lay-block clearfix" v-if="item.type >= 0">
           <div class="avatar">
             <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
-            <img :src="getImgSrc(item.sender)" v-else> </div> <div class="lay-content">
+            <img :src="getAvatarSrc(item.sender)" v-else>
+          </div>
+          <div class="lay-content">
             <div class="msg-header">
               <h4>{{item.type === 4 ? '计划消息' : item.sender.nickname}}</h4>
               <span class="common-member" v-if="item.type !== 4">
@@ -19,7 +21,7 @@
             <div v-else :class="['bubble', 'bubble' + item.type]">
               <p>
                 <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
-                <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content">
+                <img-async @click.native="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content" @imgStart="imgLoadCount++" @imgLoad="imgLoadCount--"/>
               </p>
             </div>
           </div>
@@ -60,7 +62,9 @@
           <div v-else class="money"></div>
         </div>
         <div class="envelope-owner">{{selectedEnvelope.sendername}} 发红包</div>
-        <div class="envelope-content">{{selectedEnvelope.content?`“${selectedEnvelope.content}”`:''}}</div>
+        <p class="envelope-content">
+          ”{{selectedEnvelope.content}}”
+        </p>
         <div v-if="selectedEnvelope.status === 4" class="loader">
           <div class="loading"></div>
           <div class="moneys"></div>
@@ -72,14 +76,14 @@
           </div>
           <div class="text">恭喜你抢到红包啦！</div>
         </div>
-        <div v-else class="not-remain">手慢了，红包已派完。</div>
-        <div class="userlist">
-          <div class="count">{{selectedEnvelope.users&&selectedEnvelope.users.length}} 已领取</div>
+        <div v-else class="not-remain">{{selectedEnvelope.status === 3 ?'手慢了，红包已派完。':'红包已过期'}}</div>
+        <div v-if="selectedEnvelope.users && selectedEnvelope.users.length" class="userlist">
+          <div class="count">{{statistic}}</div>
           <div class="view">
             <ul>
               <li :class="['group', member.receiver_id===user.id?'me':'']" v-for="(member, index) in selectedEnvelope.users" :key="index">
                 <span>{{member.nickname}}</span>
-                <span>{{selectedEnvelope.amount | currency('￥')}}</span>
+                <span>{{member.amount | currency('￥')}}</span>
               </li>
             </ul>
           </div>
@@ -94,13 +98,15 @@ import { mapState } from 'vuex'
 import { TransferDom, Popup, XDialog, XTable } from 'vux'
 import { takeEnvelope } from '../api'
 import Envelope from './Envelope'
+import ImgAsync from './ImgAsync'
 import urls from '../api/urls'
 export default {
   components: {
     Popup,
     Envelope,
     XDialog,
-    XTable
+    XTable,
+    ImgAsync
   },
   directives: {
     TransferDom
@@ -122,13 +128,32 @@ export default {
       roleCache: {},
       showEnvelopeDialog: false,
       selectedEnvelope: {},
-      messageCount: 0
+      messageCount: 0,
+      busy: false,
+      imgLoadCount: 0
     }
   },
   computed: {
     ...mapState([
       'user', 'personal_setting', 'rooms', 'envelope'
-    ])
+    ]),
+    noPermission () {
+      return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+    },
+    statistic () {
+      if (this.selectedEnvelope.users) {
+        const remaining = this.selectedEnvelope.remaining
+        const gottenNum = this.selectedEnvelope.users.length
+        const total = gottenNum + this.selectedEnvelope.remaining
+        if (remaining === 0) {
+          return `${gottenNum}/${total} 已领完`
+        } else {
+          return `${gottenNum}/${total} 已领取`
+        }
+      } else {
+        return ''
+      }
+    }
   },
   mounted () {
     const view = this.$refs.view
@@ -140,10 +165,18 @@ export default {
         const view = this.$refs.view
         view.scrollTop = view.scrollHeight
       })
+    },
+    'imgLoadCount': function (count) {
+      if (count === 0) {
+        this.$nextTick(() => {
+          const view = this.$refs.view
+          view.scrollTop = view.scrollHeight
+        })
+      }
     }
   },
   methods: {
-    getImgSrc (sender) {
+    getAvatarSrc (sender) {
       if (sender) {
         if (sender.id === this.user.id) {
           if (this.user.avatar) {
@@ -179,11 +212,16 @@ export default {
       return this.roleCache[id]
     },
     openEnvelop (id) {
+      if (this.noPermission || this.busy) {
+        return
+      }
       if (this.envelope[id].status !== 1) {
         this.selectedEnvelope = this.envelope[id]
         this.showEnvelopeDialog = true
         if (this.envelope[id].status === 4) {
+          this.busy = true
           takeEnvelope(id, this.user.id).then(res => {
+            this.busy = false
             const status = res.status
             switch (status) {
               case 'success':
@@ -194,14 +232,13 @@ export default {
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 3}})
                 break
               case 'expired':
-                this.showEnvelopeDialog = false
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 1}})
                 break
               case 'repeat':
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 2}})
                 break
             }
-          })
+          }).catch(() => { this.busy = false })
         }
       }
     }
@@ -248,6 +285,8 @@ export default {
   &.item-left {
     .lay-block {
       .lay-content {
+        float: left;
+        margin-left: 15px;
         .bubble:after {
           left: 0;
           border-left: 0;
@@ -324,8 +363,11 @@ export default {
   float: left;
 }
 .lay-content {
+<<<<<<< HEAD
   margin-left: 15px;
   float: left;
+=======
+>>>>>>> 11ef9c503e6d68c376256bbb33c076351e920d70
   width: calc(~"100%" - 62px);
 }
 .msg-header {
@@ -454,9 +496,12 @@ export default {
     color: #debd85;
   }
   .envelope-content {
-    height: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
     line-height: 20px;
     font-size: 14px;
+    padding: 0 20px;
   }
   .get-amount {
     width: 100%;
@@ -468,13 +513,14 @@ export default {
       align-items: center;
       justify-content: center;
       .moneys {
-        height: 36px;
+        height: 60px;
         width: 36px;
         background: url('../assets/moneys.png') no-repeat center;
         background-size: contain;
       }
       .amount {
         font-size: 36px;
+        height: 60px;
         font-weight: 600;
       }
     }

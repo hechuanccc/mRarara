@@ -26,7 +26,7 @@
     </div>
     <x-header
       v-else
-      :left-options="{showBack: false}"
+      :left-options="{showBack: needShowBack}"
       slot="header"
       :style="{
         width: '100%',
@@ -132,14 +132,12 @@ export default {
         }
       }
       return ''
+    },
+    needShowBack () {
+      return this.$route.path === '/register'
     }
   },
   watch: {
-    '$route': function (to, from) {
-      if (to.path === '/') {
-        this.$router.replace({path: '/chatroom'})
-      }
-    },
     'user.logined': function (logined) {
       if (logined) {
         this.initWebSocket()
@@ -166,6 +164,9 @@ export default {
       let token = this.$cookie.get('access_token')
       const ws = new WebSocket(`${config.chatHost}/chat/stream?token=${token}`)
       ws.onopen = () => {
+        window.addEventListener('beforeunload', () => {
+          this.beforeunloadHandler(ws)
+        })
         this.$store.dispatch('setWs', ws)
         ws.send(JSON.stringify({
           'command': 'join',
@@ -176,8 +177,14 @@ export default {
             'command': 'live',
             'user_id': this.user.id
           }))
-        }, 300000)
+        }, 30000)
         ws.onclose = () => {
+          if (this.user.logined) {
+            this.$store.commit('RESET_USER')
+            this.$router.push({
+              path: '/login'
+            })
+          }
           clearInterval(hearbeat)
         }
         ws.onmessage = (resData) => {
@@ -229,13 +236,14 @@ export default {
                       break
                     case 6:
                       const envelopeStatue = data.envelope_status
-                      const setting = {users: envelopeStatue.users}
+                      const setting = {users: envelopeStatue.users, remaining: envelopeStatue.remaining}
                       if (envelopeStatue.remaining === 0) {
                         setting.status = 3
                       }
                       this.$store.dispatch('updateEnvelope', {id: envelopeStatue.id, data: setting})
+                      const nickname = data.get_envelope_user.id === this.user.id ? '你' : data.get_envelope_user.nickname
                       if (data.sender.id === this.user.id) {
-                        this.$store.dispatch('addMessage', {roomId: 1, message: {type: -1, content: data.get_envelope_user + '领取了你的红包'}})
+                        this.$store.dispatch('addMessage', {roomId: 1, message: {type: -1, content: nickname + '领取了你的红包'}})
                       }
                       break
                   }
@@ -265,9 +273,7 @@ export default {
                       type: 'warn'
                     })
                     setTimeout(() => {
-                      this.$store.dispatch('logout').then(res => {
-                        this.$router.push({name: 'Login'})
-                      })
+                      this.$router.push({name: 'Login'})
                     }, 3000)
                     break
                   default:
@@ -284,6 +290,13 @@ export default {
           }
         }
       }
+    },
+    beforeunloadHandler (ws) {
+      ws.send(JSON.stringify({
+        'command': 'live',
+        'user_id': this.user.id,
+        'status': 'disconnect'
+      }))
     }
   },
   beforeDestroy () {
@@ -291,6 +304,7 @@ export default {
     if (ws) {
       this.$store.dispatch('leaveRoom')
     }
+    window.removeEventListener('beforeunload', this.beforeunloadHandler)
   }
 }
 </script>

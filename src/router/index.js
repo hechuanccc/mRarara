@@ -15,11 +15,7 @@ export default new Router({
     },
     {
       path: '/',
-      name: 'Home',
-      meta: {
-
-      },
-      component: resolve => { require(['../screens/Home.vue'], resolve) }
+      redirect: '/chatroom'
     },
     {
       path: '/register',
@@ -34,7 +30,8 @@ export default new Router({
       name: 'PrivateChat',
       component: resolve => { require(['../screens/PrivateChat.vue'], resolve) },
       meta: {
-        requiresAuth: true
+        requiresAuth: true,
+        title: '联系客服'
       }
     },
     {
@@ -42,23 +39,17 @@ export default new Router({
       name: 'PrivateChatroom',
       component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
       meta: {
-        requiresAuth: true
+        requiresAuth: true,
+        title: '联系客服'
       }
     },
-    // {
-    //   path: '/bet',
-    //   name: 'Bet',
-    //   component: resolve => { require(['../screens/Bet.vue'], resolve) },
-    //   meta: {
-    //     requiresAuth: true
-    //   }
-    // },
     {
       path: '/chatroom',
       name: 'ChatRoom',
       component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
       meta: {
-        requiresAuth: true
+        requiresAuth: true,
+        title: '首页'
       }
     },
     {
@@ -66,7 +57,8 @@ export default new Router({
       name: 'Results',
       component: resolve => { require(['../screens/ResultPage.vue'], resolve) },
       meta: {
-        requiresAuth: true
+        requiresAuth: true,
+        title: '开奖'
       }
     },
     {
@@ -74,7 +66,7 @@ export default new Router({
       name: 'my',
       component: resolve => { require(['../screens/My.vue'], resolve) },
       meta: {
-        title: '个人中心',
+        title: '我的账户',
         requiresAuth: true
       }
     },
@@ -104,6 +96,19 @@ export default new Router({
         requiresAuth: true
       },
       component: resolve => { require(['../screens/my/Img.vue'], resolve) }
+    },
+    {
+      path: '/my/envelope',
+      name: 'EnvelopRecord',
+      meta: {
+        title: '红包纪录',
+        requiresAuth: true
+      },
+      component: resolve => { require(['../screens/my/EnvelopeRecord.vue'], resolve) }
+    },
+    {
+      path: '*',
+      redirect: '/chatroom'
     }
   ]
 })
