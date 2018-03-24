@@ -304,6 +304,7 @@ export default {
       .lay-content {
         float: right;
         margin-right: 15px;
+        margin-left: 0;
         .msg-header {
           h4 {
             text-align: right;

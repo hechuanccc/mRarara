@@ -154,6 +154,7 @@ export default {
     border-right-color: #f5c38e;
   }
 }
+
 .item-right .container{
   float: right;
   &:after {
