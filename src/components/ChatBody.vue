@@ -12,8 +12,10 @@
           <div class="lay-content">
             <div class="msg-header">
               <h4>{{item.type === 4 ? '计划消息' : item.sender.nickname}}</h4>
-              <span class="common-member" v-if="item.type !== 4">
-                {{getRole(item.sender.id, item.sender.roles)}}
+              <span
+                v-if="item.type !== 4"
+                :class="['common-member', getRole(item.sender.id, item.sender.roles).role]">
+                {{getRole(item.sender.id, item.sender.roles).displayName}}
               </span>
               <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
             </div>
@@ -194,20 +196,31 @@ export default {
       }
       let isManager = ''
       let isService = ''
+      let displayName = ''
       for (let i = 0, length = roles.length; i < length; i++) {
+        displayName = roles[i].display_name
         if (roles[i].id === 1) {
-          isManager = roles[i].display_name
+          isManager = true
           break
         } else if (roles[i].id === 4) {
-          isService = roles[i].display_name
+          isService = true
         }
       }
       if (isManager) {
-        this.roleCache[id] = isManager
+        this.roleCache[id] = {
+          role: 'manager',
+          displayName: displayName
+        }
       } else if (isService) {
-        this.roleCache[id] = isService
+        this.roleCache[id] = {
+          role: 'service',
+          displayName: displayName
+        }
       } else {
-        this.roleCache[id] = '普通会员'
+        this.roleCache[id] = {
+          role: '',
+          displayName: ''
+        }
       }
       return this.roleCache[id]
     },
@@ -351,16 +364,28 @@ export default {
 }
 
 .common-member {
-  margin: 0 2px;
-  background: #cb9b64;
+  display: inline-block;
   color: #fff;
-  padding: 0 6px;
   border-radius: 10px;
   font-weight: 400;
   font-size: 10px;
-  margin-left: 5px;
-  margin-right: 5px;
+  width: 8px;
+  height: 1px;
   float: left;
+  &.service {
+    background: #1976d2;
+    padding: 0 6px;
+    width: auto;
+    height: auto;
+    margin: 0 5px;
+  }
+  &.manager {
+    background: #d6a254;
+    padding: 0 6px;
+    width: auto;
+    height: auto;
+    margin: 0 5px;
+  }
 }
 .lay-content {
   width: calc(~"100%" - 62px);

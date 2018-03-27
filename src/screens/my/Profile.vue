@@ -28,7 +28,6 @@
         :class="{'weui-cell_warn': !validators['QQ'].valid}"
         autocapitalize="off"
         title="QQ号"
-        :max="8"
         @on-change="validate($event, 'QQ')"
         keyboard="number"
         :value="member.QQ">
