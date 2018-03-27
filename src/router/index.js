@@ -1,7 +1,12 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '../store'
 
 Vue.use(Router)
+
+const isCommonMember = (roles) => {
+  return roles && roles.every(role => role.id !== 4 && role.id !== 1)
+}
 
 export default new Router({
   routes: [
@@ -32,6 +37,13 @@ export default new Router({
       meta: {
         requiresAuth: true,
         title: '联系客服'
+      },
+      beforeEnter: (to, from, next) => {
+        if (isCommonMember(store.state.user.roles)) {
+          next()
+        } else {
+          next('/chatroom')
+        }
       }
     },
     {

@@ -3,7 +3,7 @@ import axios from 'axios'
 import App from './App'
 import router from './router'
 import VueCookie from 'vue-cookie'
-import { createStore } from './store'
+import store from './store'
 import { sync } from 'vuex-router-sync'
 import { fetchSystemConfig, setCookie } from './api'
 import * as types from './store/mutations/mutation-types'
@@ -69,8 +69,6 @@ axios.interceptors.response.use(res => {
 
 Vue.config.productionTip = false
 
-const store = createStore()
-
 const toLogin = function (router) {
   store.commit('RESET_USER')
   if (store.state.ws) {
@@ -86,22 +84,13 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-const isCommonMember = (roles) => {
-  return roles && roles.every(role => role.id !== 4 && role.id !== 1)
-}
-
 router.beforeEach((to, from, next) => {
   document.title = `彩票计划聊天室 - ${to.meta.title}`
-  const matched = to.matched[0]
   if (!store.state.user.logined && to.meta.requiresAuth === true) {
     let token = VueCookie.get('access_token')
     if (token) {
       store.dispatch('fetchUser').then(res => {
-        if ((matched && matched.path !== '/private') || isCommonMember(res.roles)) {
-          next()
-        } else {
-          next('/chatroom')
-        }
+        next()
       }).catch(() => {
         toLogin(router)
       })
@@ -109,11 +98,7 @@ router.beforeEach((to, from, next) => {
       toLogin(router)
     }
   } else {
-    if ((matched && matched.path !== '/private') || isCommonMember(store.state.user.roles)) {
-      next()
-    } else {
-      next('/chatroom')
-    }
+    next()
   }
 })
 
