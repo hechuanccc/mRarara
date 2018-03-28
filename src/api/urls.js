@@ -22,5 +22,6 @@ export default {
   setCookie: host + '/set_cookie/',
   decode,
   buildRoom: host + '/v1/room/',
-  envelope: host + '/v1/envelope/'
+  envelope: host + '/v1/envelope/',
+  stickers: host + '/v1/stickers/'
 }

@@ -111,5 +111,8 @@ export default {
   },
   updateEnvelope: ({commit}, setting) => {
     commit(types.UPDATE_ENVELOPE, setting)
+  },
+  initEmoji: ({commit}, setting) => {
+    commit(types.INIT_EMOJI, setting)
   }
 }

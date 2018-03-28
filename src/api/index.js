@@ -79,3 +79,7 @@ export function takeEnvelope (envelopId, userId) {
     'Content-Type': 'application/json'
   })
 }
+
+export function fetchStickers (name) {
+  return axios.get(`${urls.stickers}?group=${name}`)
+}

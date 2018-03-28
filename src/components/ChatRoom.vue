@@ -11,11 +11,81 @@
     </div>
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
-      <chat-body :messages="rooms[roomId]" :roomId="roomId"/>
+      <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="hidePanel"/>
       <div :class="['footer', isFocus?'isFocus':'']">
-        <div class="typing">
-          <label class="control-bar" for="capture">
-            <icon scale="1.3" name="picture-o" class="text-center el-icon-picture"></icon>
+        <div id="typing" class="typing" @click="handTriggerPanel">
+          <div id="more-btn" class="more-btn"></div>
+          <div id="emoji-btn" class="emoji-btn">
+            <icon scale="1.5" name="smile-o"></icon>
+          </div>
+          <textarea
+            @focus="isFocus = true"
+            @blur="isFocus = false"
+            ref="chatpannel"
+            type="textarea"
+            autocomplete="off"
+            validateevent="true"
+            :class="['el-textarea', noPermission ? 'is-disabled' : '']"
+            v-model="msgCnt"
+            :disabled="noPermission">
+          </textarea>
+          <div class="send-btn" @click="sendMsg" >
+            <icon scale="1" name="paper-plane"></icon>
+          </div>
+        </div>
+        <div v-show="isShowEmojiPanel" class="emoji-panel">
+          <div class="select-panel">
+            <swiper
+              height="180px"
+              dots-position="center"
+              dots-class="emoji">
+              <swiper-item
+                v-for="(chunk, index) in currentEmojisChunk"
+                :key="index">
+                <ul
+                  v-if="activeSeries === 'symbol'" class="symbol-series"
+                  @click="sendEmojiSymbol">
+                  <li
+                    v-for="(emoji, emojiIndex) in chunk"
+                    :key="emojiIndex"
+                    :data-content="emoji.emoji">
+                    {{emoji.emoji}}
+                    </li>
+                </ul>
+                <ul
+                  v-else class="sticker-series"
+                  @click="sendEmojiSticker">
+                  <li
+                    v-for="(sticker, stickerIndex) in chunk"
+                    :key="stickerIndex"
+                    :data-content="sticker.id">
+                    <div class="sticker" :style="{'background-image': `url('${sticker.url}')`}"></div>
+                    </li>
+                </ul>
+              </swiper-item>
+            </swiper>
+          </div>
+          <div class="series-panel">
+            <ul>
+              <li :class="{active: series.name === activeSeries}" v-for="(series, index) in emojiSeries" :key="index" @click="selectSeries(series)">
+                <div v-if="series.logo" class="logo" :style="{'background-image':`url('${series.logo}')`}"></div>
+                <span v-else :style="{'font-size':'20px'}">{{series.display_name}}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div v-show="isShowControlPanel" class="control-panel">
+          <label v-if="roomId === 1" class="control-btn" @click="openEnvelopeDialog">
+            <div class="icon-bg">
+              <div class="envelope-icon"></div>
+            </div>
+            <div class="title">发红包</div>
+          </label>
+          <label class="control-btn" for="capture">
+            <div class="icon-bg">
+              <div class="picture-icon"></div>
+            </div>
+            <div class="title">图片</div>
             <input @change="sendMsgImg"
               type="file"
               id="capture"
@@ -23,32 +93,13 @@
               class="img-upload-input"
               accept="image/*">
           </label>
-          <label v-if="roomId === 1" class="control-bar" @click="openEnvelopeDialog">
-            <div class="envelope-icon"></div>
-          </label>
-          <div class="txtinput el-textarea">
-            <textarea
-              @focus="isFocus = true"
-              @blur="isFocus = false"
-              ref="chatpannel"
-              type="textarea"
-              autocomplete="off"
-              validateevent="true"
-              :class="['el-textarea-inner', !personal_setting.chat ? 'is-disabled' : '']"
-              v-model="msgCnt"
-              :disabled="noPermission">
-            </textarea>
-          </div>
-          <div class="txt-right clearfix">
-            <a href="javascript:void(0)" class="send-btn" @click="sendMsg">发送</a>
-          </div>
         </div>
       </div>
     </div>
     <div v-transfer-dom>
       <x-dialog
         class="envelope-dialog"
-        :show.sync="showEnvelopeDialog"
+        :show.sync="isShowEnvelopeDialog"
         :hide-on-blur="true"
         @on-hide="reset"
         :dialog-style="{
@@ -61,7 +112,7 @@
           'background-position': 'top, center',
           'background-repeat': 'no-repeat, no-repeat'
         }">
-        <div class="close" @click="showEnvelopeDialog = false"></div>
+        <div class="close" @click="isShowEnvelopeDialog = false"></div>
         <div class="envelope-avatar">
           <div class="money"></div>
         </div>
@@ -127,12 +178,13 @@
 
 <script>
 import Icon from 'vue-awesome/components/Icon'
-import 'vue-awesome/icons/picture-o'
+import _ from 'lodash'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
+import 'vue-awesome/icons/paper-plane'
 import { mapGetters, mapState } from 'vuex'
-import { sendImgToChat, buildRoom, sendEnvelope } from '../api'
-import { Group, XInput, XTextarea, XButton, Tab, TabItem, AlertModule, Popover, TransferDom, XDialog } from 'vux'
+import { sendImgToChat, buildRoom, sendEnvelope, fetchStickers } from '../api'
+import { Group, XInput, XTextarea, XButton, Tab, TabItem, AlertModule, Popover, TransferDom, XDialog, Swiper, SwiperItem } from 'vux'
 import { msgFormatter } from '../utils'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatBody from './ChatBody'
@@ -151,7 +203,9 @@ export default {
     Group,
     XInput,
     XTextarea,
-    XButton
+    XButton,
+    Swiper,
+    SwiperItem
   },
   directives: {
     TransferDom
@@ -172,7 +226,10 @@ export default {
       roomId: '',
       chatWithId: this.$route.params.chatWithId,
       isFocus: false,
-      showEnvelopeDialog: false,
+      isShowEnvelopeDialog: false,
+      isShowControlPanel: false,
+      isShowEmojiPanel: false,
+      activeSeries: 'symbol',
       envelope: {
         pack_amount: '',
         pack_nums: '',
@@ -215,10 +272,25 @@ export default {
       'user'
     ]),
     ...mapState([
-      'systemConfig', 'personal_setting', 'announcement', 'rooms'
+      'systemConfig', 'personal_setting', 'announcement', 'rooms', 'emojis'
     ]),
     noPermission () {
       return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+    },
+    emojiSeries () {
+      let symbol = {
+        name: 'symbol',
+        display_name: this.emojis.symbol[0] ? this.emojis.symbol[0].emoji : '',
+        logo: null
+      }
+      return [symbol].concat(this.systemConfig.stickerGroups)
+    },
+    currentEmojisChunk () {
+      const emojis = this.emojis[this.activeSeries]
+      if (this.activeSeries === 'symbol') {
+        return _.chunk(emojis, 24)
+      }
+      return _.chunk(emojis, 8)
     }
   },
   created () {
@@ -244,16 +316,74 @@ export default {
     document.addEventListener('visibilitychange', this.visibilitychange)
   },
   methods: {
+    handTriggerPanel (e) {
+      let target = e.target
+      let id = target.id
+      while (id !== 'typing') {
+        if (id === 'more-btn') {
+          this.isShowControlPanel = !this.isShowControlPanel
+          this.isShowEmojiPanel = false
+          break
+        } else if (id === 'emoji-btn') {
+          this.isShowControlPanel = false
+          this.isShowEmojiPanel = !this.isShowEmojiPanel
+          break
+        }
+        target = target.parentNode
+        id = target.id
+        if (id === 'typing' || target.nodeName === 'BODY') {
+          this.hidePanel()
+          break
+        }
+      }
+    },
+    hidePanel () {
+      this.isShowControlPanel = false
+      this.isShowEmojiPanel = false
+    },
     openEnvelopeDialog () {
       if (this.noPermission) {
         return
       }
-      this.showEnvelopeDialog = true
+      this.isShowEnvelopeDialog = true
     },
     visibilitychange () {
       this.isFocus = false
       if (this.$refs.chatpannel) {
         this.$refs.chatpannel.blur()
+      }
+    },
+    selectSeries (series) {
+      let seriesName = series.name
+      this.activeSeries = seriesName
+      if (seriesName !== 'symbol') {
+        if (!this.emojis[seriesName]) {
+          fetchStickers(seriesName).then(resp => {
+            this.$store.dispatch('initEmoji', {id: seriesName, emojis: resp[seriesName]})
+          }).catch(() => {})
+        }
+      }
+    },
+    sendEmojiSymbol (e) {
+      let target = e.target
+      if (target.nodeName === 'LI') {
+        this.msgCnt = this.msgCnt + target.dataset.content
+      }
+    },
+    sendEmojiSticker (e, id) {
+      let target = e.target
+      while (target.nodeName !== 'UL') {
+        if (target.nodeName === 'LI') {
+          this.$store.state.ws.send(JSON.stringify({
+            'command': 'send',
+            'receivers': [this.roomId],
+            'type': 7,
+            'sticker': target.dataset.content
+          }))
+          this.hidePanel()
+          break
+        }
+        target = target.parentNode
       }
     },
     sendMsgImg (e) {
@@ -280,6 +410,7 @@ export default {
         formData.append('receiver', this.roomId)
         formData.append('image', rst.file)
         sendImgToChat(formData).then((data) => {
+          this.hidePanel()
           fileInp.value = ''
         })
       })
@@ -306,8 +437,9 @@ export default {
           envelope.content = '恭喜发财，大吉大利'
         }
         sendEnvelope(envelope).then(data => {
+          this.hidePanel()
           this.loading = false
-          this.showEnvelopeDialog = false
+          this.isShowEnvelopeDialog = false
           this.$store.dispatch('fetchUser')
         }, error => {
           this.error = msgFormatter(error)
@@ -354,7 +486,6 @@ export default {
 <style lang="less" scoped>
 @import '../styles/vars.less';
 @import '~vux/src/styles/close';
-
 .chat-box {
   position: relative;
   width: 100%;
@@ -410,98 +541,212 @@ export default {
 }
 .footer {
   display: flex;
+  flex-direction: column;
   position: relative;
   flex: 0 0 auto;
   width: 100%;
-  height: 65px;
   background: #f5f5f5;
   &.isFocus {
     transform: translateY(-28px);
   }
   .typing {
+    height: 50px;
     display: flex;
     box-sizing: border-box;
     padding: 5px;
     width: 100%;
-    height: 100%;
-  }
-  .el-textarea-inner {
-    outline: none;
-  }
-  .control-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 5px;
-    flex: 0.5;
-    border: 1px solid #bfcbd9;
-    background: #efefef;
-    color: #666;
-    text-align: center;
-    border-radius: 4px;
-    overflow: hidden;
-    .img-upload-input {
-      display: none;
+    .more-btn {
+      flex: 0 0 auto;
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      margin-right: 5px;
+      background-color: #dfdfdf;
+      &::before,&::after {
+        position: absolute;
+        left: 19px;
+        top: 12px;
+        content: ' ';
+        height: 16px;
+        width: 2px;
+        background-color: #9b9b9b;
+      }
+      &::before {
+        transform: rotate(90deg);
+      }
     }
-    .el-icon-picture {
-      font-size: 20px;
-      color: #72aadb;
+    .emoji-btn {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      margin-right: 5px;
+      background-color: #dfdfdf;
+      color: #9b9b9b;
     }
-  }
-  .envelope-icon {
-    background: url('../assets/envelope_btn.png') no-repeat center;
-    background-size: contain;
-    height: 30px;
-    width: 38px;
-  }
 
-  .txtinput {
-    flex: 3;
-  }
-  .txt-right {
-    margin-left: 5px;
-    flex: 1;
-  }
-  .el-textarea {
-    vertical-align: bottom;
-  }
-  .is-disabled {
-    .el-textarea-inner {
-      background-color: #eef1f6;
-      border-color: #d1dbe5;
-      color: #bbb;
-      cursor: not-allowed;
-      height: 54px;
+    .send-btn {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 4px;
+      width: 40px;
+      height: 40px;
+      font-size: 14px;
+      line-height: 52px;
+      background: #4a90e2;
+      color: #fff;
+    }
+
+    .el-textarea {
+      flex: 1 1 auto;
+      margin-right: 5px;
       resize: none;
+      outline: none;
+      display: block;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      font-size: 14px;
+      color: #1f2d3d;
+      background-color: #fff;
+      border: 1px solid #bfcbd9;
+      border-radius: 4px;
+      transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+      box-sizing: border-box;
+      background-image: none;
+      &.is-disabled {
+        border: solid 1px #b9b9b9;
+        color: #bbb;
+      }
     }
   }
-  .el-textarea-inner {
-    display: block;
-    resize: vertical;
-    padding: 5px 7px;
-    line-height: 1.5;
+  .emoji-panel {
     width: 100%;
-    font-size: 14px;
-    color: #1f2d3d;
-    background-color: #fff;
-    border: 1px solid #bfcbd9;
-    border-radius: 4px;
-    transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+    height: 230px;
+    .select-panel {
+      width: 100%;
+      height: 180px;
+      .sticker-series,.symbol-series {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        list-style: none;
+        box-sizing: border-box;
+        padding: 10px 10px 20px 10px;
+        li {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+      .sticker-series{
+        li {
+          height: 50%;
+          width: 25%;
+          box-sizing: border-box;
+          padding-bottom: 10px;
+          .sticker {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+          }
+        }
+      }
+      .symbol-series{
+        li {
+          height: 33%;
+          width: 12.5%;
+          font-size: 20px;
+        }
+      }
+    }
+    .series-panel {
+      width: 100%;
+      height: 50px;
+      overflow: hidden;
+      ul {
+        height: 100%;
+        display: flex;
+        background: #fff;
+        li {
+          width: 50px;
+          display: flex;
+          position: relative;
+          align-items: center;
+          justify-content: center;
+          &.active {
+            background: #f5f5f5;
+          }
+          .logo {
+            width: 30px;
+            height: 30px;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+          }
+        }
+      }
+    }
+  }
+  .control-panel {
+    display: flex;
+    width: 100%;
+    height: 90px;
+    padding: 5px 0 0 12px;
     box-sizing: border-box;
-    background-image: none;
+    .control-btn {
+      height: 100%;
+      width: 72px;
+      padding-right: 12px;
+      box-sizing: border-box;
+      .icon-bg {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 60px;
+        border-radius: 5px;
+        background-color: #ffffff;
+        border: solid 1px #dfdfdf;
+        box-sizing: border-box;
+        .envelope-icon {
+          background: url('../assets/envelope_btn.png') no-repeat center;
+          background-size: contain;
+          height: 30px;
+          width: 38px;
+        }
+        .picture-icon {
+          background: url('../assets/picture.png') no-repeat center;
+          background-size: contain;
+          height: 30px;
+          width: 38px;
+        }
+      }
+      .title {
+        width: 100%;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        color: #9b9b9b;
+        font-size: 12px;
+      }
+      .img-upload-input {
+        display: none;
+      }
+    }
   }
 }
 
-.send-btn {
-  display: block;
-  text-align: center;
-  border-radius: 3px;
-  height: 100%;
-  font-size: 14px;
-  line-height: 52px;
-  background: #72aadb;
-  color: #fff;
-}
+
 
 .envelope-dialog {
   font-weight: lighter;

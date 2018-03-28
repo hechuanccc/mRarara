@@ -93,5 +93,8 @@ export default {
       }
       Object.assign(envelope, data)
     }
+  },
+  [types.INIT_EMOJI]: (state, {id, emojis}) => {
+    Vue.set(state.emojis, id, emojis)
   }
 }
