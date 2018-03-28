@@ -17,7 +17,11 @@ export default new Vuex.Store({
       customerServiceUrl: '',
       webLotteryRegisterUrl: '',
       lotteryResultUrl: '',
-      envelopeSettings: {}
+      envelopeSettings: {},
+      stickerGroups: []
+    },
+    emojis: {
+      symbol: []
     },
     ws: '',
     rooms: {

@@ -5,7 +5,7 @@ import router from './router'
 import VueCookie from 'vue-cookie'
 import store from './store'
 import { sync } from 'vuex-router-sync'
-import { fetchSystemConfig, setCookie } from './api'
+import { fetchSystemConfig, setCookie, fetchChatEmoji } from './api'
 import * as types from './store/mutations/mutation-types'
 import Vue2Filters from 'vue2-filters'
 import qs from 'qs'
@@ -115,7 +115,9 @@ Vue.mixin({
     }
   }
 })
-
+fetchChatEmoji().then(response => {
+  store.dispatch('initEmoji', {id: 'symbol', emojis: response.people.slice(0, 42)})
+})
 fetchSystemConfig().then(
   response => {
     let pref = response.global_preferences
@@ -130,7 +132,8 @@ fetchSystemConfig().then(
         mobileUrl: pref.mobile_url,
         privateChatBlockedUsers: pref.private_chat_blocked_users,
         title: pref.title,
-        envelopeSettings: pref.envelope_settings
+        envelopeSettings: pref.envelope_settings,
+        stickerGroups: response.sticker_groups || []
       })
   }
 )

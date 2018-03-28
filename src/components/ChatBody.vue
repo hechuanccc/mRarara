@@ -20,10 +20,21 @@
               <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
             </div>
             <envelope v-if="item.type === 5" :item="item" @click.native="openEnvelop(item.envelope_status.id)"></envelope>
+            <div v-else-if="item.type === 7" class="picture">
+              <img-async
+                :src="host+item.content"
+                @imgStart="imgLoadCount++"
+                @imgLoad="imgLoadCount--"/>
+            </div>
             <div v-else :class="['bubble', 'bubble' + item.type]">
               <p>
                 <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
-                <img-async @click.native="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content" @imgStart="imgLoadCount++" @imgLoad="imgLoadCount--"/>
+                <img-async
+                  @click.native="showImageMsg = true; showImageMsgUrl = item.content"
+                  v-else-if="item.type === 1"
+                  :src="item.content"
+                  @imgStart="imgLoadCount++"
+                  @imgLoad="imgLoadCount--"/>
               </p>
             </div>
           </div>
@@ -295,6 +306,15 @@ export default {
       background: rgba(255, 255, 255, .2);
     }
   }
+  .lay-content {
+    width: calc(~"100%" - 62px);
+    .picture {
+      width: 55%;
+      img {
+        width: 100%;
+      }
+    }
+  }
   &.item-left {
     .lay-block {
       .lay-content {
@@ -332,6 +352,9 @@ export default {
           span {
             float: right;
           }
+        }
+        .picture {
+          float: right;
         }
         .bubble {
           float: right;
@@ -386,9 +409,6 @@ export default {
     height: auto;
     margin: 0 5px;
   }
-}
-.lay-content {
-  width: calc(~"100%" - 62px);
 }
 .msg-header {
   overflow: hidden;
