@@ -21,6 +21,27 @@
           <textarea
             @focus="isFocus = true"
             @blur="isFocus = false"
+            ref="realChatpannel"
+            type="textarea"
+            autocomplete="off"
+            validateevent="true"
+            :class="['el-textarea', noPermission ? 'is-disabled' : '']"
+            v-model="msgCnt"
+            :disabled="noPermission">
+          </textarea>
+          <div class="send-btn" @click="sendMsg" >
+            <icon scale="1" name="paper-plane"></icon>
+          </div>
+        </div>
+      </div>
+      <div :class="['footer', 'fake', isFocus?'isFocus':'']">
+        <div id="typing" class="typing" @click="handTriggerPanel">
+          <div id="more-btn" class="more-btn"></div>
+          <div id="emoji-btn" class="emoji-btn">
+            <icon scale="1.5" name="smile-o"></icon>
+          </div>
+          <textarea
+            @focus="triggerRealInput"
             ref="chatpannel"
             type="textarea"
             autocomplete="off"
@@ -316,6 +337,9 @@ export default {
     document.addEventListener('visibilitychange', this.visibilitychange)
   },
   methods: {
+    triggerRealInput () {
+      this.$refs.realChatpannel.focus()
+    },
     handTriggerPanel (e) {
       let target = e.target
       let id = target.id
@@ -546,8 +570,15 @@ export default {
   flex: 0 0 auto;
   width: 100%;
   background: #f5f5f5;
+  &.fake {
+    position: absolute;
+    bottom: 0;
+  }
   &.isFocus {
-    transform: translateY(-28px);
+    transform: translateY(-36px);
+    &.fake {
+      display: none
+    }
   }
   .typing {
     height: 50px;
