@@ -1,6 +1,7 @@
 <template>
   <div>
     <div
+      v-if="key !== 'csffc'"
       v-for="(value, key, index) in resultsMap"
       :key="index" class="result m-b">
       <div class="information">
