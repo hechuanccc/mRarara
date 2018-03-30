@@ -169,6 +169,11 @@ export default {
       }
     }
   },
+  mounted () {
+    this.notNeedScroll = false
+    const view = this.$refs.view
+    view.scrollTop = view.scrollHeight
+  },
   watch: {
     'messages.length': function (newCount, oldCount) {
       this.notNeedScroll = false
