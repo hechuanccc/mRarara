@@ -168,22 +168,20 @@ export default {
       }
     }
   },
-  mounted () {
-    const view = this.$refs.view
-    view.scrollTop = view.scrollHeight
-  },
   watch: {
     'messages.length': function (newCount, oldCount) {
-      this.$nextTick(() => {
-        const view = this.$refs.view
-        if (oldCount === 0) { // 初始
+      const view = this.$refs.view
+      if (oldCount === 0) { // 初始
+        this.$nextTick(() => {
           view.scrollTop = view.scrollHeight
-        } else if ( // 1. user正在閱讀之前訊息 2. 是否為自己發的訊息
-          view.scrollTop + view.clientHeight + 100 > view.scrollHeight ||
-          this.messages[newCount - 1].sender.id === this.user.id) {
+        })
+      } else if ( // 1. user正在閱讀之前訊息 2. 是否為自己發的訊息
+        view.scrollTop + view.clientHeight + 100 > view.scrollHeight ||
+        this.messages[newCount - 1].sender.id === this.user.id) {
+        this.$nextTick(() => {
           view.scrollTop = view.scrollHeight
-        }
-      })
+        })
+      }
     },
     'imgLoadCount': function (count) {
       if (count === 0) {
