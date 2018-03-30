@@ -26,7 +26,8 @@ export default new Router({
       path: '/register',
       name: 'Register',
       meta: {
-        title: '注册'
+        title: '注册',
+        showBack: true
       },
       component: resolve => { require(['../screens/Register.vue'], resolve) }
     },
@@ -52,7 +53,8 @@ export default new Router({
       component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
       meta: {
         requiresAuth: true,
-        title: '联系客服'
+        title: '联系客服',
+        showBack: true
       }
     },
     {
@@ -87,7 +89,8 @@ export default new Router({
       name: 'profile',
       meta: {
         title: '修改账户资料',
-        requiresAuth: true
+        requiresAuth: true,
+        showBack: true
       },
       component: resolve => { require(['../screens/my/Profile.vue'], resolve) }
     },
@@ -96,7 +99,8 @@ export default new Router({
       name: 'password',
       meta: {
         title: '重设密码',
-        requiresAuth: true
+        requiresAuth: true,
+        showBack: true
       },
       component: resolve => { require(['../screens/my/Password.vue'], resolve) }
     },
@@ -105,7 +109,8 @@ export default new Router({
       name: 'image',
       meta: {
         title: '修改头像',
-        requiresAuth: true
+        requiresAuth: true,
+        showBack: true
       },
       component: resolve => { require(['../screens/my/Img.vue'], resolve) }
     },
@@ -114,7 +119,8 @@ export default new Router({
       name: 'EnvelopRecord',
       meta: {
         title: '红包纪录',
-        requiresAuth: true
+        requiresAuth: true,
+        showBack: true
       },
       component: resolve => { require(['../screens/my/EnvelopeRecord.vue'], resolve) }
     },
