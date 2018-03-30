@@ -4,7 +4,7 @@
     :body-padding-top="user.logined?'44px':'46px'"
     body-padding-bottom="0">
     <div
-      v-if="user.logined"
+      v-if="user.logined && !needShowBack"
       class="tab-content"
       slot="header"
       :style="{
@@ -134,7 +134,7 @@ export default {
       return ''
     },
     needShowBack () {
-      return this.$route.path === '/register'
+      return this.$route.meta.showBack
     }
   },
   watch: {
