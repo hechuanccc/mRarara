@@ -194,7 +194,9 @@
         </div>
       </x-dialog>
     </div>
-    <div v-if="user.viewRole === VISITOR" class="logout" @click="$store.dispatch('logout')">退出</div>
+    <div v-if="user.viewRole === VISITOR" class="logout" @click="$store.dispatch('logout')">
+      <div class="btn">立即注册/会员登入</div>
+    </div>
   </div>
 </template>
 
@@ -879,15 +881,21 @@ export default {
 }
 .logout {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
-  text-align: center;
-  color: #fff;
-  font-size: 18px;
-  border-radius: 50%;
-  background: #4a90e2;
+  bottom: 10px;
+  height: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 10px;
+  .btn {
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #000;
+    text-align: center;
+    background-image: linear-gradient(-180deg, #FFFFFF 0%, #bfbfbf 100%);
+    border-radius: 100px;
+  }
 }
 </style>
