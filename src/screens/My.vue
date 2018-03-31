@@ -28,7 +28,7 @@ import { mapGetters } from 'vuex'
 import { Group, Cell, Confirm } from 'vux'
 
 export default {
-  name: 'Home',
+  name: 'My',
   data () {
     return {
       logoutDialogShow: false

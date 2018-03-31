@@ -289,7 +289,7 @@ export default {
                 }
               })
             }).then(result => {
-              this.$router.push({ name: 'Home' })
+              this.$router.push({ path: '/chatroom' })
               this.$store.dispatch('fetchUser')
             }, errorMsg => {
               this.loading = false

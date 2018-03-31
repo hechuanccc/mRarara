@@ -1,15 +1,17 @@
 <template>
-  <div :class="['container', {disabled:currentEnvelope.status === 1 || currentEnvelope.status === 3}]">
+  <div :class="['container', {disabled:currentEnvelope.status === 1 || currentEnvelope.status === 3 || isVisitor}]">
     <div class="icon"></div>
     <div class="content">
       <div class="msg">{{item.content || '恭喜发财，大吉大利'}}</div>
-      <div class="status">{{currentEnvelope.status | statusFilter}}</div>
+      <div v-if="!isVisitor" class="status">{{currentEnvelope.status | statusFilter}}</div>
+      <div v-else class="status">会员才能抢红包</div>
     </div>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import { VISITOR } from '../customConfig'
 export default {
   filters: {
     statusFilter (val) {
@@ -47,6 +49,9 @@ export default {
       } else {
         return this.envelope[envelopeId]
       }
+    },
+    isVisitor () {
+      return this.user.viewRole === VISITOR
     }
   },
   created () {

@@ -1,13 +1,23 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import store from '../store'
+import { MEMBER, VISITOR } from '../customConfig'
 
-Vue.use(Router)
-
-const isCommonMember = (roles) => {
-  return roles && roles.every(role => role.id !== 4 && role.id !== 1)
+const privatePageAuthCheck = (to, from, next) => {
+  if (store.state.user.viewRole === MEMBER) {
+    next()
+  } else {
+    next('/chatroom')
+  }
 }
-
+const myPageAuthCheck = (to, from, next) => {
+  if (store.state.user.viewRole === VISITOR) {
+    next('/chatroom')
+  } else {
+    next()
+  }
+}
+Vue.use(Router)
 export default new Router({
   routes: [
     {
@@ -16,7 +26,14 @@ export default new Router({
       meta: {
         title: '登录'
       },
-      component: resolve => { require(['../screens/Login.vue'], resolve) }
+      component: resolve => { require(['../screens/Login.vue'], resolve) },
+      beforeEnter: (to, from, next) => {
+        if (store.state.user.logined) {
+          next('/chatroom')
+        } else {
+          next()
+        }
+      }
     },
     {
       path: '/',
@@ -34,55 +51,51 @@ export default new Router({
     {
       path: '/private',
       name: 'PrivateChat',
-      component: resolve => { require(['../screens/PrivateChat.vue'], resolve) },
       meta: {
         requiresAuth: true,
         title: '联系客服'
       },
-      beforeEnter: (to, from, next) => {
-        if (isCommonMember(store.state.user.roles)) {
-          next()
-        } else {
-          next('/chatroom')
-        }
-      }
+      beforeEnter: privatePageAuthCheck,
+      component: resolve => { require(['../screens/PrivateChat.vue'], resolve) }
     },
     {
       path: '/private/:chatWithId',
       name: 'PrivateChatroom',
-      component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
       meta: {
         requiresAuth: true,
         title: '联系客服',
         showBack: true
-      }
+      },
+      beforeEnter: privatePageAuthCheck,
+      component: resolve => { require(['../components/ChatRoom.vue'], resolve) }
     },
     {
       path: '/chatroom',
       name: 'ChatRoom',
-      component: resolve => { require(['../components/ChatRoom.vue'], resolve) },
       meta: {
         requiresAuth: true,
         title: '首页'
-      }
+      },
+      component: resolve => { require(['../components/ChatRoom.vue'], resolve) }
     },
     {
       path: '/results',
       name: 'Results',
-      component: resolve => { require(['../screens/ResultPage.vue'], resolve) },
       meta: {
         requiresAuth: true,
         title: '开奖'
-      }
+      },
+      component: resolve => { require(['../screens/ResultPage.vue'], resolve) }
     },
     {
       path: '/my',
       name: 'my',
-      component: resolve => { require(['../screens/My.vue'], resolve) },
       meta: {
         title: '我的账户',
         requiresAuth: true
-      }
+      },
+      beforeEnter: myPageAuthCheck,
+      component: resolve => { require(['../screens/My.vue'], resolve) }
     },
     {
       path: '/my/profile',
@@ -92,6 +105,7 @@ export default new Router({
         requiresAuth: true,
         showBack: true
       },
+      beforeEnter: myPageAuthCheck,
       component: resolve => { require(['../screens/my/Profile.vue'], resolve) }
     },
     {
@@ -102,6 +116,7 @@ export default new Router({
         requiresAuth: true,
         showBack: true
       },
+      beforeEnter: myPageAuthCheck,
       component: resolve => { require(['../screens/my/Password.vue'], resolve) }
     },
     {
@@ -112,6 +127,7 @@ export default new Router({
         requiresAuth: true,
         showBack: true
       },
+      beforeEnter: myPageAuthCheck,
       component: resolve => { require(['../screens/my/Img.vue'], resolve) }
     },
     {
@@ -122,6 +138,7 @@ export default new Router({
         requiresAuth: true,
         showBack: true
       },
+      beforeEnter: myPageAuthCheck,
       component: resolve => { require(['../screens/my/EnvelopeRecord.vue'], resolve) }
     },
     {
