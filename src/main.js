@@ -92,10 +92,10 @@ router.beforeEach((to, from, next) => {
       store.dispatch('fetchUser').then(res => {
         next()
       }).catch(() => {
-        toLogin(router)
+        next('/login')
       })
     } else {
-      toLogin(router)
+      next('/login')
     }
   } else {
     next()
