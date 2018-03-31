@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import * as types from '../mutations/mutation-types'
 import router from '../../router'
+import {ADMIN, SERVICE, MEMBER, VISITOR} from '../../customConfig'
 import axios from 'axios'
 import {
   fetchUser,
@@ -38,7 +39,7 @@ export default {
       res => {
         commit(types.RESET_USER)
         dispatch('leaveRoom')
-        router.push('/')
+        router.push('/login')
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
       },
@@ -47,15 +48,31 @@ export default {
   },
   fetchUser: ({ commit, state, dispatch }) => {
     return fetchUser().then(res => {
+      let roles = res.roles
+      let viewRole = MEMBER
+      for (let i = 0, length = roles.length; i < length; i++) {
+        let role = roles[i]
+        if (role.id === 5) {
+          viewRole = VISITOR
+          break
+        } else if (role.id === 1) {
+          viewRole = ADMIN
+          break
+        } else if (role.id === 4) {
+          viewRole = SERVICE
+          break
+        }
+      }
       if (!res.error) {
         commit(types.SET_USER, {
           user: {
             ...res,
-            logined: true
+            logined: true,
+            viewRole: viewRole
           }
         })
         if (state.chatlist.length === 0) {
-          if (!res.roles.some(role => { return role.id === 4 || role.id === 1 })) {
+          if (viewRole === MEMBER) {
             dispatch('initChatlist')
           }
         }

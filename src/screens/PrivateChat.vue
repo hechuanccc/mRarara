@@ -35,10 +35,7 @@ export default {
   computed: {
     ...mapState([
       'user', 'chatlist', 'unreadRooms'
-    ]),
-    isCustomerService () {
-      return this.$store.state.user.roles.some(role => role.id === 4)
-    }
+    ])
   }
 }
 </script>

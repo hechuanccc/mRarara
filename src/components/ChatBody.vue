@@ -113,6 +113,7 @@ import { takeEnvelope } from '../api'
 import Envelope from './Envelope'
 import ImgAsync from './ImgAsync'
 import urls from '../api/urls'
+import { VISITOR } from '../customConfig'
 export default {
   components: {
     Popup,
@@ -152,7 +153,7 @@ export default {
       'user', 'personal_setting', 'rooms', 'envelope'
     ]),
     noPermission () {
-      return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+      return this.user.viewRole === VISITOR || (this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked))
     },
     statistic () {
       if (this.selectedEnvelope.users) {

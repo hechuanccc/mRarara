@@ -12,7 +12,7 @@
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
       <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="hidePanel"/>
-      <div :class="['footer', isFocus?'isFocus':'']">
+      <div v-if="user.viewRole !== VISITOR" :class="['footer', isFocus?'isFocus':'']">
         <div id="typing" class="typing" @click="handTriggerPanel">
           <div id="more-btn" class="more-btn"></div>
           <div id="emoji-btn" class="emoji-btn">
@@ -34,7 +34,7 @@
           </div>
         </div>
       </div>
-      <div :class="['footer', 'fake', isFocus?'isFocus':'']">
+      <div v-if="user.viewRole !== VISITOR" :class="['footer', 'fake', isFocus?'isFocus':'']">
         <div id="typing" class="typing" @click="handTriggerPanel">
           <div id="more-btn" class="more-btn"></div>
           <div id="emoji-btn" class="emoji-btn">
@@ -194,6 +194,7 @@
         </div>
       </x-dialog>
     </div>
+    <div v-if="user.viewRole === VISITOR" class="logout" @click="$store.dispatch('logout')">退出</div>
   </div>
 </template>
 
@@ -207,6 +208,7 @@ import { mapGetters, mapState } from 'vuex'
 import { sendImgToChat, buildRoom, sendEnvelope, fetchStickers } from '../api'
 import { Group, XInput, XTextarea, XButton, Tab, TabItem, AlertModule, Popover, TransferDom, XDialog, Swiper, SwiperItem } from 'vux'
 import { msgFormatter } from '../utils'
+import { VISITOR } from '../customConfig'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatBody from './ChatBody'
 import lrz from 'lrz'
@@ -285,7 +287,8 @@ export default {
             }
           }
         }
-      }
+      },
+      VISITOR: VISITOR
     }
   },
   computed: {
@@ -873,5 +876,18 @@ export default {
       text-align: center;
     }
   }
+}
+.logout {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  color: #fff;
+  font-size: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
 }
 </style>

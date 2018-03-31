@@ -46,6 +46,7 @@ import { fetchAnnouce } from './api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/user-circle'
 import config from '../config'
+import {ADMIN, SERVICE, MEMBER} from './customConfig'
 export default {
   name: 'app',
   components: {
@@ -86,11 +87,10 @@ export default {
       }
     },
     pages () {
-      if (this.user.roles) {
-        let roles = this.user.roles
-        for (let i = 0, length = roles.length; i < length; i++) {
-          let role = roles[i]
-          if (role.id === 1 || role.id === 4) {
+      if (this.user.viewRole) {
+        switch (this.user.viewRole) {
+          case ADMIN:
+          case SERVICE:
             return [{
               name: '计划聊天室',
               path: '/chatroom'
@@ -103,7 +103,23 @@ export default {
               name: '帐户',
               path: '/my'
             }]
-          }
+          case MEMBER:
+            return [{
+              name: '计划聊天室',
+              path: '/chatroom'
+            },
+            {
+              name: '联系客服',
+              path: '/private'
+            },
+            {
+              name: '开奖',
+              path: '/results'
+            },
+            {
+              name: '帐户',
+              path: '/my'
+            }]
         }
       }
       return [{
@@ -111,16 +127,8 @@ export default {
         path: '/chatroom'
       },
       {
-        name: '联系客服',
-        path: '/private'
-      },
-      {
         name: '开奖',
         path: '/results'
-      },
-      {
-        name: '帐户',
-        path: '/my'
       }]
     },
     chatWithTitle () {
