@@ -177,6 +177,9 @@ export default {
   },
   watch: {
     'messages.length': function (newCount, oldCount) {
+      if (newCount === 0) {
+        return
+      }
       this.notNeedScroll = false
       const view = this.$refs.view
       if (oldCount === 0) { // 初始
