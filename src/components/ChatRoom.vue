@@ -12,6 +12,18 @@
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
       <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="hidePanel"/>
+      <div class="checkin" v-if="isShowCheckinHint && !isCheckin">
+        <div class="bg">
+          <div class="btn" @click="isShowCheckinDialog = true">
+            <div class="checkin-btn">
+              <div class="logo"></div>
+              签到</div>
+          </div>
+          <div class="btn" @click="isShowCheckinHint = false">
+            <div class="close-btn"></div>
+          </div>
+        </div>
+      </div>
       <div v-if="user.viewRole !== VISITOR" :class="['footer', isFocus?'isFocus':'']">
         <div id="typing" class="typing" @click="handTriggerPanel">
           <div id="more-btn" class="more-btn"></div>
@@ -133,7 +145,7 @@
           'background-position': 'top, center',
           'background-repeat': 'no-repeat, no-repeat'
         }">
-        <div class="close" @click="isShowEnvelopeDialog = false"></div>
+        <div class="close-btn" @click="isShowEnvelopeDialog = false"></div>
         <div class="envelope-avatar">
           <div class="money"></div>
         </div>
@@ -194,6 +206,24 @@
         </div>
       </x-dialog>
     </div>
+    <div v-transfer-dom>
+        <x-dialog
+        :show.sync="isShowCheckinDialog"
+        :hide-on-blur="true"
+        :dialog-style="{
+          'max-width': '355px',
+          width: '355px',
+          'box-sizing': 'border-box',
+          'padding': '0',
+          'background-image': `url('${require('../assets/checkin_bg.png')}')`,
+          'background-size': 'contain',
+          'background-position': 'top',
+          'background-repeat': 'no-repeat',
+          'background-color': 'transparent'
+        }">
+          <checkin-dialog :show="isShowCheckinDialog" @closeCheckin="isShowCheckinDialog = false"/>
+        </x-dialog>
+    </div>
     <div v-if="user.viewRole === VISITOR" class="logout" @click="$store.dispatch('logout')">
       <div class="btn">立即注册/会员登入</div>
     </div>
@@ -206,13 +236,14 @@ import _ from 'lodash'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/smile-o'
 import 'vue-awesome/icons/paper-plane'
-import { mapGetters, mapState } from 'vuex'
+import { mapState } from 'vuex'
 import { sendImgToChat, buildRoom, sendEnvelope, fetchStickers } from '../api'
 import { Group, XInput, XTextarea, XButton, Tab, TabItem, AlertModule, Popover, TransferDom, XDialog, Swiper, SwiperItem } from 'vux'
 import { msgFormatter } from '../utils'
 import { VISITOR } from '../customConfig'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatBody from './ChatBody'
+import CheckinDialog from './checkinDialog'
 import lrz from 'lrz'
 const validateItems = ['pack_amount', 'pack_nums']
 export default {
@@ -230,7 +261,8 @@ export default {
     XTextarea,
     XButton,
     Swiper,
-    SwiperItem
+    SwiperItem,
+    CheckinDialog
   },
   directives: {
     TransferDom
@@ -290,15 +322,14 @@ export default {
           }
         }
       },
-      VISITOR: VISITOR
+      VISITOR: VISITOR,
+      isShowCheckinDialog: false,
+      isShowCheckinHint: true
     }
   },
   computed: {
-    ...mapGetters([
-      'user'
-    ]),
     ...mapState([
-      'systemConfig', 'personal_setting', 'announcement', 'rooms', 'emojis'
+      'user', 'today', 'systemConfig', 'personal_setting', 'announcement', 'rooms', 'emojis'
     ]),
     noPermission () {
       return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
@@ -317,6 +348,10 @@ export default {
         return _.chunk(emojis, 24)
       }
       return _.chunk(emojis, 8)
+    },
+    isCheckin () {
+      const lastCheckin = this.user.last_checkin
+      return lastCheckin && !this.$moment(this.today).isAfter(lastCheckin, 'day')
     }
   },
   created () {
@@ -568,6 +603,49 @@ export default {
   height: 100%;
   flex-direction: column;
 }
+.checkin {
+  position: absolute;
+  bottom: 50px;
+  height: 60px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px;
+  .bg {
+    background-image: linear-gradient(to bottom, #f76b1c 0%, #fad961 100%);
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    border-radius: 5px;
+    .btn {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 0 10px;
+    }
+    .checkin-btn {
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      padding-left: 7px;
+      width: 86px;
+      height: 25px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px 0 #8e6015;
+      background-color: #f5a623;
+      border: solid 1px #f8b91c;
+      color: #fff;
+      .logo {
+        width: 20px;
+        height: 20px;
+        background: url('../assets/moneys.png') no-repeat;
+        background-size: contain;
+        margin-right: 10px;
+      }
+    }
+  }
+}
 .footer {
   display: flex;
   flex-direction: column;
@@ -786,30 +864,11 @@ export default {
 
 .envelope-dialog {
   font-weight: lighter;
-  .close {
+  .close-btn {
     position: absolute;
-      right: 8px;
-      top: 8px;
-      width: 30px;
-      height: 30px;
-    &::before, &::after {
-      position: absolute;
-      content: ' ';
-      top: 5px;
-      right: 15px;
-      height: 20px;
-      width: 2px;
-      background-color: #fff;
-    }
-    &::before {
-      transform: rotate(45deg);
-    }
-
-    &::after {
-      transform: rotate(-45deg);
-    }
+    top: 8px;
+    right: 8px;
   }
-
   .envelope-avatar {
     height: 60px;
     width: 100%;

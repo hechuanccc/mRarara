@@ -18,7 +18,10 @@ export default new Vuex.Store({
       webLotteryRegisterUrl: '',
       lotteryResultUrl: '',
       envelopeSettings: {},
-      stickerGroups: []
+      stickerGroups: [],
+      checkin_settings: {
+        single_day_amount: undefined
+      }
     },
     emojis: {
       symbol: []
@@ -35,7 +38,8 @@ export default new Vuex.Store({
     announcement: [],
     unreadRooms: {},
     chatlist: [],
-    envelope: {}
+    envelope: {},
+    today: new Date()
   },
   actions,
   mutations,

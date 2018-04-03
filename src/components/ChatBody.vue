@@ -69,7 +69,7 @@
           'background-position': 'top, center',
           'background-repeat': 'no-repeat, no-repeat'
         }">
-        <div class="close" @click="showEnvelopeDialog = false"></div>
+        <div class="close-btn" @click="showEnvelopeDialog = false"></div>
         <div class="envelope-avatar">
           <div v-if="selectedEnvelope.avatar" class="avatar" :style="{'background-image': `url('${host+selectedEnvelope.avatar}')`}"></div>
           <div v-else class="money"></div>
@@ -503,28 +503,10 @@ export default {
 .envelope-dialog {
   font-weight: lighter;
   color: #fff;
-  .close {
+  .close-btn {
     position: absolute;
-      right: 8px;
-      top: 8px;
-      width: 30px;
-      height: 30px;
-    &::before, &::after {
-      position: absolute;
-      content: ' ';
-      top: 5px;
-      right: 15px;
-      height: 20px;
-      width: 2px;
-      background-color: #fff;
-    }
-    &::before {
-      transform: rotate(45deg);
-    }
-
-    &::after {
-      transform: rotate(-45deg);
-    }
+    top: 8px;
+    right: 8px;
   }
   .envelope-avatar {
     height: 60px;

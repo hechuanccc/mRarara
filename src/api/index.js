@@ -83,3 +83,13 @@ export function takeEnvelope (envelopId, userId) {
 export function fetchStickers (name) {
   return axios.get(`${urls.stickers}?group=${name}`)
 }
+
+export function fetchCheckinRecord () {
+  return axios.get(urls.checkin)
+}
+
+export function checkin () {
+  return axios.post(urls.checkin, {platform: 1}, {
+    'Content-Type': 'application/json'
+  })
+}
