@@ -133,7 +133,8 @@ fetchSystemConfig().then(
         privateChatBlockedUsers: pref.private_chat_blocked_users,
         title: pref.title,
         envelopeSettings: pref.envelope_settings,
-        stickerGroups: response.sticker_groups || []
+        stickerGroups: response.sticker_groups || [],
+        checkin_settings: pref.checkin_settings
       })
   }
 )

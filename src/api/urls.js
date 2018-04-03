@@ -23,5 +23,6 @@ export default {
   decode,
   buildRoom: host + '/v1/room/',
   envelope: host + '/v1/envelope/',
-  stickers: host + '/v1/stickers/'
+  stickers: host + '/v1/stickers/',
+  checkin: host + '/v1/member/checkin/'
 }
