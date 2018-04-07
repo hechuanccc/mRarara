@@ -243,7 +243,7 @@ import { msgFormatter } from '../utils'
 import { VISITOR } from '../customConfig'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatBody from './ChatBody'
-import CheckinDialog from './checkinDialog'
+import CheckinDialog from './CheckinDialog'
 import lrz from 'lrz'
 const validateItems = ['pack_amount', 'pack_nums']
 export default {
