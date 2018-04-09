@@ -11,7 +11,12 @@ import {
 } from '../../api'
 
 export default {
-  login: ({ commit, state }, { user }) => {
+  login: ({ commit, state, dispatch }, { user }) => {
+    if (state.user.logined) {
+      logout().catch(() => {})
+      commit(types.RESET_USER)
+      dispatch('leaveRoom')
+    }
     return login(user).then(res => {
       let expires = new Date(res.expires_in)
       if (res.access_token && res.refresh_token) {
@@ -35,16 +40,10 @@ export default {
     })
   },
   logout: ({ commit, state, dispatch }) => {
-    return logout().then(
-      res => {
-        commit(types.RESET_USER)
-        dispatch('leaveRoom')
-        router.push('/login')
-        Vue.cookie.delete('access_token')
-        Vue.cookie.delete('refresh_token')
-      },
-      errRes => Promise.reject(errRes)
-    )
+    logout().catch(() => {})
+    commit(types.RESET_USER)
+    dispatch('leaveRoom')
+    router.push('/chatroom')
   },
   fetchUser: ({ commit, state, dispatch }) => {
     return fetchUser().then(res => {

@@ -12,7 +12,7 @@
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
       <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="hidePanel"/>
-      <div class="checkin" v-if="isShowCheckinHint && !isCheckin">
+      <div class="checkin" v-if="user.viewRole && user.viewRole !== VISITOR && isShowCheckinHint && !isCheckin">
         <div class="bg">
           <div class="btn" @click="isShowCheckinDialog = true">
             <div class="checkin-btn">
@@ -24,7 +24,7 @@
           </div>
         </div>
       </div>
-      <div v-if="user.viewRole !== VISITOR" :class="['footer', isFocus?'isFocus':'']">
+      <div :class="['footer', isFocus?'isFocus':'']">
         <div id="typing" class="typing" @click="handTriggerPanel">
           <div id="more-btn" class="more-btn"></div>
           <div id="emoji-btn" class="emoji-btn">
@@ -46,7 +46,7 @@
           </div>
         </div>
       </div>
-      <div v-if="user.viewRole !== VISITOR" :class="['footer', 'fake', isFocus?'isFocus':'']">
+      <div :class="['footer', 'fake', isFocus?'isFocus':'']">
         <div id="typing" class="typing" @click="handTriggerPanel">
           <div id="more-btn" class="more-btn"></div>
           <div id="emoji-btn" class="emoji-btn">
@@ -224,9 +224,6 @@
           <checkin-dialog :show="isShowCheckinDialog" @closeCheckin="isShowCheckinDialog = false"/>
         </x-dialog>
     </div>
-    <div v-if="user.viewRole === VISITOR" class="logout" @click="$store.dispatch('logout')">
-      <div class="btn">立即注册/会员登入</div>
-    </div>
   </div>
 </template>
 
@@ -350,8 +347,10 @@ export default {
       return _.chunk(emojis, 8)
     },
     isCheckin () {
-      const lastCheckin = this.user.last_checkin
-      return lastCheckin && !this.$moment(this.today).isAfter(lastCheckin, 'day')
+      // TODO
+      // const lastCheckin = this.user.last_checkin
+      // return lastCheckin && !this.$moment(this.today).isAfter(lastCheckin, 'day')
+      return true
     }
   },
   created () {
@@ -389,6 +388,10 @@ export default {
           this.isShowEmojiPanel = false
           break
         } else if (id === 'emoji-btn') {
+          if (this.user.viewRole === VISITOR) {
+            this.$router.push('/login')
+            return
+          }
           this.isShowControlPanel = false
           this.isShowEmojiPanel = !this.isShowEmojiPanel
           break
@@ -406,6 +409,10 @@ export default {
       this.isShowEmojiPanel = false
     },
     openEnvelopeDialog () {
+      if (this.user.viewRole === VISITOR) {
+        this.$router.push('/login')
+        return
+      }
       if (this.noPermission) {
         return
       }
@@ -451,6 +458,10 @@ export default {
       }
     },
     sendMsgImg (e) {
+      if (this.user.viewRole === VISITOR) {
+        this.$router.push('/login')
+        return
+      }
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
 
@@ -480,6 +491,10 @@ export default {
       })
     },
     sendMsg () {
+      if (this.user.viewRole === VISITOR) {
+        this.$router.push('/login')
+        return
+      }
       if (!this.msgCnt.trim()) { return false }
       this.$store.state.ws.send(JSON.stringify({
         'command': 'send',

@@ -37,7 +37,7 @@ export default {
         case 1:
           return '手机'
         case 0:
-          return '桌机'
+          return '电脑'
       }
       return ''
     }

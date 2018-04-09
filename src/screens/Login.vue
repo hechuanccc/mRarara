@@ -36,14 +36,6 @@
       <flexbox class="m-t">
         <flexbox-item>
           <x-button type="default"
-                :show-loading="loadingTryplay"
-                action-type ="button"
-                @click.native="tryplay">
-                游客体验
-          </x-button>
-        </flexbox-item>
-        <flexbox-item>
-          <x-button type="default"
                 action-type ="button"
                 link="/register">
                 注册
@@ -57,7 +49,6 @@
 <script>
   import { XInput, Group, XButton, Flexbox, FlexboxItem, Popup } from 'vux'
   import { msgFormatter } from '../utils'
-  import { register } from '../api'
 
   export default {
     name: 'Home',
@@ -69,7 +60,6 @@
         },
         valid: false,
         loading: false,
-        loadingTryplay: false,
         error: '',
         illegalTriedLogin: false,
         illegalTrial: false
@@ -102,28 +92,6 @@
             this.loading = false
           })
         }
-      },
-      tryplay () {
-        if (this.loadingTryplay) {
-          return
-        }
-        this.loadingTryplay = true
-        register({visitor: true}).then(result => {
-          return this.$store.dispatch('login', {
-            user: {
-              username: result.username,
-              password: result.password
-            }
-          })
-        }).then(result => {
-          this.$router.push({ path: '/chatroom' })
-          this.$store.dispatch('fetchUser')
-        }, errorMsg => {
-          this.loadingTryplay = false
-          this.error = msgFormatter(errorMsg)
-        }).catch(() => {
-          this.loadingTryplay = false
-        })
       }
     },
     watch: {
