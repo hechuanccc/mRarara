@@ -5,11 +5,11 @@ import router from './router'
 import VueCookie from 'vue-cookie'
 import store from './store'
 import { sync } from 'vuex-router-sync'
-import { fetchSystemConfig, setCookie, fetchChatEmoji } from './api'
-import * as types from './store/mutations/mutation-types'
+import { fetchSystemConfig, setCookie, fetchChatEmoji, register } from './api'
 import Vue2Filters from 'vue2-filters'
 import qs from 'qs'
 import { ToastPlugin } from 'vux'
+import { VISITOR } from './customConfig'
 
 Vue.use(require('vue-moment'))
 Vue.use(Vue2Filters)
@@ -80,30 +80,59 @@ const toLogin = function (router) {
 }
 
 router.beforeEach((to, from, next) => {
-  store.commit(types.UPDATE_LOADING, {isLoading: true})
-  next()
-})
-
-router.beforeEach((to, from, next) => {
   document.title = `彩票计划聊天室 - ${to.meta.title}`
-  if (!store.state.user.logined && to.meta.requiresAuth === true) {
-    let token = VueCookie.get('access_token')
-    if (token) {
-      store.dispatch('fetchUser').then(res => {
-        next()
-      }).catch(() => {
-        next('/login')
-      })
-    } else {
-      next('/login')
-    }
-  } else {
+  if (to.path === '/login') {
     next()
+    return
   }
-})
+  const loginedPromise = new Promise((resolve, reject) => {
+    if (!store.state.user.logined) {
+      const token = Vue.cookie.get('access_token')
+      if (token) {
+        store.dispatch('fetchUser').then(res => {
+          resolve()
+        }).catch(() => {
+          register({visitor: true}).then(result => {
+            return store.dispatch('login', {
+              user: {
+                username: result.username,
+                password: result.password
+              }
+            })
+          }).then(result => {
+            store.dispatch('fetchUser').then(res => {
+              resolve()
+            })
+          }).catch(err => { reject(err) })
+        })
+      } else {
+        register({visitor: true}).then(result => {
+          return store.dispatch('login', {
+            user: {
+              username: result.username,
+              password: result.password
+            }
+          })
+        }).then(result => {
+          store.dispatch('fetchUser').then(res => {
+            resolve()
+          }).catch(err => { reject(err) })
+        })
+      }
+    } else {
+      resolve()
+    }
+  })
 
-router.afterEach(function (to) {
-  store.commit(types.UPDATE_LOADING, {isLoading: false})
+  loginedPromise.then(() => {
+    if (to.meta.requiresAuth && store.state.user.viewRole === VISITOR) {
+      next('/login')
+    } else {
+      next()
+    }
+  }).catch(() => {
+    next('/login')
+  })
 })
 
 sync(store, router)

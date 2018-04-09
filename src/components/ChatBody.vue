@@ -153,7 +153,7 @@ export default {
       'user', 'personal_setting', 'rooms', 'envelope'
     ]),
     noPermission () {
-      return this.user.viewRole === VISITOR || (this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked))
+      return (this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked))
     },
     statistic () {
       if (this.selectedEnvelope.users) {
@@ -259,6 +259,10 @@ export default {
         return
       }
       if (this.envelope[id].status !== 1) {
+        if (this.user.viewRole === VISITOR) {
+          this.$router.push('/login')
+          return
+        }
         this.selectedEnvelope = this.envelope[id]
         this.showEnvelopeDialog = true
         if (this.envelope[id].status === 4) {

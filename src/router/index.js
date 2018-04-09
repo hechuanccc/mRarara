@@ -24,16 +24,10 @@ export default new Router({
       path: '/login',
       name: 'Login',
       meta: {
-        title: '登录'
+        title: '登录',
+        showBack: true
       },
-      component: resolve => { require(['../screens/Login.vue'], resolve) },
-      beforeEnter: (to, from, next) => {
-        if (store.state.user.logined) {
-          next('/chatroom')
-        } else {
-          next()
-        }
-      }
+      component: resolve => { require(['../screens/Login.vue'], resolve) }
     },
     {
       path: '/',
@@ -73,7 +67,6 @@ export default new Router({
       path: '/chatroom',
       name: 'ChatRoom',
       meta: {
-        requiresAuth: true,
         title: '首页'
       },
       component: resolve => { require(['../components/ChatRoom.vue'], resolve) }
@@ -82,7 +75,6 @@ export default new Router({
       path: '/results',
       name: 'Results',
       meta: {
-        requiresAuth: true,
         title: '开奖'
       },
       component: resolve => { require(['../screens/ResultPage.vue'], resolve) }

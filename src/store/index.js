@@ -11,7 +11,6 @@ export default new Vuex.Store({
     user: {
       logined: false
     },
-    isLoading: false,
     systemConfig: {
       mobileLotteryUrl: '',
       customerServiceUrl: '',
