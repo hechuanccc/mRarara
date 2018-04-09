@@ -142,6 +142,17 @@ export default new Router({
       component: resolve => { require(['../screens/my/EnvelopeRecord.vue'], resolve) }
     },
     {
+      path: '/my/checkin',
+      name: 'CheckinRecord',
+      meta: {
+        title: '签到纪录',
+        requiresAuth: true,
+        showBack: true
+      },
+      beforeEnter: myPageAuthCheck,
+      component: resolve => { require(['../screens/my/CheckinRecord.vue'], resolve) }
+    },
+    {
       path: '*',
       redirect: '/chatroom'
     }

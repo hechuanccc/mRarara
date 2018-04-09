@@ -611,7 +611,10 @@ export default {
   box-sizing: border-box;
   padding: 5px;
   .bg {
-    background-image: linear-gradient(to bottom, #f76b1c 0%, #fad961 100%);
+    background-image: url('../assets/checkin_icon.png'), linear-gradient(to bottom, #f76b1c 0%, #fad961 100%);
+    background-size: 140px, auto;
+    background-repeat: no-repeat no-repeat;
+    background-position: 20px center, left center;
     height: 100%;
     width: 100%;
     display: flex;
