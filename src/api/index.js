@@ -84,8 +84,8 @@ export function fetchStickers (name) {
   return axios.get(`${urls.stickers}?group=${name}`)
 }
 
-export function fetchCheckinRecord () {
-  return axios.get(urls.checkin)
+export function fetchCheckinRecord ({offset, limit}) {
+  return axios.get(`${urls.checkin}?offset=${offset}&limit=${limit}`)
 }
 
 export function checkin () {
