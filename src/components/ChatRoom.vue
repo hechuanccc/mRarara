@@ -12,9 +12,9 @@
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
       <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="hidePanel"/>
-      <div class="checkin" v-if="user.viewRole && user.viewRole !== VISITOR && isShowCheckinHint && !isCheckin">
+      <div class="checkin" v-if="isShowCheckinHint && !isCheckin">
         <div class="bg">
-          <div class="btn" @click="isShowCheckinDialog = true">
+          <div class="btn" @click="showCheckinHint">
             <div class="checkin-btn">
               <div class="logo"></div>
               签到</div>
@@ -347,10 +347,8 @@ export default {
       return _.chunk(emojis, 8)
     },
     isCheckin () {
-      // TODO
-      // const lastCheckin = this.user.last_checkin
-      // return lastCheckin && !this.$moment(this.today).isAfter(lastCheckin, 'day')
-      return true
+      const lastCheckin = this.user.last_checkin
+      return lastCheckin && !this.$moment(this.today).isAfter(lastCheckin, 'day')
     }
   },
   created () {
@@ -376,6 +374,13 @@ export default {
     document.addEventListener('visibilitychange', this.visibilitychange)
   },
   methods: {
+    showCheckinHint () {
+      if (this.user.viewRole === VISITOR) {
+        this.$router.push('/login')
+        return
+      }
+      this.isShowCheckinDialog = true
+    },
     triggerRealInput () {
       this.$refs.realChatpannel.focus()
     },

@@ -163,7 +163,7 @@ fetchSystemConfig().then(
         title: pref.title,
         envelopeSettings: pref.envelope_settings,
         stickerGroups: response.sticker_groups || [],
-        checkin_settings: pref.checkin_settings
+        checkin_settings: pref.checkin_settings || {}
       })
   }
 )
