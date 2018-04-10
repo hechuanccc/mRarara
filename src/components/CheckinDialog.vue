@@ -154,13 +154,14 @@ export default {
 
       this.loading = true
       checkin().then(res => {
-        this.checkinSuccess = true
-        this.loading = false
         if (res.special_reason) {
           this.amount = res.special_bonus
           this.isSpecial = true
         }
-        this.$store.dispatch('fetchUser')
+        return this.$store.dispatch('fetchUser')
+      }).then(() => {
+        this.checkinSuccess = true
+        this.loading = false
       }).catch(error => {
         this.error = msgFormatter(error)
         this.loading = false
