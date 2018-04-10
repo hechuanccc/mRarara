@@ -265,7 +265,13 @@ export default {
       }
       if (this.envelope[id].status !== 1) {
         if (this.user.viewRole === VISITOR) {
-          this.$router.push('/login')
+          this.$vux.toast.show({
+            text: '游客不能抢红包',
+            type: 'warn'
+          })
+          setTimeout(() => {
+            this.$router.push('/login')
+          }, 3000)
           return
         }
         this.selectedEnvelope = this.envelope[id]
