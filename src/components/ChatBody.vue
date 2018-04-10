@@ -100,6 +100,9 @@
               </li>
             </ul>
           </div>
+          <div v-show="selectedEnvelope.status === 3 && selectedEnvelope.remaining>0" class="loading">
+            <spinner type="spiral" class="vux-spinner-inverse"></spinner> 更新中...
+          </div>
         </div>
       </x-dialog>
     </div>
@@ -108,7 +111,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { TransferDom, Popup, XDialog, XTable } from 'vux'
+import { TransferDom, Popup, XDialog, XTable, Spinner } from 'vux'
 import { takeEnvelope } from '../api'
 import Envelope from './Envelope'
 import ImgAsync from './ImgAsync'
@@ -120,7 +123,8 @@ export default {
     Envelope,
     XDialog,
     XTable,
-    ImgAsync
+    ImgAsync,
+    Spinner
   },
   directives: {
     TransferDom
@@ -145,7 +149,8 @@ export default {
       messageCount: 0,
       busy: false,
       imgLoadCount: 0,
-      notNeedScroll: true
+      notNeedScroll: true,
+      userLoading: false
     }
   },
   computed: {
@@ -160,8 +165,8 @@ export default {
         const remaining = this.selectedEnvelope.remaining
         const gottenNum = this.selectedEnvelope.users.length
         const total = gottenNum + this.selectedEnvelope.remaining
-        if (remaining === 0) {
-          return `${gottenNum}/${total} 已领完`
+        if (this.selectedEnvelope.status === 3 || remaining === 0) {
+          return `${total}/${total} 已领完`
         } else {
           return `${gottenNum}/${total} 已领取`
         }
@@ -599,7 +604,7 @@ export default {
     }
     .view {
       width: 100%;
-      height: 210px;
+      height: 180px;
       overflow-y: auto;
       ul {
         width: 100%;
@@ -614,6 +619,11 @@ export default {
           }
         }
       }
+    }
+    .loading {
+      width: 100%;
+      height: 30px;
+      color: #de5547;
     }
   }
   .loader {
