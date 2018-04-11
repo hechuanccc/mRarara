@@ -100,7 +100,7 @@
               </li>
             </ul>
           </div>
-          <div v-show="selectedEnvelope.status === 3 && selectedEnvelope.remaining>0" class="loading">
+          <div v-show="selectedEnvelope.status === 3 && selectedEnvelope.total > selectedEnvelope.users.length" class="loading">
             <spinner type="spiral" class="vux-spinner-inverse"></spinner> 更新中...
           </div>
         </div>
@@ -162,10 +162,9 @@ export default {
     },
     statistic () {
       if (this.selectedEnvelope.users) {
-        const remaining = this.selectedEnvelope.remaining
         const gottenNum = this.selectedEnvelope.users.length
-        const total = gottenNum + this.selectedEnvelope.remaining
-        if (this.selectedEnvelope.status === 3 || remaining === 0) {
+        const total = this.selectedEnvelope.total
+        if (this.selectedEnvelope.status === 3 || total === gottenNum) {
           return `${total}/${total} 已领完`
         } else {
           return `${gottenNum}/${total} 已领取`
