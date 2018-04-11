@@ -223,8 +223,8 @@ export default {
                       break
                     case 6:
                       const envelopeStatue = data.envelope_status
-                      const setting = {users: envelopeStatue.users, remaining: envelopeStatue.remaining}
-                      if (envelopeStatue.remaining === 0) {
+                      const setting = {users: envelopeStatue.users, total: envelopeStatue.total}
+                      if (envelopeStatue.total === envelopeStatue.users.length) {
                         setting.status = 3
                       }
                       this.$store.dispatch('updateEnvelope', {id: envelopeStatue.id, data: setting})

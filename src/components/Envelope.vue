@@ -64,7 +64,7 @@ export default {
         sendername: item.sender.nickname,
         content: item.content,
         users: envelopeStatus.users,
-        remaining: envelopeStatus.remaining
+        total: envelopeStatus.total
       }
 
       if (envelopeStatus.expired) {
@@ -74,7 +74,7 @@ export default {
         if (me) {
           status = 2
           data.amount = me.amount
-        } else if (envelopeStatus.remaining === 0) {
+        } else if (envelopeStatus.total === envelopeStatus.users.length) {
           status = 3
         } else {
           status = 4

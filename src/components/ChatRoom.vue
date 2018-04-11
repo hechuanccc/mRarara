@@ -379,6 +379,9 @@ export default {
         this.$router.push('/login')
         return
       }
+      if (this.personal_setting.blocked) {
+        return
+      }
       this.isShowCheckinDialog = true
     },
     triggerRealInput () {
