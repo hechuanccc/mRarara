@@ -12,7 +12,7 @@
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
       <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="hidePanel"/>
-      <div class="checkin" v-if="isShowCheckinHint && !isCheckin">
+      <div class="checkin" v-if="systemConfig.checkinSettings.enabled === '1' && isShowCheckinHint && !isCheckin">
         <div class="bg">
           <div class="btn" @click="showCheckinHint">
             <div class="checkin-btn">
@@ -108,7 +108,7 @@
           </div>
         </div>
         <div v-show="isShowControlPanel" class="control-panel">
-          <label v-if="roomId === 1" class="control-btn" @click="openEnvelopeDialog">
+          <label v-if="systemConfig.envelopeSettings.enabled === '1' && roomId === 1" class="control-btn" @click="openEnvelopeDialog">
             <div class="icon-bg">
               <div class="envelope-icon"></div>
             </div>

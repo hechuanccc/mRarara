@@ -86,7 +86,7 @@
             this.illegalTriedLogin = false
             this.error = ''
             this.loading = false
-            this.$router.push('/')
+            this.$router.push('/chatroom')
           }, (error) => {
             this.error = msgFormatter(error)
             this.loading = false

@@ -50,7 +50,7 @@ axios.interceptors.response.use(res => {
   } else {
     const status = error.response.status
     if (status === 401 || status === 403) {
-      toLogin(router)
+
     } else if (error.response.status !== 587) {
       let msg = error.response.data.error
       if (!msg) {
@@ -161,9 +161,9 @@ fetchSystemConfig().then(
         mobileUrl: pref.mobile_url,
         privateChatBlockedUsers: pref.private_chat_blocked_users,
         title: pref.title,
-        envelopeSettings: pref.envelope_settings,
+        envelopeSettings: pref.envelope_settings || {},
         stickerGroups: response.sticker_groups || [],
-        checkin_settings: pref.checkin_settings || {}
+        checkinSettings: pref.checkin_settings || {}
       })
   }
 )

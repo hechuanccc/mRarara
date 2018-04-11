@@ -117,7 +117,7 @@ export default {
           }
         } else if (i === continuousCheckin + 1 && !this.isCheckin) {
           day.status = 'takable'
-          day.amount = this.systemConfig.checkin_settings.single_day_amount
+          day.amount = this.systemConfig.checkinSettings.single_day_amount
         } else if (i < continuousCheckin) {
           day.status = 'taken'
         }

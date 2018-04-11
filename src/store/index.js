@@ -18,14 +18,13 @@ export default new Vuex.Store({
       lotteryResultUrl: '',
       envelopeSettings: {},
       stickerGroups: [],
-      checkin_settings: {
-        single_day_amount: undefined
-      }
+      checkinSettings: {}
     },
     emojis: {
       symbol: []
     },
     ws: '',
+    hearbeat: null,
     rooms: {
       1: []
     },

@@ -159,28 +159,19 @@ export default {
       let token = this.$cookie.get('access_token')
       const ws = new WebSocket(`${config.chatHost}/chat/stream?token=${token}`)
       ws.onopen = () => {
-        window.addEventListener('beforeunload', () => {
-          this.beforeunloadHandler(ws)
-        })
         this.$store.dispatch('setWs', ws)
         ws.send(JSON.stringify({
           'command': 'join',
           'receivers': [1]
         }))
-        const hearbeat = setInterval(() => {
-          ws.send(JSON.stringify({
-            'command': 'live',
-            'user_id': this.user.id
-          }))
-        }, 30000)
         ws.onclose = () => {
-          if (this.user.logined) {
+          if (this.$store.state.user.logined) {
             this.$store.commit('RESET_USER')
             this.$router.push({
               path: '/login'
             })
           }
-          clearInterval(hearbeat)
+          clearInterval(this.$store.state.hearbeat)
         }
         ws.onmessage = (resData) => {
           let data
@@ -286,13 +277,6 @@ export default {
           }
         }
       }
-    },
-    beforeunloadHandler (ws) {
-      ws.send(JSON.stringify({
-        'command': 'live',
-        'user_id': this.user.id,
-        'status': 'disconnect'
-      }))
     }
   },
   beforeDestroy () {
@@ -300,7 +284,6 @@ export default {
     if (ws) {
       this.$store.dispatch('leaveRoom')
     }
-    window.removeEventListener('beforeunload', this.beforeunloadHandler)
   }
 }
 </script>
