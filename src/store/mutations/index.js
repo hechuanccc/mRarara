@@ -23,6 +23,13 @@ export default {
   },
   [types.SET_WS]: (state, ws) => {
     state.ws = ws
+    clearInterval(state.hearbeat)
+    state.hearbeat = setInterval(() => {
+      ws.send(JSON.stringify({
+        'command': 'live',
+        'user_id': state.user.id
+      }))
+    }, 30000)
   },
   [types.LEAVE_ROOM]: (state) => {
     state.ws = ''

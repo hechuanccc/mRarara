@@ -12,12 +12,12 @@ import {
 
 export default {
   login: ({ commit, state, dispatch }, { user }) => {
-    if (state.user.logined) {
-      logout().catch(() => {})
-      commit(types.RESET_USER)
-      dispatch('leaveRoom')
-    }
     return login(user).then(res => {
+      if (state.user.logined) {
+        logout().catch(() => {})
+        commit(types.RESET_USER)
+        dispatch('leaveRoom')
+      }
       let expires = new Date(res.expires_in)
       if (res.access_token && res.refresh_token) {
         Vue.cookie.set('access_token', res.access_token, {
@@ -28,12 +28,15 @@ export default {
         })
         axios.defaults.withCredentials = true
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.access_token
+      }
+      Vue.nextTick()
+      .then(function () {
         commit(types.SET_USER, {
           user: {
             logined: true
           }
         })
-      }
+      })
       return Promise.resolve(res)
     }, error => {
       return Promise.reject(error)
@@ -99,6 +102,7 @@ export default {
       'command': 'leave',
       'receivers': [1]
     }))
+    state.ws.onclose = null
     state.ws.close()
     commit(types.LEAVE_ROOM)
   },
