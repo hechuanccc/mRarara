@@ -100,9 +100,6 @@
               </li>
             </ul>
           </div>
-          <div v-show="selectedEnvelope.status === 3 && selectedEnvelope.total > selectedEnvelope.users.length" class="loading">
-            <spinner type="spiral" class="vux-spinner-inverse"></spinner> 更新中...
-          </div>
         </div>
       </x-dialog>
     </div>
@@ -111,7 +108,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { TransferDom, Popup, XDialog, XTable, Spinner } from 'vux'
+import { TransferDom, Popup, XDialog, XTable } from 'vux'
 import { takeEnvelope } from '../api'
 import Envelope from './Envelope'
 import ImgAsync from './ImgAsync'
@@ -123,8 +120,7 @@ export default {
     Envelope,
     XDialog,
     XTable,
-    ImgAsync,
-    Spinner
+    ImgAsync
   },
   directives: {
     TransferDom
@@ -286,7 +282,8 @@ export default {
                 this.$store.dispatch('fetchUser')
                 break
               case 'fail':
-                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 3}})
+                const users = Object.values(res.receive_users)
+                this.$store.dispatch('updateEnvelope', {id: id, data: {status: 3, users}})
                 break
               case 'expired':
                 this.$store.dispatch('updateEnvelope', {id: id, data: {status: 1}})
