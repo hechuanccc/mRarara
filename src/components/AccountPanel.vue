@@ -58,6 +58,7 @@
       logout () {
         this.handleClose()
         this.$store.dispatch('logout')
+        this.$router.push('/chatroom')
       },
       handleClose () {
         this.$emit('handleClose')

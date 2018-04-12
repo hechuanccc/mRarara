@@ -133,6 +133,7 @@ export default {
         changeUserInfo(this.$store.state.user.id, {password: this.password}).then((response) => {
           this.changed = true
           setTimeout(() => {
+            this.$store.dispatch('logout')
             this.$router.push({name: 'Login'})
             this.loading = false
           }, 2000)
