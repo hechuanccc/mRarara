@@ -26,7 +26,7 @@
     </div>
     <x-header
       v-else
-      :left-options="{showBack: needShowBack}"
+      :left-options="{showBack: needShowBack&&user.logined}"
       slot="header"
       :style="{
         width: '100%',
@@ -62,7 +62,6 @@ export default {
   data () {
     return {
       index: 0,
-      showAccountPanel: false,
       ws: undefined
     }
   },
@@ -149,9 +148,6 @@ export default {
     })
   },
   methods: {
-    closeAccountPanel () {
-      this.showAccountPanel = false
-    },
     switchTab (path) {
       this.$router.push({path})
     },
