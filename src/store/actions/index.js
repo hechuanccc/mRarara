@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import * as types from '../mutations/mutation-types'
-import router from '../../router'
 import {ADMIN, SERVICE, MEMBER, VISITOR} from '../../customConfig'
 import axios from 'axios'
 import {
@@ -46,7 +45,6 @@ export default {
     logout().catch(() => {})
     commit(types.RESET_USER)
     dispatch('leaveRoom')
-    router.push('/chatroom')
   },
   fetchUser: ({ commit, state, dispatch }) => {
     return fetchUser().then(res => {
