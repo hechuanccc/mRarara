@@ -95,6 +95,10 @@ export default {
       if (envelope.status && data.status && data.status > envelope.status) {
         data.status = envelope.status
       }
+      // 以人數多的為主
+      if (envelope.users && data.users && data.users.length < envelope.users.length) {
+        data.users = envelope.users
+      }
       Object.assign(envelope, data)
     }
   },
