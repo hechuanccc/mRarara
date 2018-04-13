@@ -114,7 +114,7 @@
             </div>
             <div class="title">发红包</div>
           </label>
-          <label class="control-btn" for="capture">
+          <label class="control-btn" for="capture" @click="clickSendImg">
             <div class="icon-bg">
               <div class="picture-icon"></div>
             </div>
@@ -400,6 +400,9 @@ export default {
             this.$router.push('/login')
             return
           }
+          if (this.noPermission) {
+            return
+          }
           this.isShowControlPanel = false
           this.isShowEmojiPanel = !this.isShowEmojiPanel
           break
@@ -463,6 +466,15 @@ export default {
           break
         }
         target = target.parentNode
+      }
+    },
+    clickSendImg (e) {
+      if (this.user.viewRole === VISITOR) {
+        e.preventDefault()
+        this.$router.push('/login')
+      }
+      if (this.noPermission) {
+        e.preventDefault()
       }
     },
     sendMsgImg (e) {
