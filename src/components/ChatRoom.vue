@@ -9,21 +9,13 @@
         <MarqueeTips :content="announcement[announcementIndex]" :speed="10"></MarqueeTips>
       </div>
     </div>
+    <div class="checkin-btn" v-if="systemConfig.checkinSettings.enabled === '1'" @click="showCheckin">
+      签到
+      <span v-if="!isCheckin" class="badge"></span>
+    </div>
     <p class="login-info" v-if="chatLoading">聊天室登录中...</p>
     <div v-else class="chat-container">
       <chat-body :messages="rooms[roomId]" :roomId="roomId" @click.native="hidePanel"/>
-      <div class="checkin" v-if="systemConfig.checkinSettings.enabled === '1' && isShowCheckinHint && !isCheckin">
-        <div class="bg">
-          <div class="btn" @click="showCheckinHint">
-            <div class="checkin-btn">
-              <div class="logo"></div>
-              签到</div>
-          </div>
-          <div class="btn" @click="isShowCheckinHint = false">
-            <div class="close-btn"></div>
-          </div>
-        </div>
-      </div>
       <chat-footer ref="chatFooter" :roomId="roomId" :openEnvelopeDialog="openEnvelopeDialog"/>
     </div>
     <div v-transfer-dom>
@@ -112,8 +104,8 @@
           width: '355px',
           'box-sizing': 'border-box',
           'padding': '0',
-          'background-image': `url('${require('../assets/checkin_bg.png')}')`,
-          'background-size': 'contain',
+          'background-image': 'linear-gradient(to top, #fad961, #f76b1c)',
+          'background-size': '100% 130px',
           'background-position': 'top',
           'background-repeat': 'no-repeat',
           'background-color': 'transparent'
@@ -212,8 +204,7 @@ export default {
         }
       },
       VISITOR: VISITOR,
-      isShowCheckinDialog: false,
-      isShowCheckinHint: true
+      isShowCheckinDialog: false
     }
   },
   computed: {
@@ -250,7 +241,7 @@ export default {
     }
   },
   methods: {
-    showCheckinHint () {
+    showCheckin () {
       if (this.user.viewRole === VISITOR) {
         this.$router.push('/login')
         return
@@ -386,50 +377,29 @@ export default {
   height: 100%;
   flex-direction: column;
 }
-.checkin {
+.checkin-btn {
   position: absolute;
-  bottom: 50px;
-  height: 60px;
-  width: 100%;
+  top: 45px;
+  right: 5px;
   box-sizing: border-box;
-  padding: 5px;
-  .bg {
-    background-image: url('../assets/checkin_icon.png'), linear-gradient(to bottom, #f76b1c 0%, #fad961 100%);
-    background-size: 140px, auto;
-    background-repeat: no-repeat no-repeat;
-    background-position: 20px center, left center;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    border-radius: 5px;
-    .btn {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      box-sizing: border-box;
-      padding: 0 10px;
-    }
-    .checkin-btn {
-      display: flex;
-      align-items: center;
-      box-sizing: border-box;
-      padding-left: 7px;
-      width: 86px;
-      height: 25px;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px 0 #8e6015;
-      background-color: #f5a623;
-      border: solid 1px #f8b91c;
-      color: #fff;
-      .logo {
-        width: 20px;
-        height: 20px;
-        background: url('../assets/moneys.png') no-repeat;
-        background-size: contain;
-        margin-right: 10px;
-      }
-    }
+  width: 86px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px 0 #8e6015;
+  background-color: #f5a623;
+  border: solid 1px #f8b91c;
+  color: #fff;
+  z-index: 1;
+  text-align: center;
+  .badge {
+    position: absolute;
+    top: 3px;
+    right: 18px;
+    width: 7px;
+    height: 7px;
+    background-color: red;
+    border-radius: 50%;
   }
 }
 

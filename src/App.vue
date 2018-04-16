@@ -201,12 +201,6 @@ export default {
                             content: data.content
                           })
                         }
-                        if (command === 'unblock') {
-                          ws.send(JSON.stringify({
-                            'command': 'join',
-                            'receivers': [1]
-                          }))
-                        }
                       }
                       break
                     case 3:
@@ -242,7 +236,7 @@ export default {
                     }
                     break
                   case 5:
-                    this.$store.dispatch('addMessage', {messages: []})
+                    this.$store.dispatch('initMessage', {roomId: 1, messages: []})
                     this.$store.dispatch('updatePersonalSetting', 'blocked')
                     if (this.$route.path === '/chatroom') {
                       AlertModule.show({
