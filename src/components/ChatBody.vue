@@ -651,7 +651,7 @@ export default {
       background: #f8e71c;
       background: linear-gradient(to right, #f8e71c 10%, #de5547 42%);
       position: relative;
-      animation: load3 1.4s infinite linear;
+      animation: loading 1.4s infinite linear;
       transform: translateZ(0);
     }
     .loading:before {
@@ -677,7 +677,7 @@ export default {
       bottom: 0;
       right: 0;
     }
-    @keyframes load3 {
+    @keyframes loading {
       0% {
         transform: rotate(0deg);
       }

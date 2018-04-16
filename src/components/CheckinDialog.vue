@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="title">
-      <div class="rule-btn" @click="isShowRule = true">
+      <div class="rule-btn" @click="isShowRule = !isShowRule">
         <icon scale="1" name="question-circle-o"></icon>&nbsp;签到规则
       </div>
       <div class="text">每日签到</div>
@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="progress">
-      <div class="text">连续签到<span class="day">{{user.continuous_checkins|addZeroFilter}}</span>天</div>
+      <div class="text">已连续签到<span class="day">{{user.continuous_checkins|addZeroFilter}}</span>天</div>
       <div class="graph">
         <div class="line">
           <div class="fill" :style="{width: calcProgress(7)}"></div>
@@ -34,20 +34,23 @@
     </div>
     <div class="body" v-if="!isSpecial">
       <div class="error text-danger">{{error}}</div>
-      <div :class="['bonus',day.status, day.type, day.type==='special'?'special'+day.num:'' ]" v-for="day in days" :key="day.num" @click="checkin(day)">
-        <div v-if="day.status === 'takable' && day.type==='special'" :class="day.status">领取</div>
+      <div :class="['bonus',day.status, day.type, day.type==='special'?'special'+day.num:'']" v-for="day in days" :key="day.num" @click="checkin(day)">
+        <div v-if="day.status === 'takable' && day.type==='special'" :class="day.status">红包</div>
         <div class="icon-bg">
           <div class="icon"></div>
         </div>
         <div class="ribbon"></div>
         <div class="text">{{day.type==='special'?day.num+'日奖励':day.num}}</div>
-        <div v-if="day.status === 'success'" :class="day.status">成功</div>
+        <div v-if="day.status === 'success'" :class="day.status">已领</div>
         <div v-else-if="day.status === 'takable' && day.type==='normal'" :class="day.status">{{day.amount| currency('￥')}}</div>
       </div>
     </div>
+    <div v-else-if="loading" class="loading-bg">
+      <div class="loading"></div>
+    </div>
     <div v-else class="win-bg">
       <div class="text">获取彩金</div>
-      <div class="amount">{{amount| currency('￥')}}</div>
+      <div class="amount">{{amount}}</div>
     </div>
     <transition name="fade">
       <div v-show="isShowRule" class="rule-panel">
@@ -68,6 +71,7 @@ import { mapState } from 'vuex'
 import 'vue-awesome/icons/question-circle-o'
 import { checkin } from '../api'
 import { msgFormatter } from '../utils'
+import { Spinner } from 'vux'
 export default {
   name: 'CheckinDialog',
   filters: {
@@ -81,7 +85,8 @@ export default {
     }
   },
   components: {
-    Icon
+    Icon,
+    Spinner
   },
   data () {
     return {
@@ -112,6 +117,8 @@ export default {
         if (i === continuousCheckin) {
           if (checkinSuccess) {
             day.status = 'success'
+          } else if (this.isCheckin) {
+            day.status = 'taken-today'
           } else {
             day.status = 'taken'
           }
@@ -153,6 +160,13 @@ export default {
       }
 
       this.loading = true
+      let timeUp = false
+      setTimeout(() => {
+        timeUp = true
+        if (this.checkinSuccess) {
+          this.loading = false
+        }
+      }, 2000)
       checkin().then(res => {
         if (res.special_reason) {
           this.amount = res.special_bonus
@@ -161,7 +175,9 @@ export default {
         return this.$store.dispatch('fetchUser')
       }).then(() => {
         this.checkinSuccess = true
-        this.loading = false
+        if (timeUp) {
+          this.loading = false
+        }
       }).catch(error => {
         this.error = msgFormatter(error)
         this.loading = false
@@ -192,6 +208,7 @@ export default {
       width: 33%;
     }
     .text {
+      font-size: 16px;
       height: 40px;
       line-height: 40px;
       width: 34%;
@@ -231,30 +248,48 @@ export default {
         margin-right: 5px;
         background: #fff;
         border: none;
+        border-radius: 2px;
         .fill {
            background: #3e73b1;
            height: 100%;
            width: 100%;
+           border-radius: 2px;
         }
       }
       .dot {
         position: relative;
-        height: 6px;
-        width: 6px;
+        height: 12px;
+        width: 12px;
         box-sizing: border-box;
         border: 1px solid #fff;
         border-radius: 50%;
         margin-right: 5px;
-        &.active{
-          border-color: #3e73b1;
-        }
         .day {
           position: absolute;
           display: inline-block;
           width: 26px;
           text-align: center;
           top: -25px;
-          left: -13px;
+          left: -10px;
+        }
+        transform: scale(.8);
+        &::after {
+          position: absolute;
+          top: 3px;
+          left: 2px;
+          display: block;
+          content: '';
+          width: 5px;
+          height: 2px;;
+          border-left: 1px solid #fff;
+          border-bottom: 1px solid #fff;
+          transform: rotate(-45deg);
+        }
+        &.active{
+          border-color: #3e73b1;
+          &::after {
+            border-color: #3e73b1;
+          }
         }
       }
     }
@@ -285,7 +320,7 @@ export default {
       border-radius: 5px;
       .icon-bg {
         box-sizing: border-box;
-        padding-top: 3px;
+        padding-top: 6px;
         position: relative;
         display: flex;
         justify-content: center;
@@ -295,8 +330,8 @@ export default {
         border-radius: 5px 5px 0 0;
         .icon {
           display: inline-block;
-          width: 30px;
-          height: 30px;
+          width: 27px;
+          height: 27px;
           background: url('../assets/daily_money.png') no-repeat;
           background-size: contain;
         }
@@ -391,6 +426,7 @@ export default {
         }
         .icon-bg {
           position: relative;
+          padding-top: 3px;
           height: 34px;
           background: transparent;
           border: none;
@@ -399,7 +435,7 @@ export default {
             width: 27px;
           }
         }
-        &.taken {
+        &.taken,&.taken-today {
           .text {
             border-radius: 1px;
             background-color: #dfdfdf;
@@ -478,7 +514,7 @@ export default {
           }
           .hook();
         }
-        &.taken {
+        &.taken,&.taken-today {
           border: solid 1px #3e73b1;
           .icon-bg{
             opacity: .5;
@@ -487,6 +523,12 @@ export default {
             opacity: .5;
           }
           .hook();
+        }
+        &.taken-today {
+          .text {
+            background: #3e73b1;
+            color: #fff;
+          }
         }
         &.takable {
           border: solid 1px #3e73b1;
@@ -518,6 +560,16 @@ export default {
     .amount {
       font-size: 36px;
     }
+  }
+  .loading-bg {
+    width: 100%;
+    height: 280px;
+    background: #de5547;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
 }
 .rule-panel {
@@ -551,6 +603,51 @@ export default {
 }
 .fade-enter, .fade-leave-to {
   opacity: 0;
+}
+
+.loading {
+  font-size: 10px;
+  margin: 0 auto;
+  text-indent: -9999em;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #f8e71c;
+  background: linear-gradient(to right, #f8e71c 10%, #de5547 42%);
+  position: relative;
+  animation: loading 1.4s infinite linear;
+  transform: translateZ(0);
+}
+.loading:before {
+  width: 50%;
+  height: 50%;
+  background: #f8e71c;
+  border-radius: 100% 0 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: '';
+}
+.loading:after {
+  background: #de5547;
+  width: 95%;
+  height: 95%;
+  border-radius: 50%;
+  content: '';
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
 
