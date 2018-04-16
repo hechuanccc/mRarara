@@ -52,8 +52,7 @@
       <div class="text">获取彩金</div>
       <div class="amount">{{amount}}</div>
     </div>
-    <transition name="fade">
-      <div v-show="isShowRule" class="rule-panel">
+    <div v-show="isShowRule" class="rule-panel">
         <div class="close-btn" @click="isShowRule = false"></div>
         <p>签到规则</p>
         <p>1.签到方式：</p>
@@ -65,7 +64,6 @@
         <p>连续签到21日有机会获得红包彩金 {{checkinSettings.d21_min_amount}} 〜 {{checkinSettings.d21_max_amount}}。</p>
         <p>连续签到21日后，则签到天数重置。</p>
       </div>
-    </transition>
   </div>
 </template>
 
@@ -303,7 +301,7 @@ export default {
   }
 
   .body {
-    height: 240px;
+    height: 280px;
     width: 100%;
     background: #fff;
     display: flex;
@@ -580,10 +578,11 @@ export default {
   }
 }
 .rule-panel {
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  height: 280px;
   width: 100%;
   background: #fff;
-  margin-top: 10px;
   box-sizing: border-box;
   padding: 8px 10px 12px 10px;
   text-align: left;
