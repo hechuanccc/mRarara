@@ -59,7 +59,11 @@
         <p>1.签到方式：</p>
         <p>用户登录时，在页面点击“签到”按钮进行签到，全天都可以签。</p>
         <p>2. 签到奖励：</p>
-        <p>每日签到即获得签到彩金，连续签到7日、14日、21日能领取更多金额彩金</p>
+        <p>每日签到即获得签到彩金 {{checkinSettings.single_day_amount}}。</p>
+        <p>连续签到7日有机会获得红包彩金 {{checkinSettings.d7_min_amount}} 〜 {{checkinSettings.d7_max_amount}}。</p>
+        <p>连续签到14日有机会获得红包彩金 {{checkinSettings.d14_min_amount}} 〜 {{checkinSettings.d14_max_amount}}。</p>
+        <p>连续签到21日有机会获得红包彩金 {{checkinSettings.d21_min_amount}} 〜 {{checkinSettings.d21_max_amount}}。</p>
+        <p>连续签到21日后，则签到天数重置。</p>
       </div>
     </transition>
   </div>
@@ -104,6 +108,9 @@ export default {
       const lastCheckin = this.user.last_checkin
       return lastCheckin && !this.$moment(this.today).isAfter(lastCheckin, 'day')
     },
+    checkinSettings () {
+      return this.systemConfig.checkinSettings || {}
+    },
     days () {
       const days = []
       const checkinSuccess = this.checkinSuccess
@@ -124,7 +131,7 @@ export default {
           }
         } else if (i === continuousCheckin + 1 && !this.isCheckin) {
           day.status = 'takable'
-          day.amount = this.systemConfig.checkinSettings.single_day_amount
+          day.amount = this.checkinSettings.single_day_amount
         } else if (i < continuousCheckin) {
           day.status = 'taken'
         }
@@ -575,11 +582,10 @@ export default {
 .rule-panel {
   position: relative;
   width: 100%;
-  height: 145px;
   background: #fff;
   margin-top: 10px;
   box-sizing: border-box;
-  padding: 8px 26px 12px 10px;
+  padding: 8px 10px 12px 10px;
   text-align: left;
   color: #4a4a4a;
   font-size: 12px;
