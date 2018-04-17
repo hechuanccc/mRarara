@@ -22,13 +22,11 @@
           </div>
         </div>
       </div>
-      <div :class="['result-numbers', {'tie-up': key === 'bjkl8' || key === 'auluck8'}]">
-        <span v-for="(num, index) in value.resultStr.split(',')"
-          :key="index"
-          :class="[key, `${key}-${num}`]">
-          {{num}}
-        </span>
-      </div>
+      <result-ball
+        :gameCode="key"
+        :resultballs="value.resultStr.split(',')"
+        :count="countdownMap[key]"
+        :baseNumber="baseNumber" />
     </div>
   </div>
 </template>
@@ -36,6 +34,8 @@
 <script>
 import urls from '../api/urls'
 import _ from 'lodash'
+import ResultBall from './ResultBall'
+import { setIndicator } from '../utils'
 const jsonp = require('jsonp')
 const CryptoJS = require('crypto-js')
 
@@ -50,12 +50,18 @@ const encoded = (data) => {
 }
 
 export default {
+  name: 'Result',
+  components: {
+    ResultBall
+  },
   data () {
     return {
       resultsMap: {},
       countdownMap: {},
       codes: [],
-      encoded
+      encoded,
+      baseNumber: 0,
+      timer: null
     }
   },
   methods: {
@@ -145,6 +151,33 @@ export default {
           })
         }
       })
+    },
+    runAnimate (game, num) {
+      this.runList = () => {
+        let t = Math.floor(Math.random() * 250)
+
+        if (this.baseNumber < 5) {
+          this.baseNumber ++
+        } else {
+          this.baseNumber = 1
+        }
+
+        this.$nextTick(() => {  // to avoid the view can't keep up the data changing
+          this.timer = setTimeout(() => {
+            this.runList()
+          }, t)
+        })
+      }
+
+      this.runList()
+    },
+    stopAnimate () {
+      this.baseNumber = 0
+      clearTimeout(this.timer)
+    },
+    init () {
+      this.resultsMap = {}
+      this.countdownMap = {}
     }
   },
   watch: {
@@ -157,9 +190,20 @@ export default {
     }
   },
   created () {
-    this.initResults()
+    setIndicator(() => {
+      this.init()
+      this.initResults()
+      this.runAnimate()
+    }, () => {
+      this.stopAnimate()
+      _.each(this.codes, (code) => {
+        clearInterval(this[`timer-${code}`])
+        clearInterval(this[`issueInterval-${code}`])
+      })
+    })
   },
   beforeDestroy () {
+    this.stopAnimate()
     _.each(this.codes, (code) => {
       clearInterval(this[`timer-${code}`])
       clearInterval(this[`issueInterval-${code}`])
@@ -169,7 +213,6 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import '../styles/resultnumbers.less';
 
 .result {
   box-sizing: border-box;
@@ -198,14 +241,6 @@ export default {
   }
   .name, .issue, .text {
     font-size: 12px;
-  }
-}
-
-.result-numbers {
-  display: block;
-  margin-bottom: 10px;
-  &.tie-up {
-    width: 290px;
   }
 }
 
