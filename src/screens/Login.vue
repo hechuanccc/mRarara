@@ -82,12 +82,13 @@
           this.$store.dispatch('login', {
             user: this.user
           }).then(res => {
-            this.$store.dispatch('fetchUser')
+            return this.$store.dispatch('fetchUser')
+          }).then(res => {
             this.illegalTriedLogin = false
             this.error = ''
             this.loading = false
             this.$router.push('/chatroom')
-          }, (error) => {
+          }).catch((error) => {
             this.error = msgFormatter(error)
             this.loading = false
           })

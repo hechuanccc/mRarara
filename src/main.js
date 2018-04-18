@@ -81,7 +81,7 @@ const toLogin = function (router) {
 
 router.beforeEach((to, from, next) => {
   document.title = `彩票计划聊天室 - ${to.meta.title}`
-  if (to.path === '/login') {
+  if (to.path === '/login' || to.path === '/register') {
     next()
     return
   }

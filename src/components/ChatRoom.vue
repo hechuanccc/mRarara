@@ -1,6 +1,6 @@
 <template>
   <div class="chat-box" id="chatBox" :style="{backgroundImage: `url(${systemConfig.mobileBackground})`}">
-    <div class="chat-announce" v-if="announcement.length > 0 && roomId === 1">
+    <div class="chat-announce" v-if="announcement.length > 0 && roomId === user.default_room_id">
       <div class="annouce-info clearfix">
         <icon class="volume-up" name="volume-up"></icon>
         公告
@@ -9,7 +9,7 @@
         <MarqueeTips :content="announcement[announcementIndex]" :speed="10"></MarqueeTips>
       </div>
     </div>
-    <div class="checkin-btn" v-if="systemConfig.checkinSettings.enabled === '1'" @click="showCheckin">
+    <div class="checkin-btn" v-if="systemConfig.checkinSettings.enabled === '1' && roomId === user.default_room_id" @click="showCheckin">
       签到
       <span v-if="!isCheckin" class="badge"></span>
     </div>
@@ -164,8 +164,8 @@ export default {
       checkUser: {},
       chatLoading: true,
       marqueeInterval: '',
-      roomId: '',
-      chatWithId: this.$route.params.chatWithId,
+      assignRoomId: -1,
+      chatWithId: parseInt(this.$route.params.chatWithId),
       isShowEnvelopeDialog: false,
       activeSeries: 'symbol',
       envelope: {
@@ -212,11 +212,14 @@ export default {
       'user', 'today', 'systemConfig', 'personal_setting', 'announcement', 'rooms'
     ]),
     noPermission () {
-      return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+      return this.roomId === this.user.default_room_id && (this.personal_setting.banned || this.personal_setting.blocked)
     },
     isCheckin () {
       const lastCheckin = this.user.last_checkin
       return lastCheckin && !this.$moment(this.today).isAfter(lastCheckin, 'day')
+    },
+    roomId () {
+      return this.assignRoomId || this.user.default_room_id || 1
     }
   },
   created () {
@@ -224,10 +227,9 @@ export default {
     this.marqueeInterval = setInterval(() => {
       this.announcementIndex = (this.announcementIndex + 1) % this.announcement.length
     }, 10000)
-    const chatWithId = this.chatWithId
-    if (chatWithId) {
-      buildRoom([this.user.id, chatWithId]).then(data => {
-        this.roomId = data.room.id
+    if (this.chatWithId) {
+      buildRoom([this.user.id, this.chatWithId]).then(data => {
+        this.assignRoomId = data.room.id
       }, errRes => {
         AlertModule.show({
           content: msgFormatter(errRes)
@@ -237,7 +239,7 @@ export default {
         })
       })
     } else {
-      this.roomId = 1
+      this.assignRoomId = 0
     }
   },
   methods: {
@@ -268,7 +270,7 @@ export default {
       const errors = this.validateAll()
       if (errors.length === 0) {
         this.loading = true
-        const envelope = {...this.envelope, sender_id: this.user.id}
+        const envelope = {...this.envelope, sender_id: this.user.id, room_id: this.roomId}
         if (!envelope.content) {
           envelope.content = '恭喜发财，大吉大利'
         }
@@ -303,16 +305,15 @@ export default {
   },
   beforeDestroy () {
     clearInterval(this.marqueeInterval)
-    if (this.roomId !== 1) {
+    if (this.roomId !== this.user.default_room_id) {
       let currentMessage = this.rooms[this.roomId]
       if (currentMessage && currentMessage.length > 0) {
         let lastMessage = currentMessage[currentMessage.length - 1]
         this.$store.state.ws.send(JSON.stringify({
           command: 'read_msg',
           message: lastMessage.id,
-          chat_with: this.chatWithId,
           room: this.roomId,
-          user: this.user.username
+          user: this.user.id
         }))
         this.$store.dispatch('updateReadStatus', {id: this.chatWithId, status: true})
       }
