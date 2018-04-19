@@ -28,7 +28,7 @@
           @on-change="validate($event, 'password')"
           @on-blur="validate($event, 'password')"
           ref="password"
-          placeholder="8~15字,含大写字母及数字"
+          placeholder="请输入6~15位数字或字母"
           autocomplete="off"
           title="密码"
           label-width="100"
@@ -97,7 +97,7 @@
       if (!value) {
         resolve('请输入密码')
       } else if (!validatePassword(value)) {
-        resolve('请输入8~15字元，其中至少包含一大写字母及一数字')
+        resolve('请输入6~15位数字或字母')
       } else {
         resolve('')
       }

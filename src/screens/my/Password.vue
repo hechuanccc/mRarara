@@ -115,7 +115,7 @@ export default {
       if (!validatePassword(value)) {
         return {
           valid: false,
-          msg: '请输入8~15字元，其中至少包含一大写字母及一数字'
+          msg: '请输入6~15位数字或字母'
         }
       } else {
         return {
