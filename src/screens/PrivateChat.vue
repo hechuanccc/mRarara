@@ -10,7 +10,7 @@
       <div
         slot="icon"
         class="avatar"></div>
-      <div v-if="!unreadRooms[member.id]" class="notify"></div>
+      <div v-if="member.room&&!member.room.read" class="notify"></div>
     </cell>
   </group>
 </template>
@@ -34,7 +34,7 @@ export default {
   },
   computed: {
     ...mapState([
-      'user', 'chatlist', 'unreadRooms'
+      'user', 'chatlist'
     ])
   }
 }
