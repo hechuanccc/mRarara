@@ -35,12 +35,14 @@
         top:'0',
         'z-index':'100'
       }">彩票计划聊天室</x-header>
-    <router-view :key="$route.path"></router-view>
+    <keep-alive include="Plan">
+      <router-view :key="$route.path"></router-view>
+    </keep-alive>
   </view-box>
 </template>
 
 <script>
-import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
+import { XHeader, ViewBox, Tab, TabItem, AlertModule } from 'vux'
 import { mapGetters, mapState } from 'vuex'
 import { fetchAnnouce } from './api'
 import Icon from 'vue-awesome/components/Icon'
@@ -53,8 +55,6 @@ export default {
     ViewBox,
     Tab,
     TabItem,
-    Swiper,
-    SwiperItem,
     Icon,
     AlertModule,
     XHeader
@@ -84,7 +84,7 @@ export default {
     pages () {
       if (this.user.viewRole && this.user.viewRole === MEMBER) {
         return [{
-          name: '计划聊天室',
+          name: '聊天室',
           path: '/chatroom'
         },
         {
@@ -96,17 +96,25 @@ export default {
           path: '/results'
         },
         {
+          name: '计划',
+          path: '/plan'
+        },
+        {
           name: '帐户',
           path: '/my'
         }]
       }
       return [{
-        name: '计划聊天室',
+        name: '聊天室',
         path: '/chatroom'
       },
       {
         name: '开奖',
         path: '/results'
+      },
+      {
+        name: '计划',
+        path: '/plan'
       },
       {
         name: '帐户',

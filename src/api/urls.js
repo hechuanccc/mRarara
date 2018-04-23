@@ -24,5 +24,7 @@ export default {
   buildRoom: host + '/v1/room/',
   envelope: host + '/v1/envelope/',
   stickers: host + '/v1/stickers/',
-  checkin: host + '/v1/member/checkin/'
+  checkin: host + '/v1/member/checkin/',
+  game: host + '/v1/member/game/',
+  prediction: host + '/v1/member/prediction/'
 }

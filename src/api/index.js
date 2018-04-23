@@ -93,3 +93,11 @@ export function checkin () {
     'Content-Type': 'application/json'
   })
 }
+
+export function fetchGame (name) {
+  return axios.get(urls.game)
+}
+
+export function fetchPrediction ({plan, scheme}) {
+  return axios.get(`${urls.prediction}?plan=${plan}&scheme=${scheme}&numbers=9`)
+}
