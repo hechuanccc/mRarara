@@ -73,7 +73,7 @@ export default {
         })
         if (state.chatlist.length === 0) {
           if (viewRole === MEMBER) {
-            dispatch('initChatlist')
+            dispatch('initChatlist').catch(() => {})
           }
         }
         return Promise.resolve(res)
