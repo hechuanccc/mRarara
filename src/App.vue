@@ -4,7 +4,7 @@
     :body-padding-top="user.logined?'44px':'46px'"
     body-padding-bottom="0">
     <div
-      v-if="user.logined && !needShowBack"
+      v-if="user.logined && !isSubPage"
       class="tab-content"
       slot="header"
       :style="{
@@ -26,7 +26,7 @@
     </div>
     <x-header
       v-else
-      :left-options="{showBack: needShowBack&&user.logined}"
+      :left-options="{showBack: needBackBtn}"
       slot="header"
       :style="{
         width: '100%',
@@ -35,12 +35,14 @@
         top:'0',
         'z-index':'100'
       }">彩票计划聊天室</x-header>
-    <router-view :key="$route.path"></router-view>
+    <keep-alive include="Plan">
+      <router-view :key="$route.path"></router-view>
+    </keep-alive>
   </view-box>
 </template>
 
 <script>
-import { XHeader, ViewBox, Tab, TabItem, Swiper, SwiperItem, AlertModule } from 'vux'
+import { XHeader, ViewBox, Tab, TabItem, AlertModule } from 'vux'
 import { mapGetters, mapState } from 'vuex'
 import { fetchAnnouce } from './api'
 import Icon from 'vue-awesome/components/Icon'
@@ -53,8 +55,6 @@ export default {
     ViewBox,
     Tab,
     TabItem,
-    Swiper,
-    SwiperItem,
     Icon,
     AlertModule,
     XHeader
@@ -74,11 +74,7 @@ export default {
     ]),
     unreadCount () {
       const chatWithId = this.$route.params.chatWithId
-      const unreadRooms = this.$store.state.unreadRooms
-      const ids = Object.keys(unreadRooms)
-      return ids.filter(id => {
-        return !unreadRooms[id] && chatWithId !== id
-      }).length
+      return this.chatlist.filter(member => member.id !== chatWithId && member.room && !member.room.read).length
     },
     avatar () {
       return {
@@ -88,7 +84,7 @@ export default {
     pages () {
       if (this.user.viewRole && this.user.viewRole === MEMBER) {
         return [{
-          name: '计划聊天室',
+          name: '聊天室',
           path: '/chatroom'
         },
         {
@@ -100,17 +96,25 @@ export default {
           path: '/results'
         },
         {
+          name: '计划',
+          path: '/plan'
+        },
+        {
           name: '帐户',
           path: '/my'
         }]
       }
       return [{
-        name: '计划聊天室',
+        name: '聊天室',
         path: '/chatroom'
       },
       {
         name: '开奖',
         path: '/results'
+      },
+      {
+        name: '计划',
+        path: '/plan'
       },
       {
         name: '帐户',
@@ -127,8 +131,17 @@ export default {
       }
       return ''
     },
-    needShowBack () {
+    isSubPage () {
       return this.$route.meta.showBack
+    },
+    needBackBtn () {
+      if (this.isSubPage) {
+        if (this.$route.path === '/login' && !this.user.logined) {
+          return false
+        }
+        return true
+      }
+      return false
     }
   },
   watch: {
@@ -156,11 +169,7 @@ export default {
       const ws = new WebSocket(`${config.chatHost}/chat/stream?token=${token}`)
       ws.onopen = () => {
         this.$store.dispatch('setWs', ws)
-        ws.send(JSON.stringify({
-          'command': 'join',
-          'receivers': [1]
-        }))
-        ws.onclose = () => {
+        ws.onclose = (e) => {
           if (this.$store.state.user.logined) {
             this.$store.commit('RESET_USER')
             this.$router.push({
@@ -174,8 +183,9 @@ export default {
           if (typeof resData.data === 'string') {
             try {
               data = JSON.parse(resData.data)
+              const defaultRoomId = this.user.default_room_id
               if (data.personal_setting) {
-                this.$store.dispatch('initPersonalSetting', data.personal_setting)
+                this.$store.dispatch('initPersonalSetting', data.personal_setting.room[defaultRoomId])
               } else if (!data.error_type) {
                 // 只顯示目前房間的歷史訊息
                 if (data.latest_message && data.latest_message.length > 0) {
@@ -190,7 +200,9 @@ export default {
                     case 1:
                     case 7:
                     case 8:
-                      this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
+                      if (data.sender.id !== this.user.id && data.receivers !== defaultRoomId) { // 排除自己及大廳
+                        this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
+                      }
                       this.$store.dispatch('addMessage', {roomId: data.receivers, message: data})
                       break
                     case 2:

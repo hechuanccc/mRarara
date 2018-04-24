@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="progress">
-      <div class="text">已连续签到<span class="day">{{user.continuous_checkins|addZeroFilter}}</span>天</div>
+      <div class="text">已连续签到<span class="day">{{user.continuous_checkins}}</span>天</div>
       <div class="graph">
         <div class="line">
           <div class="fill" :style="{width: calcProgress(7)}"></div>
@@ -76,11 +76,6 @@ import { msgFormatter } from '../utils'
 import { Spinner } from 'vux'
 export default {
   name: 'CheckinDialog',
-  filters: {
-    addZeroFilter (val) {
-      return val < 10 ? '0' + val : val
-    }
-  },
   props: {
     show: {
       type: Boolean

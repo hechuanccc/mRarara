@@ -13,7 +13,6 @@ export default {
       logined: false
     }
     state.chatlist = []
-    state.unreadRooms = {}
     state.envelope = {}
     Vue.cookie.delete('access_token')
     Vue.cookie.delete('refresh_token')
@@ -53,7 +52,6 @@ export default {
     state.announcement = announcement
   },
   [types.INIT_PERSONAL_SETTING]: (state, setting) => {
-    state.personal_setting.reasons = setting.reasons || []
     state.personal_setting.banned = setting.banned
     state.personal_setting.blocked = setting.blocked
   },
@@ -75,15 +73,11 @@ export default {
   },
   [types.INIT_CHATLIST]: (state, chatlist) => {
     state.chatlist = chatlist
-    const unreadRooms = {}
-    chatlist.forEach(member => {
-      unreadRooms[member.id] = member.read
-    })
-    state.unreadRooms = unreadRooms
   },
   [types.UPDATE_READ_STATUS]: (state, {id, status}) => {
-    if (state.unreadRooms[id] !== undefined) {
-      state.unreadRooms[id] = status
+    const target = state.chatlist.find((member) => member.id === id)
+    if (target) {
+      target.room.read = status
     }
   },
   [types.UPDATE_ENVELOPE]: (state, {id, data}) => {

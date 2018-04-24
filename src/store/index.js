@@ -30,11 +30,9 @@ export default new Vuex.Store({
     },
     personal_setting: {
       banned: false,
-      blocked: false,
-      reasons: []
+      blocked: false
     },
     announcement: [],
-    unreadRooms: {},
     chatlist: [],
     envelope: {},
     today: new Date()

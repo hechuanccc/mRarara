@@ -78,13 +78,13 @@
         <ul>
           <li :class="{active: series.name === activeSeries}" v-for="(series, index) in emojiSeries" :key="index" @click="selectSeries(series)">
             <div v-if="series.logo" class="logo" :style="{'background-image':`url('${series.logo}')`}"></div>
-            <span v-else :style="{'font-size':'20px'}">{{series.display_name}}</span>
+            <span v-else>{{series.display_name}}</span>
           </li>
         </ul>
       </div>
     </div>
     <div v-show="isShowControlPanel" class="control-panel">
-      <label v-if="systemConfig.envelopeSettings.enabled === '1' && roomId === 1" class="control-btn" @click="openEnvelopeDialog">
+      <label v-if="systemConfig.envelopeSettings.enabled === '1' && roomId === user.default_room_id" class="control-btn" @click="openEnvelopeDialog">
         <div class="icon-bg">
           <div class="envelope-icon"></div>
         </div>
@@ -149,7 +149,7 @@ export default {
       'user', 'systemConfig', 'emojis', 'personal_setting'
     ]),
     noPermission () {
-      return this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked)
+      return this.roomId === this.user.default_room_id && (this.personal_setting.banned || this.personal_setting.blocked)
     },
     emojiSeries () {
       let symbol = {
