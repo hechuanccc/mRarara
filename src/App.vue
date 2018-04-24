@@ -189,6 +189,7 @@ export default {
                     case 0:
                     case 1:
                     case 7:
+                    case 8:
                       this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
                       this.$store.dispatch('addMessage', {roomId: data.receivers, message: data})
                       break
