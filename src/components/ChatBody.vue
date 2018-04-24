@@ -28,7 +28,7 @@
             </div>
             <div v-else :class="['bubble', 'bubble' + item.type]">
               <p>
-                <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
+                <span v-if="item.type === 0 || item.type === 4 || item.type === 8">{{item.content}}</span>
                 <img-async
                   @click.native="showImageMsg = true; showImageMsgUrl = item.content"
                   v-else-if="item.type === 1"
@@ -461,10 +461,10 @@ export default {
   }
 }
 .bubble {
-  background: linear-gradient(to right, #1976D2, rgb(25, 158, 216));
-  border-left-color: rgb(25, 158, 216);
-  border-right-color: #1976D2;
-  color: rgb(255, 255, 255);
+  background: #fff;
+  border-left-color: #fff;
+  border-right-color: #fff;
+  color: #000;
   margin-top: 3px;
   position: relative;
   border-radius: 5px;
@@ -482,6 +482,12 @@ export default {
     background: linear-gradient(to right,#ab47bc,#5169DE);
     border-left-color: #5169de;
     border-right-color: #ab47bc;
+  }
+  &.bubble8 {
+    background: linear-gradient(to right, #1976D2, rgb(25, 158, 216));
+    border-left-color: rgb(25, 158, 216);
+    border-right-color: #1976D2;
+    color: rgb(255, 255, 255);
   }
   p {
     display: inline-block;

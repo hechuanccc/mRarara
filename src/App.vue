@@ -183,8 +183,8 @@ export default {
           if (typeof resData.data === 'string') {
             try {
               data = JSON.parse(resData.data)
+              const defaultRoomId = this.user.default_room_id
               if (data.personal_setting) {
-                const defaultRoomId = this.user.default_room_id
                 this.$store.dispatch('initPersonalSetting', data.personal_setting.room[defaultRoomId])
               } else if (!data.error_type) {
                 // 只顯示目前房間的歷史訊息
@@ -199,7 +199,8 @@ export default {
                     case 0:
                     case 1:
                     case 7:
-                      if (data.sender.id !== this.user.id) { // 排除自己
+                    case 8:
+                      if (data.sender.id !== this.user.id && data.receivers !== defaultRoomId) { // 排除自己及大廳
                         this.$store.dispatch('updateReadStatus', {id: data.sender.id, status: false})
                       }
                       this.$store.dispatch('addMessage', {roomId: data.receivers, message: data})
