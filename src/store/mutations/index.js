@@ -57,7 +57,7 @@ export default {
   },
   [types.UPDATE_PERSONAL_SETTING]: (state, type) => {
     switch (type) {
-      case 'unblocked':
+      case 'unblock':
         state.personal_setting.blocked = false
         break
       case 'unbanned':

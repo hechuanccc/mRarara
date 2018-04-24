@@ -95,10 +95,10 @@ export default {
           name: '开奖',
           path: '/results'
         },
-        {
-          name: '计划',
-          path: '/plan'
-        },
+        // {
+        //   name: '计划',
+        //   path: '/plan'
+        // },
         {
           name: '帐户',
           path: '/my'
@@ -112,10 +112,10 @@ export default {
         name: '开奖',
         path: '/results'
       },
-      {
-        name: '计划',
-        path: '/plan'
-      },
+      // {
+      //   name: '计划',
+      //   path: '/plan'
+      // },
       {
         name: '帐户',
         path: '/my'
@@ -244,7 +244,7 @@ export default {
                     this.$store.dispatch('updatePersonalSetting', 'banned')
                     if (this.$route.path === '/chatroom') {
                       AlertModule.show({
-                        content: '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
+                        content: '您已被聊天室管理员禁言，在' + this.$moment(data.unbanned_time).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
                       })
                     }
                     break

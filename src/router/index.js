@@ -79,14 +79,14 @@ export default new Router({
       },
       component: resolve => { require(['../screens/ResultPage.vue'], resolve) }
     },
-    {
-      path: '/plan',
-      name: 'Plan',
-      meta: {
-        title: '计划'
-      },
-      component: resolve => { require(['../screens/Plan.vue'], resolve) }
-    },
+    // {
+    //   path: '/plan',
+    //   name: 'Plan',
+    //   meta: {
+    //     title: '计划'
+    //   },
+    //   component: resolve => { require(['../screens/Plan.vue'], resolve) }
+    // },
     {
       path: '/my',
       name: 'my',
@@ -151,6 +151,16 @@ export default new Router({
       },
       beforeEnter: myPageAuthCheck,
       component: resolve => { require(['../screens/my/CheckinRecord.vue'], resolve) }
+    },
+    {
+      path: '/error',
+      name: 'Error',
+      meta: {
+        title: '发生错误',
+        showBack: true
+      },
+      beforeEnter: myPageAuthCheck,
+      component: resolve => { require(['../screens/Error.vue'], resolve) }
     },
     {
       path: '*',
