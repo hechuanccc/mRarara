@@ -52,6 +52,12 @@ axios.interceptors.response.use(res => {
     if (status === 401 || status === 403) {
 
     } else if (error.response.status !== 587) {
+      if (error.response.status === 503) {
+        router.replace({
+          path: '/error'
+        })
+        return Promise.reject(error)
+      }
       let msg = error.response.data.error
       if (!msg) {
         msg = '系统发生了错误, 请联系客服'
@@ -81,7 +87,7 @@ const toLogin = function (router) {
 
 router.beforeEach((to, from, next) => {
   document.title = `彩票计划聊天室 - ${to.meta.title}`
-  if (to.path === '/login' || to.path === '/register') {
+  if (to.path === '/login' || to.path === '/register' || to.path === '/error') {
     next()
     return
   }

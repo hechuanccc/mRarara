@@ -43,7 +43,7 @@
           {{item.content}}
         </div>
       </li>
-      <li v-if="roomId===1&&personal_setting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
+      <li v-if="roomId===user.default_room_id&&personal_setting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
       <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
     </ul>
     <div v-transfer-dom>
@@ -154,7 +154,7 @@ export default {
       'user', 'personal_setting', 'rooms', 'envelope'
     ]),
     noPermission () {
-      return (this.roomId === 1 && (this.personal_setting.banned || this.personal_setting.blocked))
+      return (this.roomId === this.user.default_room_id && (this.personal_setting.banned || this.personal_setting.blocked))
     },
     statistic () {
       if (this.selectedEnvelope.users) {
