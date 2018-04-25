@@ -77,7 +77,6 @@ export default {
   },
   methods: {
     syncImg (e) {
-      // const reader = new FileReader()
       const file = e.target.files[0]
       lrz(file).then(rst => {
         const inputErrors = []
