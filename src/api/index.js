@@ -99,5 +99,5 @@ export function fetchGame (name) {
 }
 
 export function fetchPrediction ({plan, scheme}) {
-  return axios.get(`${urls.prediction}?plan=${plan}&scheme=${scheme}&numbers=9`)
+  return axios.get(`${urls.prediction}?plan=${plan}&scheme=${scheme}&numbers=5`)
 }
