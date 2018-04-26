@@ -51,10 +51,8 @@
             title="红包金额"
             placeholder="请输入红包金额"
             placeholder-align="right"
-            type="number"
-            v-model.number="envelope.pack_amount"
-            @on-blur="validate($event, 'pack_amount')"
-            @on-change="validate($event, 'pack_amount')"
+            v-model="envelope.pack_amount"
+            @on-change="inputnum($event, 'pack_amount')"
             keyboard="number">
           </x-input>
           <div class="input-validate">
@@ -67,10 +65,8 @@
             title="红包个数"
             placeholder="请输入红包个数"
             placeholder-align="right"
-            type="number"
-            v-model.number="envelope.pack_nums"
-            @on-blur="validate($event, 'pack_nums')"
-            @on-change="validate($event, 'pack_nums')"
+            v-model="envelope.pack_nums"
+            @on-change="inputnum($event, 'pack_nums')"
             keyboard="number">
           </x-input>
           <div class="input-validate">
@@ -181,12 +177,15 @@ export default {
           validate: (value) => {
             if (!value) {
               return '请输入金额'
-            } else if (value < this.systemConfig.envelopeSettings.min_amount) {
-              return '须高于最低金额限制'
-            } else if (value > this.systemConfig.envelopeSettings.max_amount) {
-              return '不能超过最高金额限制'
             } else {
-              return ''
+              value = parseInt(value)
+              if (value < this.systemConfig.envelopeSettings.min_amount) {
+                return '须高于最低金额限制'
+              } else if (value > this.systemConfig.envelopeSettings.max_amount) {
+                return '不能超过最高金额限制'
+              } else {
+                return ''
+              }
             }
           }
         },
@@ -195,10 +194,13 @@ export default {
           validate: (value) => {
             if (!value) {
               return '请输入个数'
-            } else if (value > this.systemConfig.envelopeSettings.per_max_count) {
-              return '红包数量超出限制'
             } else {
-              return ''
+              value = parseInt(value)
+              if (value > this.systemConfig.envelopeSettings.per_max_count) {
+                return '红包数量超出限制'
+              } else {
+                return ''
+              }
             }
           }
         }
@@ -243,6 +245,13 @@ export default {
     }
   },
   methods: {
+    inputnum (val, input) {
+      let formatted = !val ? '' : val.replace(/^[0]|[^0-9]/g, '')
+      this.$nextTick(() => {
+        this.envelope[input] = formatted
+        this.validate(formatted, input)
+      })
+    },
     showCheckin () {
       if (this.user.viewRole === VISITOR) {
         this.$router.push('/login')
@@ -270,7 +279,13 @@ export default {
       const errors = this.validateAll()
       if (errors.length === 0) {
         this.loading = true
-        const envelope = {...this.envelope, sender_id: this.user.id, room_id: this.roomId}
+        const envelope = {
+          pack_amount: parseInt(this.envelope.pack_amount),
+          pack_nums: parseInt(this.envelope.pack_nums),
+          content: this.envelope.content,
+          sender_id: this.user.id,
+          room_id: this.roomId
+        }
         if (!envelope.content) {
           envelope.content = '恭喜发财，大吉大利'
         }
