@@ -100,6 +100,10 @@ export default {
           path: '/plan'
         },
         {
+          name: '投注',
+          path: '/bet'
+        },
+        {
           name: '帐户',
           path: '/my'
         }]
@@ -115,6 +119,10 @@ export default {
       {
         name: '计划',
         path: '/plan'
+      },
+      {
+        name: '投注',
+        path: '/bet'
       },
       {
         name: '帐户',
