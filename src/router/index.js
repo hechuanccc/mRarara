@@ -98,6 +98,14 @@ export default new Router({
       component: resolve => { require(['../screens/My.vue'], resolve) }
     },
     {
+      path: '/bet',
+      name: 'Bet',
+      meta: {
+        title: '投注'
+      },
+      component: resolve => { require(['../screens/Bet.vue'], resolve) }
+    },
+    {
       path: '/my/profile',
       name: 'profile',
       meta: {
