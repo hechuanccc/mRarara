@@ -1,6 +1,6 @@
 <template>
 <div class="container">
-  <iframe class="results-frame" scrolling="no" src="$store.state.systemConfig.mobileLotteryUrl" frameborder="0">
+  <iframe class="results-frame" scrolling="no" :src="$store.state.systemConfig.mobileLotteryUrl" frameborder="0">
   </iframe>
 </div>
 </template>
