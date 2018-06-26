@@ -95,10 +95,10 @@ export default {
           name: '开奖',
           path: '/results'
         },
-        {
-          name: '计划',
-          path: '/plan'
-        },
+        // {
+        //   name: '计划',
+        //   path: '/plan'
+        // },
         {
           name: '投注',
           path: '/bet'
@@ -116,10 +116,10 @@ export default {
         name: '开奖',
         path: '/results'
       },
-      {
-        name: '计划',
-        path: '/plan'
-      },
+      // {
+      //   name: '计划',
+      //   path: '/plan'
+      // },
       {
         name: '投注',
         path: '/bet'
