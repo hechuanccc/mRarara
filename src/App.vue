@@ -104,6 +104,10 @@ export default {
           path: '/bet'
         },
         {
+          name: '充值中心',
+          path: '/recharge'
+        },
+        {
           name: '帐户',
           path: '/my'
         }]
@@ -123,6 +127,10 @@ export default {
       {
         name: '投注',
         path: '/bet'
+      },
+      {
+        name: '充值中心',
+        path: '/recharge'
       },
       {
         name: '帐户',

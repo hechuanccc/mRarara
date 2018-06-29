@@ -96,6 +96,14 @@ export default new Router({
       component: resolve => { require(['../screens/Bet.vue'], resolve) }
     },
     {
+      path: '/recharge',
+      name: 'Recharge',
+      meta: {
+        title: '充值中心'
+      },
+      component: resolve => { require(['../screens/Recharge.vue'], resolve) }
+    },
+    {
       path: '/my',
       name: 'my',
       meta: {
