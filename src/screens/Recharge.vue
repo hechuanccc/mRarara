@@ -1,5 +1,8 @@
 <template>
-  <iframe  class="results-frame" src="http://zz79.com" frameborder="0"></iframe>
+<div class="container">
+  <iframe class="results-frame" scrolling="no" src="http://zz79.com" frameborder="0">
+  </iframe>
+</div>
 </template>
 <script>
 export default {
@@ -8,14 +11,17 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.container {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  height: 100%;
+}
 .results-frame {
   height: 100%;
-  margin-bottom: -10px;
-  width: 100%;
-}
-
-.not-yet {
-  padding-top: 40px;
+  width: 1px;
+  min-width: 100%;
 }
 </style>
+
 
