@@ -21,6 +21,7 @@ export default {
   height: 100%;
   width: 1px;
   min-width: 100%;
+  min-height: 820px; //fix android scrolling issue- must taller than iframe content height
 }
 </style>
 
