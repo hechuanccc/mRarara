@@ -14,14 +14,14 @@
         top:'0',
         'z-index':'100'
       }">
-      <tab :line-width="2" active-color="#fc378c">
+      <tab :line-width="2" active-color="#fc378c" ref="tab">
         <tab-item
           v-if="page.path || page.newPage"
           :badge-label="page.path === '/private' && unreadCount ? unreadCount+'' : ''"
           class="vux-center"
           :selected="`/${$route.path.split('/')[1]}` === page.path"
           v-for="(page, index) in pages"
-          @on-item-click="switchTab(page)"
+          @on-item-click="switchTab(page, index)"
           :key="index">{{page.name}}</tab-item>
       </tab>
     </div>
@@ -178,12 +178,14 @@ export default {
     })
   },
   methods: {
-    switchTab (page) {
+    switchTab (page, index) {
       if (page.path) {
         this.$router.push({path: page.path})
+        this.$refs['tab']['_data'].currentIndex = index
       } else {
+        this.$router.push({path: this.pages[0].path})
+        this.$refs['tab']['_data'].currentIndex = 0
         window.open(page.newPage)
-        this.$router.push({path: this.pages[0].path}) // init tab to chatroom
       }
     },
     initWebSocket () {
