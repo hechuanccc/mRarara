@@ -16,11 +16,12 @@
       }">
       <tab :line-width="2" active-color="#fc378c">
         <tab-item
+          v-if="page.path || page.newPage"
           :badge-label="page.path === '/private' && unreadCount ? unreadCount+'' : ''"
           class="vux-center"
           :selected="`/${$route.path.split('/')[1]}` === page.path"
           v-for="(page, index) in pages"
-          @on-item-click="switchTab(page.path)"
+          @on-item-click="switchTab(page)"
           :key="index">{{page.name}}</tab-item>
       </tab>
     </div>
@@ -101,7 +102,7 @@ export default {
         // },
         {
           name: '投注',
-          path: '/bet'
+          newPage: this.$store.state.systemConfig.mobileLotteryUrl
         },
         {
           name: '充值中心',
@@ -126,7 +127,7 @@ export default {
       // },
       {
         name: '投注',
-        path: '/bet'
+        newPage: this.$store.state.systemConfig.mobileLotteryUrl
       },
       {
         name: '充值中心',
@@ -177,8 +178,13 @@ export default {
     })
   },
   methods: {
-    switchTab (path) {
-      this.$router.push({path})
+    switchTab (page) {
+      if (page.path) {
+        this.$router.push({path: page.path})
+      } else {
+        window.open(page.newPage)
+        this.$router.push({path: this.pages[0].path}) // init tab to chatroom
+      }
     },
     initWebSocket () {
       let token = this.$cookie.get('access_token')
