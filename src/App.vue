@@ -183,6 +183,7 @@ export default {
         this.$router.push({path: page.path})
       } else {
         window.open(page.newPage)
+        this.$router.push({path: this.pages[0].path}) // init tab to chatroom
       }
     },
     initWebSocket () {
