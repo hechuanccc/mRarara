@@ -88,10 +88,10 @@ export default {
           name: '聊天室',
           path: '/chatroom'
         },
-        {
-          name: '联系客服',
-          path: '/private'
-        },
+        // {
+        //   name: '联系客服',
+        //   path: '/private'
+        // },
         {
           name: '开奖',
           path: '/results'
