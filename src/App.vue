@@ -170,11 +170,13 @@ export default {
   },
   created () {
     fetchAnnouce().then(result => {
+      const announcement = []
       result.forEach((item) => {
         if (item.platform !== 0) {
-          this.$store.dispatch('setAnnouncement', [item.content])
+          announcement.push(item.content)
         }
       })
+      this.$store.dispatch('setAnnouncement', announcement)
     })
   },
   methods: {

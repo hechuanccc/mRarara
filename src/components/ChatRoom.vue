@@ -6,7 +6,7 @@
         公告
       </div>
       <div class="scroll">
-        <MarqueeTips :content="announcement[announcementIndex]" :speed="10"></MarqueeTips>
+        <marquee :messages="announcement" height="29px"></marquee>
       </div>
     </div>
     <div class="checkin-btn" v-if="systemConfig.checkinSettings.enabled === '1' && roomId === user.default_room_id" @click="showCheckin">
@@ -120,10 +120,10 @@ import { buildRoom, sendEnvelope } from '../api'
 import { Group, XInput, XTextarea, XButton, Tab, TabItem, AlertModule, Popover, TransferDom, XDialog, Swiper, SwiperItem } from 'vux'
 import { msgFormatter } from '../utils'
 import { VISITOR } from '../customConfig'
-import MarqueeTips from 'vue-marquee-tips'
 import ChatBody from './ChatBody'
 import ChatFooter from './ChatFooter'
 import CheckinDialog from './CheckinDialog'
+import Marquee from './Marquee'
 const validateItems = ['pack_amount', 'pack_nums']
 export default {
   components: {
@@ -131,7 +131,7 @@ export default {
     TabItem,
     AlertModule,
     Icon,
-    MarqueeTips,
+    Marquee,
     Popover,
     ChatBody,
     ChatFooter,
@@ -360,12 +360,13 @@ export default {
 .chat-announce {
   position: absolute;
   top: 5px;
-  margin: 0 5px;
+  box-sizing: border-box;
   width: calc(~"100%" - 12px);
+  height: 31px;
   background: rgba(237,244,254,.9);
   border: 1px solid #c2cfe2;
   border-radius: 5px;
-  height: 29px;
+  margin: 0 5px;
   overflow: hidden;
   z-index: 1;
   .annouce-info {
@@ -375,6 +376,7 @@ export default {
     background: #e1edfd;
     color: @red;
     padding: 0 8px;
+    height: 29px;
     line-height: 29px;
     font-size: 14px;
     .volume-up {
@@ -382,10 +384,9 @@ export default {
     }
   }
   .scroll {
-    line-height: 30px;
+    height: 29px;
+    line-height: 29px;
     font-size: 14px;
-    display: block;
-    margin-left: 72px;
   }
 }
 .chat-container {
