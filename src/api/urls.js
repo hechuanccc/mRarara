@@ -12,7 +12,7 @@ export default {
   user: host + '/v1/token/identity/',
   logout: host + '/logout/',
   chatEmoji: host + '/v1/emoji/',
-  sendImgToChat: host + '/v1/image/',
+  sendFileChat: host + '/v1/media/',
   annoucement: host + '/v1/member/announcement/',
   check_username: host + '/v1/user/check/',
   systemConfig: host + '/v1/global-data/',

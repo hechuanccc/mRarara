@@ -29,9 +29,16 @@
             <div v-else :class="['bubble', 'bubble' + item.type]">
               <p>
                 <span v-if="item.type === 0 || item.type === 4 || item.type === 8">{{item.content}}</span>
+                <video v-else-if="item.type === 1 && videoType(item.content)" 
+                  :src="item.content" 
+                  controls 
+                  preload 
+                  width="100%">
+                  您的浏览器不支持 video 播放
+                </video>
                 <img-async
                   @click.native="showImageMsg = true; showImageMsgUrl = item.content"
-                  v-else-if="item.type === 1"
+                  v-else-if="item.type === 1 && !videoType(item.content)"
                   :src="item.content"
                   @imgStart="imgLoadCount++"
                   @imgLoad="imgLoadCount--"/>
@@ -295,6 +302,9 @@ export default {
           }).catch(() => { this.busy = false })
         }
       }
+    },
+    videoType (str) {
+      return /\.(flv|avi|wmv|mp4|mov)$/i.test(str)
     }
   }
 }

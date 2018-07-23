@@ -90,17 +90,29 @@
         </div>
         <div class="title">发红包</div>
       </label>
-      <label class="control-btn" for="capture" @click="clickSendImg">
-        <div class="icon-bg">
+      <label class="control-btn" for="capture" @click="checkUploadFile">
+        <div class="icon-bg fl">
           <div class="picture-icon"></div>
         </div>
         <div class="title">图片</div>
-        <input @change="sendMsgImg"
+        <input @change="sendFileMsg($refs.fileImgSend)"
           type="file"
           id="capture"
           ref="fileImgSend"
-          class="img-upload-input"
+          class="upload-input"
           accept="image/*">
+      </label>
+      <label class="control-btn" for="captureVideo" @click="checkUploadFile">
+        <div class="icon-bg fl">
+          <div class="picture-icon video-icon"></div>
+        </div>
+        <div class="title">视频</div>
+        <input @change="sendFileMsg($refs.fileVideoSend)"
+          type="file"
+          id="captureVideo"
+          ref="fileVideoSend"
+          class="upload-input"
+          accept="video/*">
       </label>
     </div>
   </div>
@@ -115,8 +127,11 @@ import { mapState } from 'vuex'
 import 'vue-awesome/icons/smile-o'
 import 'vue-awesome/icons/paper-plane'
 import { Swiper, SwiperItem } from 'vux'
-import { sendImgToChat, fetchStickers } from '../api'
+import { sendFileToChat, fetchStickers } from '../api'
 import lrz from 'lrz'
+
+const VIDEO_SIZE = 2
+
 export default {
   name: 'ChatFooter',
   components: {
@@ -209,15 +224,15 @@ export default {
       this.isShowControlPanel = false
       this.isShowEmojiPanel = false
     },
-    sendMsgImg (e) {
+    sendFileMsg (fileInp) {
       if (this.user.viewRole === VISITOR) {
         this.$router.push('/login')
         return
       }
-      let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
+      let reg = fileInp.id === 'capture' ? /\.(gif|jpg|jpeg|png)$/i : /\.(flv|avi|wmv|mp4|mov)$/i
 
-      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || this.noPermission) {
+      if (!reg.test(fileInp.value) || this.noPermission) {
         this.$vux.toast.show({
           text: '文件格式不正确或您目前尚不符合发言条件',
           type: 'warn'
@@ -225,22 +240,39 @@ export default {
         return false
       }
 
-      lrz(file).then(rst => {
-        if (rst.fileLen > 1024 * 1024) {
+      let formData = new FormData()
+      formData.append('receiver', this.roomId)
+
+      if (fileInp.id === 'capture') {
+        lrz(file).then(rst => {
+          if (rst.fileLen > 1024 * 1024) {
+            this.$vux.toast.show({
+              text: '图片尺寸太大，请选择较小尺寸的图片',
+              type: 'warn'
+            })
+            return
+          }
+          rst.file.name = file.name
+          formData.append('media', rst.file)
+          sendFileToChat(formData).then((data) => {
+            this.hidePanel()
+            fileInp.value = ''
+          })
+        })
+      } else {
+        if (file.size / 1024 > VIDEO_SIZE * 1024) {
           this.$vux.toast.show({
-            text: '图片尺寸太大，请选择较小尺寸的图片',
+            text: '视频尺寸太大，请选择较小尺寸的视频',
             type: 'warn'
           })
           return
         }
-        let formData = new FormData()
-        formData.append('receiver', this.roomId)
-        formData.append('image', rst.file)
-        sendImgToChat(formData).then((data) => {
+        formData.append('media', file)
+        sendFileToChat(formData).then((data) => {
           this.hidePanel()
           fileInp.value = ''
         })
-      })
+      }
     },
     sendMsg () {
       if (this.user.viewRole === VISITOR) {
@@ -289,7 +321,7 @@ export default {
         target = target.parentNode
       }
     },
-    clickSendImg (e) {
+    checkUploadFile (e) {
       if (this.user.viewRole === VISITOR) {
         e.preventDefault()
         this.$router.push('/login')
@@ -507,6 +539,9 @@ export default {
           height: 30px;
           width: 38px;
         }
+        .video-icon {
+          background: url('../assets/video.png') no-repeat center;
+        }
       }
       .title {
         width: 100%;
@@ -516,7 +551,7 @@ export default {
         color: #9b9b9b;
         font-size: 12px;
       }
-      .img-upload-input {
+      .upload-input {
         display: none;
       }
     }

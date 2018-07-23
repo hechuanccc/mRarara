@@ -23,8 +23,8 @@ export function register (user) {
   return axios.post(urls.register, qs.stringify(user), {withCredentials: true})
 }
 
-export function sendImgToChat (data) {
-  return axios.post(`${urls.sendImgToChat}`, data)
+export function sendFileToChat (data) {
+  return axios.post(`${urls.sendFileChat}`, data)
 }
 
 export function checkUserName (username) {
